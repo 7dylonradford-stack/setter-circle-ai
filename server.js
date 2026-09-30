@@ -54,8 +54,12 @@ NON-NEGOTIABLE ROLEPLAY RULES
 - Do not overuse "mate", "fair enough", "got you", or any repeated filler.
 - Keep factual continuity perfectly.
 
-OPENING ALREADY SENT
-${s.scenario.opening}`;
+CONVERSATION START
+The student has been shown a pre-conversation briefing containing the realistic source/context, what they could know publicly, their position, lead/contact type and objective.
+The following first message has ALREADY been sent by you:
+${s.scenario.opening}
+
+Treat that opening as literal conversation history. The student's first reply must make sense as a response to it. Never reset the conversation, introduce a conflicting backstory, or act as though outreach happened differently.`;
 }
 
 const evalSchema = {
