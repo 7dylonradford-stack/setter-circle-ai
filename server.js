@@ -3,6 +3,7 @@ import OpenAI from "openai";
 import crypto from "crypto";
 import path from "path";
 import { fileURLToPath } from "url";
+import { initDb, q, pool } from "./db.js";
 
 const app = express();
 app.use(express.json({limit:"200kb"}));
@@ -26,6 +27,18 @@ app.post("/api/access", (req,res)=>{
 });
 const client = new OpenAI({apiKey: process.env.OPENAI_API_KEY});
 const sessions = new Map();
+const userTokens = new Map();
+const USER_TTL=1000*60*60*24*30;
+function hashToken(t){return crypto.createHash("sha256").update(t).digest("hex")}
+function hashPassword(p,salt=crypto.randomBytes(16).toString("hex")){return salt+":"+crypto.scryptSync(String(p),salt,64).toString("hex")}
+function verifyPassword(p,stored){const [salt,key]=String(stored).split(":");if(!salt||!key)return false;const got=crypto.scryptSync(String(p),salt,64);const want=Buffer.from(key,"hex");return got.length===want.length&&crypto.timingSafeEqual(got,want)}
+async function currentUser(req){const a=String(req.headers.authorization||"");const t=a.startsWith("Bearer ")?a.slice(7):"";if(!t||!pool)return null;const r=await q("SELECT u.id,u.email,u.name,u.role,u.xp,u.streak FROM auth_sessions s JOIN users u ON u.id=s.user_id WHERE s.token_hash=$1 AND s.expires_at>NOW()",[hashToken(t)]);return r.rows[0]||null}
+async function requireUser(req,res,next){try{const u=await currentUser(req);if(!u)return res.status(401).json({error:"Sign in required"});req.user=u;next()}catch(e){res.status(500).json({error:"Account service unavailable"})}}
+app.post("/api/account/register",async(req,res)=>{try{if(!pool)return res.status(503).json({error:"Accounts are being prepared"});const email=String(req.body?.email||"").trim().toLowerCase(),name=String(req.body?.name||"").trim(),password=String(req.body?.password||"");if(!email.includes("@")||name.length<2||password.length<8)return res.status(400).json({error:"Use a valid name, email and password of at least 8 characters"});const id=crypto.randomUUID();await q("INSERT INTO users(id,email,name,password_hash) VALUES($1,$2,$3,$4)",[id,email,name,hashPassword(password)]);res.json({ok:true})}catch(e){res.status(e.code==="23505"?409:500).json({error:e.code==="23505"?"An account already exists for that email":"Could not create account"})}});
+app.post("/api/account/login",async(req,res)=>{try{if(!pool)return res.status(503).json({error:"Accounts are being prepared"});const email=String(req.body?.email||"").trim().toLowerCase(),password=String(req.body?.password||"");const r=await q("SELECT * FROM users WHERE email=$1",[email]),u=r.rows[0];if(!u||!verifyPassword(password,u.password_hash))return res.status(401).json({error:"Incorrect email or password"});const token=crypto.randomBytes(32).toString("hex");await q("INSERT INTO auth_sessions(token_hash,user_id,expires_at) VALUES($1,$2,NOW()+INTERVAL '30 days')",[hashToken(token),u.id]);res.json({token,user:{name:u.name,email:u.email,role:u.role,xp:u.xp,streak:u.streak}})}catch(e){res.status(500).json({error:"Could not sign in"})}});
+app.get("/api/account/me",requireUser,async(req,res)=>{const h=await q("SELECT overall_score,mode,difficulty,prospect_name,created_at FROM simulation_results WHERE user_id=$1 ORDER BY created_at DESC LIMIT 20",[req.user.id]);res.json({user:req.user,history:h.rows})});
+app.get("/api/leaderboard",requireUser,async(req,res)=>{const r=await q("SELECT u.name,u.xp,COUNT(sr.id)::int reps,COALESCE(ROUND(AVG(sr.overall_score)),0)::int average FROM users u LEFT JOIN simulation_results sr ON sr.user_id=u.id AND sr.created_at>NOW()-INTERVAL '7 days' WHERE u.role='student' GROUP BY u.id ORDER BY xp DESC LIMIT 25");res.json({leaders:r.rows})});
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 app.use(express.static(path.join(__dirname,"public")));
 
@@ -309,4 +322,4 @@ ${s.transcript.map(x=>`${x.role.toUpperCase()}: ${x.text}`).join("\n")}`;
 
 app.get("/{*splat}",(req,res)=>res.sendFile(path.join(__dirname,"public","index.html")));
 const port=process.env.PORT||3000;
-app.listen(port,()=>console.log(`Setter Circle AI running on ${port}`));
+initDb().catch(console.error).finally(()=>app.listen(port,()=>console.log(`Setter Circle AI running on ${port}`)));
