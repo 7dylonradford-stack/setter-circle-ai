@@ -291,7 +291,7 @@ const debriefSchema={
  },required:["overall_score","scores","outcome","strengths","improvements","better_approach","hidden_reveal"]
 };
 
-app.post("/api/debrief",async(req,res)=>{
+app.post("/api/debrief", requireTrainingAccess, async(req,res)=>{
  const s=sessions.get(req.body.session_id);
  if(!s)return res.status(404).json({error:"Session expired"});
  try{
@@ -316,7 +316,15 @@ ${s.transcript.map(x=>`${x.role.toUpperCase()}: ${x.text}`).join("\n")}`;
    input:prompt, reasoning:{effort:"high"}, max_output_tokens:1400,
    text:{format:{type:"json_schema",name:"session_debrief",strict:true,schema:debriefSchema}}
   });
-  const data=JSON.parse(r.output_text); sessions.delete(req.body.session_id); res.json(data);
+  const data=JSON.parse(r.output_text);
+  // Persist completed work when the student is signed into a platform account.
+  const user=await currentUser(req).catch(()=>null);
+  if(user&&pool){
+   const xp=Math.max(25,Math.round(data.overall_score));
+   await q("INSERT INTO simulation_results(id,user_id,mode,difficulty,prospect_name,prospect_role,overall_score,scores,transcript,debrief) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)",[crypto.randomUUID(),user.id,s.mode,s.difficulty,s.scenario.name,s.scenario.role,data.overall_score,JSON.stringify(data.scores),JSON.stringify(s.transcript),JSON.stringify(data)]);
+   await q("UPDATE users SET xp=xp+$1,last_active=CURRENT_DATE,streak=CASE WHEN last_active=CURRENT_DATE-1 THEN streak+1 WHEN last_active=CURRENT_DATE THEN streak ELSE 1 END WHERE id=$2",[xp,user.id]);
+  }
+  sessions.delete(req.body.session_id); res.json(data);
  }catch(e){console.error(e);res.status(500).json({error:"Debrief failed"})}
 });
 
