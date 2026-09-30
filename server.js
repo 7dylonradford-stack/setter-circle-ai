@@ -38,6 +38,23 @@ app.post("/api/account/register",async(req,res)=>{try{if(!pool)return res.status
 app.post("/api/account/login",async(req,res)=>{try{if(!pool)return res.status(503).json({error:"Accounts are being prepared"});const email=String(req.body?.email||"").trim().toLowerCase(),password=String(req.body?.password||"");const r=await q("SELECT * FROM users WHERE email=$1",[email]),u=r.rows[0];if(!u||!verifyPassword(password,u.password_hash))return res.status(401).json({error:"Incorrect email or password"});const token=crypto.randomBytes(32).toString("hex");await q("INSERT INTO auth_sessions(token_hash,user_id,expires_at) VALUES($1,$2,NOW()+INTERVAL '30 days')",[hashToken(token),u.id]);res.json({token,user:{name:u.name,email:u.email,role:u.role,xp:u.xp,streak:u.streak}})}catch(e){res.status(500).json({error:"Could not sign in"})}});
 app.get("/api/account/me",requireUser,async(req,res)=>{const h=await q("SELECT overall_score,mode,difficulty,prospect_name,created_at FROM simulation_results WHERE user_id=$1 ORDER BY created_at DESC LIMIT 20",[req.user.id]);res.json({user:req.user,history:h.rows})});
 app.get("/api/leaderboard",requireUser,async(req,res)=>{const r=await q("SELECT u.name,u.xp,COUNT(sr.id)::int reps,COALESCE(ROUND(AVG(sr.overall_score)),0)::int average FROM users u LEFT JOIN simulation_results sr ON sr.user_id=u.id AND sr.created_at>NOW()-INTERVAL '7 days' WHERE u.role='student' GROUP BY u.id ORDER BY xp DESC LIMIT 25");res.json({leaders:r.rows})});
+app.get("/api/daily-challenge",requireUser,async(req,res)=>{
+ const day=new Date().toISOString().slice(0,10),seed=[...day].reduce((a,c)=>a+c.charCodeAt(0),0),modes=["network","client","role"],mode=modes[seed%3],difficulty=1+(seed%4),scenario=makePreloadedProspect(seed%PRELOADED_PROSPECT_COUNT,mode,difficulty);
+ res.json({date:day,mode,difficulty,scenario});
+});
+app.get("/api/skills",requireUser,async(req,res)=>{
+ const r=await q("SELECT scores FROM simulation_results WHERE user_id=$1 ORDER BY created_at DESC LIMIT 30",[req.user.id]);
+ const keys=["conversational_awareness","rapport","discovery","qualification","objection_handling","positioning","cta","naturalness"],out={};
+ for(const k of keys){const vals=r.rows.map(x=>Number(x.scores?.[k])).filter(Number.isFinite);out[k]=vals.length?Math.round(vals.reduce((a,b)=>a+b,0)/vals.length):null}
+ const ranked=Object.entries(out).filter(([,v])=>v!==null).sort((a,b)=>a[1]-b[1]);
+ res.json({skills:out,weakest:ranked[0]?.[0]||null,strongest:ranked.at(-1)?.[0]||null});
+});
+app.get("/api/admin/students",requireUser,async(req,res)=>{
+ if(req.user.role!=="admin")return res.status(403).json({error:"Admin access required"});
+ const r=await q("SELECT u.id,u.name,u.email,u.xp,u.streak,u.last_active,COUNT(sr.id)::int reps,COALESCE(ROUND(AVG(sr.overall_score)),0)::int average FROM users u LEFT JOIN simulation_results sr ON sr.user_id=u.id WHERE u.role='student' GROUP BY u.id ORDER BY u.last_active DESC NULLS LAST,u.created_at DESC");
+ res.json({students:r.rows});
+});
+
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 app.use(express.static(path.join(__dirname,"public")));
