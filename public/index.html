@@ -102,13 +102,19 @@ async function unlockTraining(){let p=$('accessPassword').value,b=$('unlockBtn')
 function closeTrainer(){sessionId=null;busy=false;selectedScenarioId=null;['briefing','results','simSetup'].forEach(id=>{let e=$(id);if(e)e.classList.add('hidden')});$('trainer').classList.add('hidden');$('site').classList.remove('hidden');document.body.style.overflow='';window.scrollTo({top:0,behavior:'smooth'})}
 function switchMode(m){mode=m;selectedScenarioId=null;prepareBriefing()}
 function difficultyCopy(){return {1:'More open and forgiving. Learn the flow.',2:'Natural skepticism and incomplete answers.',3:'Guarded and busy. Weak questions lose attention.',4:'Sharp and unforgiving. Earn every step.'}[+$('difficulty').value]}
+function nextPreloadedProspect(){
+ let state;try{state=JSON.parse(localStorage.getItem('setterProspectDeck')||'null')}catch(e){}
+ if(!state||!Array.isArray(state.deck)){let deck=Array.from({length:100},(_,i)=>i);for(let i=deck.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[deck[i],deck[j]]=[deck[j],deck[i]]}state={deck,pos:0};}
+ if(state.pos>=state.deck.length)return null;
+ const index=state.deck[state.pos++];localStorage.setItem('setterProspectDeck',JSON.stringify(state));return index;
+}
 async function prepareBriefing(){
  $('briefing').classList.remove('hidden');
  $('bAvatar').textContent='…';$('bName').textContent='Generating your prospect…';$('bLevel').textContent=$('difficulty').options[$('difficulty').selectedIndex].text;
  $('bSource').textContent='Building a fresh conversation…';$('bKnown').textContent='';$('bTemp').textContent='';$('bPosition').textContent=positionInfo[mode];$('bMission').textContent='Your objective will appear with the prospect.';
  const go=document.querySelector('#briefing .briefactions .btn');if(go){go.disabled=true;go.textContent='Generating…'}
  try{
-  const r=await fetch('/api/prospect',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+accessToken},body:JSON.stringify({mode,difficulty:+$('difficulty').value})});
+  const preloadedIndex=nextPreloadedProspect();const payload={mode,difficulty:+$('difficulty').value};if(preloadedIndex!==null)payload.preloaded_index=preloadedIndex;const r=await fetch('/api/prospect',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+accessToken},body:JSON.stringify(payload)});
   if(r.status===401){accessToken='';sessionStorage.removeItem('setterAccess');$('briefing').classList.add('hidden');$('trainer').classList.add('hidden');$('site').classList.remove('hidden');pendingMode=mode;$('accessError').textContent='Your training session expired. Unlock training again.';$('accessGate').classList.remove('hidden');return}
   const d=await r.json();if(!r.ok)throw new Error(d.error||'Generation failed');
   scenario=d.scenario;selectedScenarioId=scenario.id;
