@@ -50,7 +50,15 @@ section.pad{padding:110px 0}.sectiontop{max-width:680px;margin-bottom:42px}.sect
 <div id="briefing" class="briefmodal hidden"><div class="briefbox"><div class="briefhead"><div class="briefperson"><div class="briefavatar" id="bAvatar">A</div><div><div class="eyebrow">SCENARIO BRIEFING</div><h2 id="bName" style="margin:5px 0 0;font-size:25px;font-weight:600"></h2></div></div><div id="bLevel" class="tag"></div></div><div class="briefgrid"><div class="briefitem"><label>WHERE THIS CONVERSATION STARTS</label><div id="bSource"></div></div><div class="briefitem"><label>WHAT YOU KNOW</label><div id="bKnown"></div></div><div class="briefitem"><label>LEAD / CONTACT TYPE</label><div id="bTemp"></div></div><div class="briefitem"><label>YOUR POSITION</label><div id="bPosition"></div></div></div><div class="missionbox"><label>YOUR OBJECTIVE</label><p id="bMission"></p></div><div class="briefactions"><div class="briefnote">You only see information you could realistically know at this point. Hidden motivations and objections must be discovered in the conversation.</div><button class="btn ghost" onclick="closeTrainer()">Exit</button><button class="btn" onclick="startBriefedSession()">Enter conversation →</button></div></div></div><button id="soundToggle" class="soundtoggle" onclick="toggleSound()" aria-label="Toggle sound">♪</button><div id="results" class="modal hidden"><div class="modalbox"><div class="eyebrow">SIMULATION COMPLETE</div><h2 style="font-size:29px;margin:9px 0">Performance review</h2><div class="resultgrid" id="resultGrid"></div><p id="debrief" style="font-size:13px;color:#aab1bb;line-height:1.6"></p><div style="display:flex;gap:8px"><button class="btn" onclick="hideResults();prepareBriefing()">Run another</button><button class="btn ghost" onclick="hideResults();closeTrainer()">Back to website</button></div></div></div>
 
 
-<div id="toast" class="toast"></div><script>window.addEventListener("load",()=>{setTimeout(()=>{const sp=document.getElementById("splash"),site=document.getElementById("site");if(sp)sp.classList.add("hide");if(site)site.classList.add("site-reveal");setTimeout(()=>{if(sp)sp.remove()},750)},1550)});
+<div id="toast" class="toast"></div><script>
+(function(){
+ const dismissSplash=()=>{const sp=document.getElementById("splash"),site=document.getElementById("site");if(site)site.classList.add("site-reveal");if(sp){sp.classList.add("hide");setTimeout(()=>sp.remove(),500)}};
+ // Do not depend on every page resource finishing. Mobile browsers can leave "load" waiting.
+ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",()=>setTimeout(dismissSplash,1250),{once:true});
+ else setTimeout(dismissSplash,1250);
+ // Absolute fail-safe: the intro must never block access to the site.
+ setTimeout(dismissSplash,2600);
+})();
 const scenarios={
 network:[
 {id:"network_setter",name:"Jordan",role:"Appointment Setter",objective:"Build a genuine relationship and create a reason to stay connected.",brief:"Experienced setter. Guarded around strangers asking for jobs. Wants better opportunities but values genuine relationships.",opening:"Yo mate, saw your message. You in the setting space too?"},
