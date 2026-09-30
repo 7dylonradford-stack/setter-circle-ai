@@ -93,6 +93,48 @@ const evalSchema = {
  }, required:["trust","interest","patience","signals","coach_note","should_end","evidence"]
 };
 
+const PRELOADED_PROSPECT_COUNT=100;
+const preloadNames=["Aiden","Amelia","Archie","Ava","Blake","Brooke","Cameron","Charlie","Daisy","Elijah","Ella","Evie","Finn","Freya","George","Grace","Hannah","Harvey","Holly","Isaac","Isla","Jack","Jacob","Jasmine","Jay","Jessica","Joe","Kai","Katie","Leo","Lily","Logan","Lucy","Luke","Maisie","Mason","Mia","Millie","Nathan","Noah","Oscar","Phoebe","Reece","Ruby","Sam","Sienna","Theo","Zara","Beth","Adam","Niamh"];
+const preloadPersonalities=[
+ ["Direct","decisive, blunt and impatient with vague answers"],["Skeptical","analytical and suspicious of unsupported claims"],
+ ["Friendly","warm and conversational but not automatically interested"],["Busy","time-poor and easily distracted"],
+ ["Guarded","private and slow to disclose problems"],["Analytical","detail-oriented and wants specifics"],
+ ["Chatty","open but frequently goes off-topic"],["Blunt","short replies and low tolerance for filler"],
+ ["Curious","asks questions and wants to understand the process"],["Cautious","interested but worried about another bad decision"],
+ ["Confident","believes their current process works"],["Defensive","interprets generic sales questions as criticism"],
+ ["Independent","prefers doing things themselves"],["Results-focused","cares about measurable outcomes"],
+ ["Relationship-led","values trust and reputation"],["Price-sensitive","focuses on cost early"],
+ ["Distracted","answers inconsistently and may disappear"],["Experienced","recognises canned sales frameworks"],
+ ["Reserved","polite but gives minimal information"],["Challenging","tests confidence and pushes back"]
+];
+const preloadFrictions=[
+ "follow-up is inconsistent and good conversations go cold","show rates are weaker than expected","a previous setter damaged trust",
+ "they believe the current team already has this covered","time is the real constraint","they wasted money on a previous service",
+ "they need proof before giving more time","they receive too many generic sales DMs","qualification quality is inconsistent",
+ "old opportunities are not being reactivated","they have not measured the cost of the problem","brand reputation matters more than booking volume",
+ "they are comparing alternatives","they dislike premature call pushes","they know something is leaking but not where"
+];
+const preloadRoles={
+ network:["Appointment Setter","High-Ticket Closer","Sales Manager","Sales Recruiter","SDR","Account Executive","Head of Sales","Setter Team Lead","Sales Trainer","Revenue Manager"],
+ client:["Fitness Coach","Agency Founder","Recruitment Founder","Business Coach","Property Mentor","E-commerce Educator","SaaS Founder","Consultant","Career Coach","Content Agency Owner","Leadership Coach","Health Coach"],
+ role:["Inbound Lead","Warm Lead","Cold Re-engagement","Qualified Lead","Previous No-Show","Referral Lead","Webinar Lead","Instagram Lead","Application Lead","Price-Conscious Lead"]
+};
+const preloadOpenings={
+ network:["Yeah, saw your message. What's up?","Appreciate the message — what made you reach out?","Hey. You working in sales at the minute?","How did you come across my page?"],
+ client:["Hey, saw your message. What exactly are you reaching out about?","We get a lot of these DMs. What did you actually notice?","Potentially — what are you suggesting?","We've already got a process for this. What's the angle?"],
+ role:["Hey, I was having a look earlier. What happens from here?","Yeah I'm interested, just got a couple of concerns first.","Sorry for the slow reply — still looking into it.","Before we book anything, can I ask you something?"]
+};
+function makePreloadedProspect(index,mode,difficulty){
+ const p=preloadPersonalities[(index*7+(mode==="client"?3:mode==="role"?8:0))%preloadPersonalities.length];
+ const roles=preloadRoles[mode],role=roles[(index*11)%roles.length],name=preloadNames[(index*13)%preloadNames.length];
+ const friction=preloadFrictions[(index*5+(mode==="role"?2:0))%preloadFrictions.length];
+ const opening=preloadOpenings[mode][(index*3)%preloadOpenings[mode].length];
+ const objective=mode==="network"?"Build a genuine professional connection and uncover mutual relevance without forcing a job ask.":mode==="client"?"Diagnose whether there is a genuine commercial gap and earn the right to progress.":"Understand the lead, qualify fit and progress only when the next step is earned.";
+ return {id:"preloaded_"+mode+"_"+index,name,role:role+" · "+p[0],objective,
+  brief:p[1]+". Hidden reality: "+friction+". Difficulty "+difficulty+". Reveal this gradually only when earned.",
+  opening,public_context:mode==="network"?"You reached out after seeing this person in the remote-sales space.":mode==="client"?"You researched the business and initiated a cold DM.":"You are handling this lead as the setter for the offer.",
+  public_known:role,contact_type:mode==="network"?"Cold network contact":mode==="client"?"Cold outbound":"Lead conversation"};
+}
 const generatedScenarioSchema={
  type:"object",additionalProperties:false,
  properties:{
@@ -107,6 +149,10 @@ app.post("/api/prospect", requireTrainingAccess, async (req,res)=>{
  try{
   const mode=["network","client","role"].includes(req.body?.mode)?req.body.mode:"client";
   const difficulty=Math.max(1,Math.min(4,Number(req.body?.difficulty)||2));
+  const requestedIndex=Number(req.body?.preloaded_index);
+  if(Number.isInteger(requestedIndex)&&requestedIndex>=0&&requestedIndex<PRELOADED_PROSPECT_COUNT){
+   return res.json({scenario:makePreloadedProspect(requestedIndex,mode,difficulty),source:"preloaded"});
+  }
   const modeBrief={
    network:"The student is networking in the appointment-setting / remote-sales space. Create a setter, closer, recruiter, sales manager, SDR, AE, sales trainer, founder, team lead or another realistic sales contact.",
    client:"The student is prospecting for appointment-setting clients. Create a realistic business owner/founder/coach/consultant/agency or service-business decision maker from a varied niche.",
