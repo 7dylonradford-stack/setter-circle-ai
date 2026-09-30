@@ -6,6 +6,24 @@ import { fileURLToPath } from "url";
 
 const app = express();
 app.use(express.json({limit:"200kb"}));
+const accessTokens = new Map();
+const ACCESS_TTL = 1000 * 60 * 60 * 24 * 14;
+function safeEqual(a,b){const aa=Buffer.from(String(a||"")),bb=Buffer.from(String(b||""));return aa.length===bb.length && crypto.timingSafeEqual(aa,bb)}
+function requireTrainingAccess(req,res,next){
+ const auth=String(req.headers.authorization||"");
+ const token=auth.startsWith("Bearer ")?auth.slice(7):"";
+ const exp=accessTokens.get(token);
+ if(!token||!exp||exp<Date.now()){if(token)accessTokens.delete(token);return res.status(401).json({error:"Member access required"})}
+ next();
+}
+app.post("/api/access", (req,res)=>{
+ const configured=process.env.TRAINING_PASSWORD;
+ if(!configured)return res.status(503).json({error:"Member access is not configured"});
+ if(!safeEqual(req.body?.password,configured))return res.status(401).json({error:"Incorrect access password"});
+ const token=crypto.randomBytes(32).toString("hex");
+ accessTokens.set(token,Date.now()+ACCESS_TTL);
+ res.json({token,expires_in:ACCESS_TTL});
+});
 const client = new OpenAI({apiKey: process.env.OPENAI_API_KEY});
 const sessions = new Map();
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -75,7 +93,7 @@ const evalSchema = {
  }, required:["trust","interest","patience","signals","coach_note","should_end","evidence"]
 };
 
-app.post("/api/session", async (req,res)=>{
+app.post("/api/session", requireTrainingAccess, async (req,res)=>{
  try{
   const {mode,difficulty,scenario}=req.body;
   if(!scenario?.name) return res.status(400).json({error:"Invalid scenario"});
@@ -85,7 +103,7 @@ app.post("/api/session", async (req,res)=>{
  }catch(e){res.status(500).json({error:"Could not create session"})}
 });
 
-app.post("/api/message", async (req,res)=>{
+app.post("/api/message", requireTrainingAccess, async (req,res)=>{
  const s=sessions.get(req.body.session_id);
  if(!s)return res.status(404).json({error:"Session expired"});
  const message=String(req.body.message||"").slice(0,2500);
