@@ -202,6 +202,6 @@ ${s.transcript.map(x=>`${x.role.toUpperCase()}: ${x.text}`).join("\n")}`;
  }catch(e){console.error(e);res.status(500).json({error:"Debrief failed"})}
 });
 
-app.get("*",(req,res)=>res.sendFile(path.join(__dirname,"public","index.html")));
+app.get("/{*splat}",(req,res)=>res.sendFile(path.join(__dirname,"public","index.html")));
 const port=process.env.PORT||3000;
 app.listen(port,()=>console.log(`Setter Circle AI running on ${port}`));
