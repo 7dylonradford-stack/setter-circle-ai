@@ -93,6 +93,43 @@ const evalSchema = {
  }, required:["trust","interest","patience","signals","coach_note","should_end","evidence"]
 };
 
+const generatedScenarioSchema={
+ type:"object",additionalProperties:false,
+ properties:{
+  name:{type:"string"},role:{type:"string"},objective:{type:"string"},
+  brief:{type:"string"},opening:{type:"string"},
+  public_context:{type:"string"},public_known:{type:"string"},contact_type:{type:"string"}
+ },
+ required:["name","role","objective","brief","opening","public_context","public_known","contact_type"]
+};
+
+app.post("/api/prospect", requireTrainingAccess, async (req,res)=>{
+ try{
+  const mode=["network","client","role"].includes(req.body?.mode)?req.body.mode:"client";
+  const difficulty=Math.max(1,Math.min(4,Number(req.body?.difficulty)||2));
+  const modeBrief={
+   network:"The student is networking in the appointment-setting / remote-sales space. Create a setter, closer, recruiter, sales manager, SDR, AE, sales trainer, founder, team lead or another realistic sales contact.",
+   client:"The student is prospecting for appointment-setting clients. Create a realistic business owner/founder/coach/consultant/agency or service-business decision maker from a varied niche.",
+   role:"The student already works as a setter and is handling a lead. Create a realistic inbound, warm, reactivation, referral, application, no-show, skeptical, price-aware or otherwise commercially realistic lead."
+  }[mode];
+  const prompt=`Create ONE brand-new prospect for an appointment-setting training simulation.
+${modeBrief}
+Difficulty: ${DIFFICULTY[difficulty]}
+
+Make this prospect materially different from generic sales-training characters. Randomise personality, communication style, patience, sophistication, hidden motivation, objection, commercial situation and openness. Possible personalities include warm, blunt, skeptical, analytical, distracted, guarded, chatty, impatient, experienced, cautious, defensive, curious, confident, price-sensitive and combinations of these.
+
+The private brief must contain the personality and hidden reality the student has to discover. Do NOT put hidden information in public_context or public_known. The opening must be a natural short DM that establishes a concrete starting point. Do not mention AI, simulation, scoring or training. UK/international contemporary DM language is fine. Avoid making every character say "mate".`;
+  const g=await client.responses.create({
+   model:process.env.PROSPECT_MODEL||"gpt-5.6-terra",
+   input:prompt,reasoning:{effort:"low"},max_output_tokens:550,
+   text:{format:{type:"json_schema",name:"generated_prospect",strict:true,schema:generatedScenarioSchema}}
+  });
+  const scenario=JSON.parse(g.output_text);
+  scenario.id="generated_"+crypto.randomUUID();
+  res.json({scenario});
+ }catch(e){console.error(e);res.status(500).json({error:"Could not generate prospect"})}
+});
+
 app.post("/api/session", requireTrainingAccess, async (req,res)=>{
  try{
   const {mode,difficulty,scenario}=req.body;
