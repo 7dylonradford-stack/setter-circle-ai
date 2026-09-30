@@ -72,6 +72,79 @@ role:[
 {id:"role_price",name:"Jamie",role:"Price-Conscious Lead",objective:"Understand the concern behind the price question without becoming defensive or evasive.",brief:"Warm lead who can afford the offer but previously wasted money on a cheap course. Price is really a trust concern.",opening:"Before we go any further mate, how much does this actually cost?"},
 {id:"role_noshow",name:"Ethan",role:"Previous No-Show",objective:"Re-engage respectfully, understand what happened and decide whether rebooking makes sense.",brief:"Previously qualified but missed the call because work became chaotic. Feels awkward about it and will disengage if guilt-tripped.",opening:"Yeah sorry about the other day, work was mental. Been meaning to reply."}]
 };
+
+// Expanded prospect engine: 500 additional scenario/personality combinations.
+// These are deterministic training profiles, not filler duplicates: each combines mode,
+// niche/role, personality, hidden friction and opening style.
+const extraFirstNames=["Aiden","Amelia","Archie","Ava","Blake","Brooke","Cameron","Charlie","Daisy","Dylan","Elijah","Ella","Emily","Evie","Finn","Freya","George","Grace","Hannah","Harvey","Holly","Isaac","Isla","Jack","Jacob","Jasmine","Jay","Jessica","Joe","Kai","Katie","Leo","Lily","Logan","Lucy","Luke","Maisie","Mason","Mia","Millie","Nathan","Noah","Oscar","Phoebe","Reece","Ruby","Sam","Sienna","Theo","Zara"];
+const personalityBank=[
+["Direct","decisive, blunt and impatient with vague answers","Keep it concise and earn permission to continue."],
+["Skeptical","analytical and suspicious of unsupported claims","Build credibility through relevant questions rather than hype."],
+["Friendly","warm and conversational but not automatically interested","Build genuine rapport while still qualifying properly."],
+["Busy","time-poor and easily distracted","Create relevance quickly without rushing into a pitch."],
+["Guarded","private and slow to disclose business problems","Earn trust and uncover information gradually."],
+["Analytical","detail-oriented and wants specifics before accepting assumptions","Diagnose clearly and avoid vague claims."],
+["Chatty","open and talkative but frequently goes off-topic","Keep the conversation natural while guiding it toward useful discovery."],
+["Blunt","short replies and low tolerance for filler","Stay composed and ask purposeful questions."],
+["Curious","asks lots of questions and wants to understand how things work","Answer enough to maintain trust while continuing discovery."],
+["Cautious","interested but worried about making another bad decision","Understand the source of hesitation before progressing."],
+["Confident","believes their current process already works well","Find genuine gaps without manufacturing a problem."],
+["Defensive","interprets generic sales questions as criticism","Use tact and avoid attacking their current approach."],
+["Independent","prefers handling things themselves and dislikes outsourcing","Explore capacity and opportunity cost without forcing a need."],
+["Results-focused","cares about measurable outcomes and little else","Connect discovery to concrete commercial impact."],
+["Relationship-led","values trust and reputation above speed","Prioritise credibility and fit before suggesting a next step."],
+["Price-sensitive","focuses on cost early even when value is not yet clear","Clarify what is driving the price concern without dodging it."],
+["Distracted","answers inconsistently and may disappear mid-thread","Maintain context and make each message easy to answer."],
+["Experienced","knows sales language and recognises canned frameworks","Sound natural, specific and commercially aware."],
+["Reserved","polite but gives minimal information","Use patient, well-sequenced questions without interrogating."],
+["Challenging","tests confidence and pushes back on weak statements","Stay calm, accurate and non-defensive."]
+];
+const clientRoles=["Fitness Coach","Marketing Agency Founder","Recruitment Agency Owner","Business Coach","Property Mentor","E-commerce Educator","SaaS Founder","Web Design Agency Owner","Consultant","Personal Brand Coach","Mortgage Broker","Accountancy Firm Owner","Leadership Coach","Career Coach","Online Education Founder","Health Coach","Sales Consultant","Content Agency Owner","Lead Generation Founder","Executive Coach"];
+const networkRoles=["Appointment Setter","High-Ticket Closer","Sales Manager","Sales Recruiter","SDR","Account Executive","Head of Sales","Agency Setter","Remote Sales Coach","Setter Team Lead","Closer Team Lead","Talent Manager","Sales Trainer","Revenue Manager","Business Development Rep"];
+const leadRoles=["Inbound Lead","Warm Lead","Cold Re-engagement","Qualified Lead","Previous No-Show","Referral Lead","Webinar Lead","Instagram Lead","Application Lead","Price-Conscious Lead","Comparison Shopper","Busy Founder Lead","Skeptical Lead","Returning Lead","Content Engager"];
+const frictions=[
+"follow-up is inconsistent and good conversations quietly go cold",
+"show rates are lower than expected even though lead volume is healthy",
+"they had a poor experience with a previous setter and now protect their brand closely",
+"they believe the current team already handles everything well",
+"they are interested but genuinely short on time",
+"they have been burned by an expensive service before",
+"they want proof before committing time to another conversation",
+"they receive so many sales DMs that they assume most outreach is generic",
+"they have enough leads but qualification quality is inconsistent",
+"their team is slow to reactivate older opportunities",
+"they are unsure whether the problem is serious enough to fix",
+"they care more about reputation and customer experience than raw booking volume",
+"they are comparing several possible solutions",
+"they dislike being pushed toward calls before value is clear",
+"they know something is leaking in the process but have not measured where"
+];
+const openings={
+network:["Yeah mate, saw your message. What's up?","Appreciate the message — what made you reach out?","Hey. You working in sales at the minute?","Yeah I saw that. What are you looking to get into?","What's good — how did you come across my page?"],
+client:["Hey, saw your message. What exactly are you reaching out about?","I'll be honest, we get a lot of these DMs. What's different here?","Potentially. What did you notice about the business?","We've already got a process for this — what are you suggesting?","Hey. Happy to hear you out, just keep it brief."],
+role:["Hey, I was having a look earlier. What happens from here?","Yeah I'm interested, just got a couple of concerns first.","Sorry for the slow reply — still looking into it.","Before we book anything, can I ask you something?","I've seen the content. I'm interested but not fully sold yet."]
+};
+function buildExtraScenarios(){
+ const out={network:[],client:[],role:[]}; let n=0;
+ const counts={network:165,client:170,role:165};
+ for(const m of ["network","client","role"]){
+  const roles=m==="network"?networkRoles:m==="client"?clientRoles:leadRoles;
+  for(let i=0;i<counts[m];i++,n++){
+   const p=personalityBank[(i*7+(m==="client"?3:m==="role"?9:0))%personalityBank.length];
+   const role=roles[(i*11+Math.floor(i/roles.length))%roles.length];
+   const name=extraFirstNames[(i*13+n)%extraFirstNames.length];
+   const friction=frictions[(i*5+n)%frictions.length];
+   const opening=openings[m][(i*3+n)%openings[m].length];
+   const objective=m==="network"?p[2]:(m==="client"?"Diagnose whether there is a real commercial gap. "+p[2]):"Understand the lead's situation, qualify fit and only progress when earned. "+p[2];
+   out[m].push({id:"x_"+m+"_"+String(i+1).padStart(3,"0"),name,role:role+" · "+p[0],personality:p[0],objective,brief:p[1]+". Hidden situation: "+friction+". Do not volunteer this immediately; reveal it only when the student's conversation earns it.",opening});
+  }
+ }
+ return out;
+}
+const extraScenarios=buildExtraScenarios();
+scenarios.network.push(...extraScenarios.network);
+scenarios.client.push(...extraScenarios.client);
+scenarios.role.push(...extraScenarios.role);
 let mode='client',scenario=null,sessionId=null,turns=0,busy=false,lastEval=null,selectedScenarioId=null,pendingMode='client',accessToken=sessionStorage.getItem('setterAccess')||'';const profileInfo={network_setter:['2 years in remote sales · currently setting','Posts about setting and career growth','Cold network contact'],network_recruiter:['Recruits remote setters and closers','Receives lots of generic job DMs','Cold network contact'],network_closer:['Established high-ticket closer','Works alongside setters and sales teams','Cold network contact'],client_fitness:['Online fitness coaching owner','Active brand with regular enquiries','Cold outbound'],client_consultant:['Premium consultant with a polished brand','Protective of her audience and reputation','Cold outbound · cautious'],client_agency:['Growth agency with a sales function','You know he already has a setter','Cold outbound · resistant'],client_recruitment:['Specialist recruitment founder','Active marketing and a busy team','Cold outbound · analytical'],role_inbound:['Completed an enquiry form today','Interested enough to enquire','Warm inbound'],role_warm:['Has consumed content for several days','Engaged with multiple posts','Warm lead'],role_reengage:['Old lead from a previous enquiry','Never booked or purchased','Cold re-engagement'],role_qualified:['Pre-qualified and showing clear intent','Strong apparent fit','Hot qualified lead'],network_manager:['Remote sales manager','Recently posted about hiring and setter standards','Cold network contact'],client_coach:['Premium coach with an established audience','Strong engagement and an assistant managing DMs','Cold outbound · resistant'],client_ecom:['High-ticket e-commerce education founder','Uses paid traffic and publishes case studies','Cold outbound · skeptical'],role_price:['Warm lead who engaged with a case study','Asked about price early','Warm · price aware'],role_noshow:['Previously qualified and booked','Missed the previous call','Re-engagement · defensive']};
 const $=x=>document.getElementById(x);
 function getProgress(){try{return JSON.parse(localStorage.getItem('setterProgress'))||{xp:0,reps:0,scores:[]}}catch(e){return{xp:0,reps:0,scores:[]}}}
@@ -100,7 +173,7 @@ function enterTrainer(m){mode=m;$('accessGate').classList.add('hidden');$('simSe
 function closeAccess(){$('accessGate').classList.add('hidden');document.body.style.overflow=''}
 async function unlockTraining(){let p=$('accessPassword').value,b=$('unlockBtn');if(!p)return;$('accessError').textContent='';b.disabled=true;b.textContent='Checking…';try{let r=await fetch('/api/access',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:p})});let d=await r.json();if(!r.ok)throw new Error(d.error||'Access denied');accessToken=d.token;sessionStorage.setItem('setterAccess',accessToken);$('accessPassword').value='';tone(700,.07,.025);openSetup(pendingMode)}catch(e){$('accessError').textContent=e.message||'Incorrect password';tone(180,.08,.02)}finally{b.disabled=false;b.textContent='Unlock training →'}}
 function closeTrainer(){sessionId=null;busy=false;selectedScenarioId=null;['briefing','results','simSetup'].forEach(id=>{let e=$(id);if(e)e.classList.add('hidden')});$('trainer').classList.add('hidden');$('site').classList.remove('hidden');document.body.style.overflow='';window.scrollTo({top:0,behavior:'smooth'})}
-function switchMode(m){mode=m;selectedScenarioId=null;populateScenarioPicker();prepareBriefing()}function populateScenarioPicker(){let p=$('scenarioPick');if(!p)return;p.innerHTML=scenarios[mode].map(x=>'<option value="'+x.id+'">'+escapeHtml(x.name)+' · '+escapeHtml(x.role)+'</option>').join('');if(selectedScenarioId)p.value=selectedScenarioId}function pickScenario(){selectedScenarioId=$('scenarioPick').value;prepareBriefing()}function randomProspect(){let pool=scenarios[mode].filter(x=>x.id!==selectedScenarioId);selectedScenarioId=(pool[Math.floor(Math.random()*pool.length)]||scenarios[mode][0]).id;populateScenarioPicker();prepareBriefing()}function difficultyCopy(){return {1:'More open and forgiving. Learn the flow.',2:'Natural skepticism and incomplete answers.',3:'Guarded and busy. Weak questions lose attention.',4:'Sharp and unforgiving. Earn every step.'}[+$('difficulty').value]}
+function switchMode(m){mode=m;selectedScenarioId=null;populateScenarioPicker();prepareBriefing()}function populateScenarioPicker(){let p=$('scenarioPick');if(!p)return;let featured=scenarios[mode].filter(x=>!x.id.startsWith('x_')),expanded=scenarios[mode].filter(x=>x.id.startsWith('x_'));p.innerHTML='<optgroup label="Featured prospects">'+featured.map(x=>'<option value="'+x.id+'">'+escapeHtml(x.name)+' · '+escapeHtml(x.role)+'</option>').join('')+'</optgroup><optgroup label="Expanded library · '+expanded.length+' prospects">'+expanded.map(x=>'<option value="'+x.id+'">'+escapeHtml(x.name)+' · '+escapeHtml(x.role)+'</option>').join('')+'</optgroup>';if(selectedScenarioId)p.value=selectedScenarioId}function pickScenario(){selectedScenarioId=$('scenarioPick').value;prepareBriefing()}function randomProspect(){let pool=scenarios[mode].filter(x=>x.id!==selectedScenarioId);selectedScenarioId=(pool[Math.floor(Math.random()*pool.length)]||scenarios[mode][0]).id;populateScenarioPicker();prepareBriefing()}function difficultyCopy(){return {1:'More open and forgiving. Learn the flow.',2:'Natural skepticism and incomplete answers.',3:'Guarded and busy. Weak questions lose attention.',4:'Sharp and unforgiving. Earn every step.'}[+$('difficulty').value]}
 function prepareBriefing(){if(!selectedScenarioId)selectedScenarioId=scenarios[mode][Math.floor(Math.random()*scenarios[mode].length)].id;scenario=scenarios[mode].find(x=>x.id===selectedScenarioId)||scenarios[mode][0];populateScenarioPicker();let pi=profileInfo[scenario.id]||[scenario.role,'Only public profile information','Unknown'];$('bAvatar').textContent=scenario.name[0];$('bName').textContent=scenario.name+' · '+scenario.role;$('bLevel').textContent=$('difficulty').options[$('difficulty').selectedIndex].text;$('bSource').textContent=sourceInfo[scenario.id]||'A realistic DM conversation has begun.';$('bKnown').textContent=pi[1];$('bTemp').textContent=pi[2];$('bPosition').textContent=positionInfo[mode];$('bMission').textContent=scenario.objective;$('briefing').classList.remove('hidden');tone(520,.045,.018)}
 function startBriefedSession(){$('briefing').classList.add('hidden');begin()}
 function add(t,c){let d=document.createElement('div');d.className='bubble '+c;d.textContent=t;$('messages').appendChild(d);$('messages').scrollTop=99999;if(c==='them')tone(620,.045,.018);else tone(440,.03,.014)}
