@@ -60,6 +60,14 @@ app.get("/api/admin/students",requireUser,async(req,res)=>{
  res.json({students:r.rows});
 });
 
+app.get("/api/admin/student/:id",requireUser,async(req,res)=>{
+ if(req.user.role!=="admin")return res.status(403).json({error:"Admin access required"});
+ const u=await q("SELECT id,name,email,xp,streak,last_active,created_at FROM users WHERE id=$1 AND role='student'",[req.params.id]);
+ if(!u.rows[0])return res.status(404).json({error:"Student not found"});
+ const h=await q("SELECT mode,difficulty,prospect_name,overall_score,scores,created_at FROM simulation_results WHERE user_id=$1 ORDER BY created_at DESC LIMIT 50",[req.params.id]);
+ res.json({student:u.rows[0],history:h.rows});
+});
+
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 app.use(express.static(path.join(__dirname,"public")));
