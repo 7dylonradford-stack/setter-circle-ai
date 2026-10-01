@@ -303,8 +303,9 @@ const debriefSchema={
   strengths:{type:"array",items:{type:"string"},minItems:2,maxItems:5},
   improvements:{type:"array",items:{type:"string"},minItems:2,maxItems:5},
   better_approach:{type:"string"},
-  hidden_reveal:{type:"string"}
- },required:["overall_score","scores","outcome","strengths","improvements","better_approach","hidden_reveal"]
+  hidden_reveal:{type:"string"},
+  message_feedback:{type:"array",maxItems:14,items:{type:"object",additionalProperties:false,properties:{student_text:{type:"string"},rating:{type:"string",enum:["strong","okay","weak"]},feedback:{type:"string"},better_line:{type:"string"}},required:["student_text","rating","feedback","better_line"]}}
+ },required:["overall_score","scores","outcome","strengths","improvements","better_approach","hidden_reveal","message_feedback"]
 };
 
 app.post("/api/debrief", requireTrainingAccess, async(req,res)=>{
@@ -318,7 +319,7 @@ Reward concise relevance, strong sequencing, genuine curiosity, commercially use
 Scores must be calibrated: 50 = weak/average novice, 70 = competent, 85 = excellent, 95+ = exceptional and rare.
 If a category was not meaningfully tested, score based on what was observable and do not invent evidence.
 Give a "better approach" that explains the strategy and includes 1-2 example lines tailored to the exact moments where the student lost leverage.
-Hidden prospect reality must reveal the private brief after the roleplay.
+Hidden prospect reality must reveal the private brief after the roleplay.\nFor message_feedback, review every student message in order. Rate each strong, okay or weak, explain the specific effect it had in context, and give a concise stronger line. If the original was already strong, better_line can be a polished alternative rather than pretending it failed.
 
 Mode: ${s.mode}
 Difficulty: ${s.difficulty}
@@ -329,7 +330,7 @@ Transcript:
 ${s.transcript.map(x=>`${x.role.toUpperCase()}: ${x.text}`).join("\n")}`;
   const r=await client.responses.create({
    model:process.env.COACH_MODEL||"gpt-5.6-sol",
-   input:prompt, reasoning:{effort:"high"}, max_output_tokens:1400,
+   input:prompt, reasoning:{effort:"high"}, max_output_tokens:2200,
    text:{format:{type:"json_schema",name:"session_debrief",strict:true,schema:debriefSchema}}
   });
   const data=JSON.parse(r.output_text);
