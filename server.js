@@ -5,7 +5,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { initDb, q, pool } from "./db.js";
 
-const app = express();\napp.set("trust proxy",1);
+const app = express();
 app.use(express.json({limit:"200kb"}));
 const accessTokens = new Map();
 const ACCESS_TTL = 1000 * 60 * 60 * 24 * 14;
