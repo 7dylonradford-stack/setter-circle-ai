@@ -73,6 +73,7 @@ app.get("/api/admin/student/:id",requireUser,async(req,res)=>{
 });
 
 
+app.post("/api/admin/promote",requireUser,async(req,res)=>{if(process.env.ADMIN_BOOTSTRAP_EMAIL&&req.user.email===process.env.ADMIN_BOOTSTRAP_EMAIL.toLowerCase()){await q("UPDATE users SET role='admin' WHERE id=$1",[req.user.id]);return res.json({ok:true,role:"admin"})}return res.status(403).json({error:"Admin bootstrap not authorised"})});
 app.get("/api/health",async(req,res)=>{let database=false;try{if(pool){await q("SELECT 1");database=true}}catch(e){}res.status(database||!process.env.DATABASE_URL?200:503).json({ok:true,database,ai_configured:Boolean(process.env.OPENAI_API_KEY),accounts_configured:Boolean(process.env.TRAINING_PASSWORD)})});
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 app.use(express.static(path.join(__dirname,"public")));
