@@ -102,7 +102,8 @@ const sourceInfo={network_setter:"You found Jordan through appointment-setting c
 const positionInfo={network:"You are networking as a setter. Do not pretend you know this person.",client:"You are representing your appointment-setting service. You initiated the outreach.",role:"You are the setter representing the offer. Stay within what the lead has actually told you."};
 function tone(freq=420,dur=.035,vol=.025,type='sine'){if(!soundOn)return;try{audioCtx=audioCtx||new(window.AudioContext||window.webkitAudioContext)();let o=audioCtx.createOscillator(),g=audioCtx.createGain();o.type=type;o.frequency.value=freq;g.gain.setValueAtTime(vol,audioCtx.currentTime);g.gain.exponentialRampToValueAtTime(.0001,audioCtx.currentTime+dur);o.connect(g);g.connect(audioCtx.destination);o.start();o.stop(audioCtx.currentTime+dur)}catch(e){}}
 function toggleSound(){soundOn=!soundOn;localStorage.setItem('setterSound',soundOn?'1':'0');$('soundToggle').textContent=soundOn?'♪':'×';if(soundOn)tone(520,.05,.025);toast(soundOn?'Sound on':'Sound off')}
-function clickSound(kind='normal'){if(!soundOn)return;if(kind==='primary')tone(520,.035,.018,'sine');else if(kind==='danger')tone(210,.045,.016,'triangle');else tone(390,.025,.013,'sine')}
+function clickSound(kind='normal'){if(!soundOn)return;if(kind==='danger'){tone(190,.045,.014,'triangle');return}const now=audioCtx?.currentTime||0;try{if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.type='sine';o.frequency.setValueAtTime(kind==='primary'?720:620,audioCtx.currentTime);o.frequency.exponentialRampToValueAtTime(kind==='primary'?420:360,audioCtx.currentTime+.055);g.gain.setValueAtTime(.0001,audioCtx.currentTime);g.gain.exponentialRampToValueAtTime(kind==='primary'?.035:.026,audioCtx.currentTime+.006);g.gain.exponentialRampToValueAtTime(.0001,audioCtx.currentTime+.065);o.connect(g);g.connect(audioCtx.destination);o.start();o.stop(audioCtx.currentTime+.07)}catch(e){}}
+let typingSoundTimer=null;function startTypingSound(){if(!soundOn||typingSoundTimer)return;let n=0;typingSoundTimer=setInterval(()=>{if(!soundOn)return;n++;tone(760+(n%4)*35,.018,.008,n%3?'sine':'triangle')},78)}function stopTypingSound(){if(typingSoundTimer){clearInterval(typingSoundTimer);typingSoundTimer=null}}
 document.addEventListener('pointerdown',e=>{let el=e.target.closest('button,a,select,.setupchoice,.diffchoice');if(!el)return;el.classList.add('pressable');clickSound(el.classList.contains('btn')&&!el.classList.contains('ghost')?'primary':(String(el.textContent).toLowerCase().includes('exit')?'danger':'normal'))},true);
 function toast(msg){let t=$('toast');if(!t)return;t.textContent=msg;t.classList.add('show');clearTimeout(window.__toastTimer);window.__toastTimer=setTimeout(()=>t.classList.remove('show'),1600)}
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(!$('results').classList.contains('hidden'))hideResults();else if(!$('briefing').classList.contains('hidden'))closeTrainer();else if(!$('simSetup').classList.contains('hidden'))cancelSetup()}if(e.key==='Enter'&&document.activeElement===$('input')&&!e.shiftKey){e.preventDefault();send()}});
@@ -165,14 +166,14 @@ async function begin(){
 async function send(){
   let i=$('input'),message=i.value.trim(); if(!message||!sessionId||busy)return;
   add(message,'me'); i.value=''; turns++; busy=true;
-  let t=document.createElement('div');t.className='bubble them typing';t.textContent='•••';$('messages').appendChild(t);$('messages').scrollTop=99999;
+  let t=document.createElement('div');t.className='bubble them typing';t.textContent='•••';$('messages').appendChild(t);$('messages').scrollTop=99999;startTypingSound();
   try{
     const r=await fetch('/api/message',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+accessToken},body:JSON.stringify({session_id:sessionId,message})});
-    const data=await r.json(); t.remove();
+    const data=await r.json(); stopTypingSound();t.remove();
     if(!r.ok)throw new Error(data.error||'Request failed');
     add(data.prospect_reply,'them'); lastEval=data.evaluation; updateUI(data.evaluation);
     if(data.evaluation.should_end || turns>=14)setTimeout(finish,900);
-  }catch(e){t.remove();add("Something went wrong on the training server. Try that message again.",'them')}
+  }catch(e){stopTypingSound();t.remove();add("Something went wrong on the training server. Try that message again.",'them')}
   busy=false;
 }
 function updateUI(e){
