@@ -131,7 +131,7 @@ async function prepareBriefing(){
  $('bSource').textContent='Building a fresh conversation…';$('bKnown').textContent='';$('bTemp').textContent='';$('bPosition').textContent=positionInfo[mode];$('bMission').textContent='Your objective will appear with the prospect.';
  const go=$('briefEnter');if(go){go.disabled=true;go.textContent='Generating…'}
  try{
-  const preloadedIndex=nextPreloadedProspect();const payload={mode,difficulty:+$('difficulty').value};if(preloadedIndex!==null)payload.preloaded_index=preloadedIndex;const r=await fetch('/api/prospect',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+accessToken},body:JSON.stringify(payload)});
+  const preloadedIndex=nextPreloadedProspect();const payload={mode,difficulty:+$('difficulty').value};if(preloadedIndex!==null)payload.preloaded_index=preloadedIndex;const r=await fetch('/api/prospect',{method:'POST',headers:{'Content-Type':'application/json','X-Account-Token':accountToken},body:JSON.stringify(payload)});
   if(r.status===401){accessToken='';sessionStorage.removeItem('setterAccess');$('briefing').classList.add('hidden');$('trainer').classList.add('hidden');$('site').classList.remove('hidden');pendingMode=mode;$('accessError').textContent='Your training session expired. Unlock training again.';$('accessGate').classList.remove('hidden');return}
   const d=await r.json();if(!r.ok)throw new Error(d.error||'Generation failed');
   scenario=d.scenario;selectedScenarioId=scenario.id;
@@ -154,7 +154,7 @@ async function begin(){
   ['mn','mc','mr'].forEach(x=>$(x).classList.remove('sel')); $({network:'mn',client:'mc',role:'mr'}[mode]).classList.add('sel');
   add(scenario.opening,'them'); updateUI({trust:45,interest:45,patience:80,signals:["New conversation"],coach_note:"Read the prospect's exact wording. Don't force a memorised framework."});
   try{
-    const r=await fetch('/api/session',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+accessToken},body:JSON.stringify({mode,difficulty:+$('difficulty').value,scenario})});
+    const r=await fetch('/api/session',{method:'POST',headers:{'Content-Type':'application/json','X-Account-Token':accountToken},body:JSON.stringify({mode,difficulty:+$('difficulty').value,scenario})});
     if(!r.ok)throw new Error(await r.text()); const data=await r.json(); sessionId=data.session_id;
   }catch(e){add("Training server isn't connected yet. Add OPENAI_API_KEY to the server environment and redeploy.",'them')}
   busy=false;
@@ -164,7 +164,7 @@ async function send(){
   add(message,'me'); i.value=''; turns++; busy=true;
   let t=document.createElement('div');t.className='bubble them typing';t.textContent='•••';$('messages').appendChild(t);$('messages').scrollTop=99999;
   try{
-    const r=await fetch('/api/message',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+accessToken},body:JSON.stringify({session_id:sessionId,message})});
+    const r=await fetch('/api/message',{method:'POST',headers:{'Content-Type':'application/json','X-Account-Token':accountToken},body:JSON.stringify({session_id:sessionId,message})});
     const data=await r.json(); t.remove();
     if(!r.ok)throw new Error(data.error||'Request failed');
     add(data.prospect_reply,'them'); lastEval=data.evaluation; updateUI(data.evaluation);
@@ -180,7 +180,7 @@ function updateUI(e){
 async function finish(){
  if(!sessionId)return;
  try{
-   const r=await fetch('/api/debrief',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+accessToken,'X-Account-Token':accountToken},body:JSON.stringify({session_id:sessionId})});
+   const r=await fetch('/api/debrief',{method:'POST',headers:{'Content-Type':'application/json','X-Account-Token':accountToken,'X-Account-Token':accountToken},body:JSON.stringify({session_id:sessionId})});
    const d=await r.json(); if(!r.ok)throw new Error(d.error||'Debrief failed');
    saveProgress(d.overall_score);$('resultGrid').innerHTML=[['Overall',d.overall_score],['Discovery',d.scores.discovery],['Objections',d.scores.objection_handling]].map(v=>'<div class="result"><span class="small muted">'+v[0]+'</span><b>'+v[1]+'</b></div>').join('');
    $('debrief').innerHTML='<b>Outcome:</b> '+escapeHtml(d.outcome)+'<br><br><b>What you did well:</b> '+escapeHtml(d.strengths.join(' · '))+'<br><br><b>What cost you:</b> '+escapeHtml(d.improvements.join(' · '))+'<br><br><b>Better approach:</b> '+escapeHtml(d.better_approach)+ '<br><br><b>Hidden prospect reality:</b> '+escapeHtml(d.hidden_reveal)+'<br><br><b>Message-by-message review:</b><div style="margin-top:8px">'+(d.message_feedback||[]).map((x,i)=>'<div style="padding:10px 0;border-top:1px solid #25292c"><b>#'+(i+1)+' · '+escapeHtml(x.rating.toUpperCase())+'</b><br><span style="color:#fff">“'+escapeHtml(x.student_text)+'”</span><br>'+escapeHtml(x.feedback)+'<br><span style="color:var(--lime)">Try: “'+escapeHtml(x.better_line)+'”</span></div>').join('')+'</div>';
