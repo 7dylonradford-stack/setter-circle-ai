@@ -10,12 +10,19 @@ app.use(express.json({limit:"200kb"}));
 const accessTokens = new Map();
 const ACCESS_TTL = 1000 * 60 * 60 * 24 * 14;
 function safeEqual(a,b){const aa=Buffer.from(String(a||"")),bb=Buffer.from(String(b||""));return aa.length===bb.length && crypto.timingSafeEqual(aa,bb)}
-function requireTrainingAccess(req,res,next){
- const auth=String(req.headers.authorization||"");
- const token=auth.startsWith("Bearer ")?auth.slice(7):"";
- const exp=accessTokens.get(token);
- if(!token||!exp||exp<Date.now()){if(token)accessTokens.delete(token);return res.status(401).json({error:"Member access required"})}
- next();
+async function requireTrainingAccess(req,res,next){
+ try{
+  const accountToken=String(req.headers["x-account-token"]||"");
+  if(accountToken&&pool){
+   const r=await q("SELECT u.id,u.email,u.name,u.role,u.xp,u.streak FROM auth_sessions s JOIN users u ON u.id=s.user_id WHERE s.token_hash=$1 AND s.expires_at>NOW()",[hashToken(accountToken)]);
+   if(r.rows[0]){req.user=r.rows[0];return next()}
+  }
+  const auth=String(req.headers.authorization||"");
+  const token=auth.startsWith("Bearer ")?auth.slice(7):"";
+  const exp=accessTokens.get(token);
+  if(!token||!exp||exp<Date.now()){if(token)accessTokens.delete(token);return res.status(401).json({error:"Member sign in required"})}
+  next();
+ }catch(e){res.status(500).json({error:"Account service unavailable"})}
 }
 app.post("/api/access", (req,res)=>{
  const configured=process.env.TRAINING_PASSWORD;
