@@ -93,6 +93,37 @@ app.get("/api/profile",requireUser,async(req,res)=>{try{
  if(reps){const wk=weakest?.[0]||'naturalness',map={conversational_awareness:['Slow down and read the room','network',2],rapport:['Build natural rapport','network',2],discovery:['Sharpen discovery','client',2],qualification:['Practise qualification','client',3],objection_handling:['Handle objections under pressure','client',3],positioning:['Improve positioning','client',3],cta:['Practise the transition to a call','role',3],naturalness:['Sound more natural','network',2]};const m=map[wk]||map.naturalness;recommendation={title:m[0],detail:'Your current lowest measured skill is '+wk.replaceAll('_',' ')+'. Train it deliberately next.',mode:m[1],difficulty:m[2]}}
  res.json({profile:u.rows[0],programme_completed:completed,reps,average,skills,role_ready:roleReady,weakest:weakest?{skill:weakest[0],score:weakest[1]}:null,strongest:strongest?{skill:strongest[0],score:strongest[1]}:null,trend,recent_average:recentAvg,recommendation,readiness:{programme:Math.min(100,Math.round(completed/40*100)),practice:Math.min(100,Math.round(reps/20*100)),performance:average}});
  }catch(e){console.error("Profile failed",e);res.status(500).json({error:"Could not load Setter Profile"})}});
+app.get("/api/student-hub",requireUser,async(req,res)=>{try{
+ const [p,h,a]=await Promise.all([
+  q("SELECT COUNT(*) FILTER (WHERE completed=TRUE)::int completed FROM programme_progress WHERE user_id=$1",[req.user.id]),
+  q("SELECT overall_score,scores,mode,difficulty,prospect_name,prospect_role,created_at FROM simulation_results WHERE user_id=$1 ORDER BY created_at DESC LIMIT 50",[req.user.id]),
+  q("SELECT code,unlocked_at FROM achievements WHERE user_id=$1 ORDER BY unlocked_at DESC",[req.user.id])
+ ]);
+ const rows=h.rows,completed=p.rows[0]?.completed||0,reps=rows.length,avg=reps?Math.round(rows.reduce((n,x)=>n+Number(x.overall_score||0),0)/reps):0;
+ const recent=rows.slice(0,5),older=rows.slice(5,10),ra=recent.length?Math.round(recent.reduce((n,x)=>n+Number(x.overall_score||0),0)/recent.length):0,oa=older.length?Math.round(older.reduce((n,x)=>n+Number(x.overall_score||0),0)/older.length):null;
+ const trend=oa===null?'new':ra>oa+2?'up':ra<oa-2?'down':'steady';
+ const roleReady=completed>=30&&reps>=10&&avg>=65,interviewReady=completed>=35&&reps>=15&&avg>=70;
+ const stage=interviewReady?'INTERVIEW READY':roleReady?'ROLE READY':reps>=5?'PRACTISING':completed>=5?'LEARNING':'FOUNDATIONS';
+ const milestones=[
+  {code:'first_rep',title:'First Rep',detail:'Complete your first AI simulation.',unlocked:reps>=1},
+  {code:'five_reps',title:'Consistency',detail:'Complete 5 AI simulations.',unlocked:reps>=5},
+  {code:'score_70',title:'70 Club',detail:'Reach a 70+ average Setter Score.',unlocked:avg>=70&&reps>=3},
+  {code:'halfway',title:'Halfway',detail:'Complete 20 days of the 40-Day Programme.',unlocked:completed>=20},
+  {code:'role_ready',title:'Role Ready',detail:'30 programme days, 10 reps and 65+ average.',unlocked:roleReady},
+  {code:'interview_ready',title:'Interview Ready',detail:'35 programme days, 15 reps and 70+ average.',unlocked:interviewReady}
+ ];
+ const proof={programme_days:completed,ai_reps:reps,average_score:avg,recent_average:ra,trend,stage,milestones:milestones.filter(x=>x.unlocked).length,total_milestones:milestones.length};
+ res.json({proof,milestones,recent:rows.slice(0,8),achievements:a.rows});
+ }catch(e){console.error("Student hub failed",e);res.status(500).json({error:"Could not load student hub"})}});
+app.get("/api/admin/intelligence",requireAdmin,async(req,res)=>{try{
+ const r=await q(`SELECT u.id,u.name,u.email,u.last_active,u.streak,u.xp,
+ (SELECT COUNT(*)::int FROM simulation_results s WHERE s.user_id=u.id) reps,
+ (SELECT COALESCE(ROUND(AVG(s.overall_score)),0)::int FROM simulation_results s WHERE s.user_id=u.id) average,
+ (SELECT COUNT(*) FILTER (WHERE p.completed=TRUE)::int FROM programme_progress p WHERE p.user_id=u.id) programme_completed
+ FROM users u ORDER BY u.last_active DESC NULLS LAST LIMIT 200`);
+ const now=Date.now(),students=r.rows.map(x=>{const last=x.last_active?new Date(x.last_active).getTime():0,days=last?Math.floor((now-last)/86400000):999;let status='BUILDING';if(x.programme_completed>=30&&x.reps>=10&&x.average>=65)status='ROLE READY';else if(days>=7)status='INACTIVE';else if(x.reps>=5&&x.average<55)status='NEEDS SUPPORT';else if(x.reps>=5)status='ACTIVE';return {...x,days_inactive:days,status}});
+ res.json({students,summary:{total:students.length,role_ready:students.filter(x=>x.status==='ROLE READY').length,needs_support:students.filter(x=>x.status==='NEEDS SUPPORT').length,inactive:students.filter(x=>x.status==='INACTIVE').length}});
+ }catch(e){console.error("Admin intelligence failed",e);res.status(500).json({error:"Could not load student intelligence"})}});
 // Weighted reward pool: lower rewards are common and the £1,000 maximum is deliberately rare.
 const referralRewards=[...Array(30).fill(100),...Array(22).fill(200),...Array(16).fill(300),...Array(11).fill(400),...Array(8).fill(500),...Array(5).fill(600),...Array(3).fill(700),...Array(2).fill(800),...Array(2).fill(900),1000];
 const referralDurations=[1,7,7,7,14,14,21,28];
