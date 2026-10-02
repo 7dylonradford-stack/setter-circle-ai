@@ -94,10 +94,14 @@ const referralDurations=[1,7,7,7,14,14,21,28];
 function randomItem(items){return items[crypto.randomInt(0,items.length)]}
 app.get("/api/referral-challenge",requireUser,async(req,res)=>{try{
  const r=await q("SELECT id,challenge_date,reward_pence,duration_days,expires_at,status,referred_name,referred_email,created_at FROM referral_challenges WHERE user_id=$1 AND challenge_date=(NOW() AT TIME ZONE 'Europe/London')::date LIMIT 1",[req.user.id]);
- res.json({challenge:r.rows[0]||null,can_spin:!r.rows[0],preview:true});
+ res.json({challenge:r.rows[0]||null,can_spin:req.user.role==='admin'||!r.rows[0],is_admin:req.user.role==='admin',preview:true});
  }catch(e){console.error("Referral challenge load failed",e);res.status(500).json({error:"Could not load today's challenge"})}});
 app.post("/api/referral-challenge/spin",requireUser,async(req,res)=>{try{
  const reward=randomItem(referralRewards),days=randomItem(referralDurations),id=crypto.randomUUID();
+ if(req.user.role==='admin'){
+  const challenge={id,challenge_date:new Date().toISOString().slice(0,10),reward_pence:reward*100,duration_days:days,expires_at:new Date(Date.now()+days*86400000).toISOString(),status:'admin_preview',created_at:new Date().toISOString()};
+  return res.json({challenge,preview:true,is_admin:true});
+ }
  const r=await q("INSERT INTO referral_challenges(id,user_id,challenge_date,reward_pence,duration_days,expires_at) VALUES($1,$2,(NOW() AT TIME ZONE 'Europe/London')::date,$3,$4,NOW()+make_interval(days => $4)) ON CONFLICT(user_id,challenge_date) DO NOTHING RETURNING id,challenge_date,reward_pence,duration_days,expires_at,status,created_at",[id,req.user.id,reward*100,days]);
  if(!r.rows[0]){const old=await q("SELECT id,challenge_date,reward_pence,duration_days,expires_at,status,created_at FROM referral_challenges WHERE user_id=$1 AND challenge_date=(NOW() AT TIME ZONE 'Europe/London')::date",[req.user.id]);return res.status(409).json({error:"Today's spin has already been used",challenge:old.rows[0]})}
  res.json({challenge:r.rows[0],preview:true});
