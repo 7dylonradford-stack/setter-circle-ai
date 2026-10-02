@@ -321,6 +321,27 @@ app.post("/api/session", requireTrainingAccess, async (req,res)=>{
  }catch(e){res.status(500).json({error:"Could not create session"})}
 });
 
+app.post("/api/guidance",requireTrainingAccess,async(req,res)=>{
+ const ss=sessions.get(req.body.session_id);if(!ss)return res.status(404).json({error:"Session expired"});
+ const message=String(req.body.message||"").trim().slice(0,1200);if(!message)return res.status(400).json({error:"Empty message"});
+ try{
+  const last=[...ss.transcript].reverse().find(x=>x.role==="prospect")?.text||ss.scenario.opening;
+  const prompt=`You are a live appointment-setting writing coach. The student is drafting their NEXT message but has not sent it yet.
+Mode: ${ss.mode}. Difficulty: ${ss.difficulty}. Objective: ${ss.scenario.objective}.
+Prospect's latest message: ${last}
+Student draft: ${message}
+Classify the draft as green, orange, or red.
+green = context-aware, natural and moves the conversation appropriately.
+orange = usable but has a meaningful weakness.
+red = likely to damage trust, ignores context, pitches too early, pressures, rambles, makes unsupported claims, or is clearly inappropriate.
+Give ONE short reason and ONE directional hint. Do not write the exact message for them unless guide_mode is "hints".
+guide_mode: ${String(req.body.guide_mode||"guided")}
+Return JSON only.`;
+  const out=await client.responses.create({model:process.env.EVALUATOR_MODEL||"gpt-5.6-terra",input:prompt,reasoning:{effort:"low"},max_output_tokens:180,text:{format:{type:"json_schema",name:"draft_guidance",strict:true,schema:{type:"object",additionalProperties:false,properties:{rating:{type:"string",enum:["green","orange","red"]},reason:{type:"string"},hint:{type:"string"}},required:["rating","reason","hint"]}}}});
+  res.json(JSON.parse(out.output_text));
+ }catch(e){console.error("Guidance AI failed",e?.status,e?.code,e?.message);res.status(500).json({error:"Guidance unavailable"})}
+});
+
 app.post("/api/message", requireTrainingAccess, async (req,res)=>{
  const s=sessions.get(req.body.session_id);
  if(!s)return res.status(404).json({error:"Session expired"});
