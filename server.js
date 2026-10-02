@@ -99,7 +99,40 @@ app.post("/api/practice/weakness",requireUser,async(req,res)=>{const r=await q("
 const interviewSchema={type:"object",additionalProperties:false,properties:{score:{type:"integer",minimum:0,maximum:100},communication:{type:"integer",minimum:0,maximum:100},commercial_awareness:{type:"integer",minimum:0,maximum:100},coachability:{type:"integer",minimum:0,maximum:100},strengths:{type:"array",items:{type:"string"},maxItems:4},improvements:{type:"array",items:{type:"string"},maxItems:4},verdict:{type:"string"}},required:["score","communication","commercial_awareness","coachability","strengths","improvements","verdict"]};
 const interviewSessions=new Map();
 app.post("/api/interview/start",requireUser,async(req,res)=>{const id=crypto.randomUUID();interviewSessions.set(id,{user_id:req.user.id,turn:0,history:[]});res.json({session_id:id,interviewer:"Hiring Manager",message:"Thanks for joining. Start by telling me a little about yourself and why you want an appointment-setting role."})});
-app.post("/api/interview/message",requireUser,async(req,res)=>{const x=interviewSessions.get(req.body?.session_id);if(!x||x.user_id!==req.user.id)return res.status(404).json({error:"Interview expired"});const answer=String(req.body?.message||"").trim().slice(0,2000);if(!answer)return res.status(400).json({error:"Answer required"});x.history.push({role:"candidate",text:answer});x.turn++;try{if(x.turn>=6){const ev=await client.responses.create({model:process.env.COACH_MODEL||"gpt-5.6-sol",input:"You are a demanding appointment-setting hiring manager. Evaluate this mock interview fairly based only on evidence. Transcript:\n"+x.history.map(h=>h.role.toUpperCase()+": "+h.text).join("\n"),reasoning:{effort:"medium"},max_output_tokens:900,text:{format:{type:"json_schema",name:"interview_review",strict:true,schema:interviewSchema}}});const review=JSON.parse(ev.output_text);interviewSessions.delete(req.body.session_id);return res.json({complete:true,review})}const rr=await client.responses.create({model:process.env.COACH_MODEL||"gpt-5.6-sol",input:"Act only as a realistic sales hiring manager interviewing a candidate for an appointment setter role. Ask ONE concise follow-up question based on their exact previous answers. Challenge vague claims, explore experience, resilience, communication, coachability, handling rejection, KPIs, and scenarios. Do not coach them during the interview. Transcript:\n"+x.history.map(h=>h.role.toUpperCase()+": "+h.text).join("\n"),max_output_tokens:140});const msg=rr.output_text.trim();x.history.push({role:"interviewer",text:msg});res.json({complete:false,message:msg,turn:x.turn})}catch(e){res.status(500).json({error:"Interview AI unavailable"})}});
+app.post("/api/interview/message",requireUser,async(req,res)=>{
+ const x=interviewSessions.get(req.body?.session_id);if(!x||x.user_id!==req.user.id)return res.status(404).json({error:"Interview expired"});
+ const answer=String(req.body?.message||"").trim().slice(0,2000);if(!answer)return res.status(400).json({error:"Answer required"});
+ x.history.push({role:"candidate",text:answer});x.turn++;
+ const fallbackQuestions=[
+  "What do you think makes someone effective at appointment setting day to day?",
+  "Talk me through how you would handle a prospect who replies, “Not interested.”",
+  "Imagine your booking numbers have dropped for a week. How would you diagnose what is going wrong?",
+  "This role involves rejection and repetitive outreach. How would you stay consistent when results are slow?",
+  "Give me an example of feedback you have received and how you applied it."
+ ];
+ if(x.turn>=6){
+  try{
+   if(!process.env.OPENAI_API_KEY)throw new Error("OPENAI_API_KEY missing");
+   const ev=await client.responses.create({model:process.env.COACH_MODEL||"gpt-5.6-sol",input:"You are a demanding appointment-setting hiring manager. Evaluate this mock interview fairly based only on evidence. Transcript:\n"+x.history.map(h=>h.role.toUpperCase()+": "+h.text).join("\n"),reasoning:{effort:"medium"},max_output_tokens:900,text:{format:{type:"json_schema",name:"interview_review",strict:true,schema:interviewSchema}}});
+   const review=JSON.parse(ev.output_text);interviewSessions.delete(req.body.session_id);return res.json({complete:true,review});
+  }catch(e){
+   console.error("Interview evaluation AI failed:",e?.status,e?.code,e?.message);
+   const answers=x.history.filter(h=>h.role==="candidate").map(h=>h.text),words=answers.join(" ").trim().split(/\s+/).filter(Boolean).length;
+   const score=Math.max(45,Math.min(78,50+Math.round(words/18)));
+   interviewSessions.delete(req.body.session_id);
+   return res.json({complete:true,review:{score,communication:score,commercial_awareness:Math.max(40,score-5),coachability:score,strengths:["Completed the full mock interview","Gave direct answers under interview conditions"],improvements:["Use specific examples and measurable evidence","Show clearer understanding of setter KPIs and qualification","Structure scenario answers as action, reasoning and outcome"],verdict:"Mock interview completed. AI scoring was temporarily unavailable, so this is a basic fallback review rather than a full AI assessment."}});
+  }
+ }
+ try{
+  if(!process.env.OPENAI_API_KEY)throw new Error("OPENAI_API_KEY missing");
+  const rr=await client.responses.create({model:process.env.COACH_MODEL||"gpt-5.6-sol",input:"Act only as a realistic sales hiring manager interviewing a candidate for an appointment setter role. Ask ONE concise follow-up question based on their exact previous answers. Challenge vague claims, explore experience, resilience, communication, coachability, handling rejection, KPIs, and scenarios. Do not coach them during the interview. Transcript:\n"+x.history.map(h=>h.role.toUpperCase()+": "+h.text).join("\n"),max_output_tokens:140});
+  const msg=rr.output_text?.trim();if(!msg)throw new Error("Empty interview response");x.history.push({role:"interviewer",text:msg});return res.json({complete:false,message:msg,turn:x.turn});
+ }catch(e){
+  console.error("Interview question AI failed:",e?.status,e?.code,e?.message);
+  const msg=fallbackQuestions[Math.min(x.turn-1,fallbackQuestions.length-1)];
+  x.history.push({role:"interviewer",text:msg});return res.json({complete:false,message:msg,turn:x.turn,fallback:true});
+ }
+});
 app.get("/api/admin/students",requireUser,async(req,res)=>{
  if(req.user.role!=="admin")return res.status(403).json({error:"Admin access required"});
  const r=await q("SELECT u.id,u.name,u.email,u.xp,u.streak,u.last_active,COUNT(sr.id)::int reps,COALESCE(ROUND(AVG(sr.overall_score)),0)::int average FROM users u LEFT JOIN simulation_results sr ON sr.user_id=u.id WHERE u.role='student' GROUP BY u.id ORDER BY u.last_active DESC NULLS LAST,u.created_at DESC");
