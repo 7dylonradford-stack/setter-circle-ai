@@ -544,6 +544,14 @@ ${s.transcript.map(x=>`${x.role.toUpperCase()}: ${x.text}`).join("\n")}`;
    text:{format:{type:"json_schema",name:"session_debrief",strict:true,schema:debriefSchema}}
   });
   const data=JSON.parse(r.output_text);
+  const studentTurns=s.transcript.filter(x=>x.role==="user").map(x=>x.text);
+  const words=studentTurns.map(x=>String(x).trim().split(/\s+/).filter(Boolean).length),totalWords=words.reduce((a,b)=>a+b,0),avgWords=studentTurns.length?Math.round(totalWords/studentTurns.length):0;
+  const questions=studentTurns.filter(x=>String(x).includes("?")).length,questionRate=studentTurns.length?Math.round(questions/studentTurns.length*100):0;
+  const longTurns=words.filter(x=>x>=35).length,conciseRate=studentTurns.length?Math.round((studentTurns.length-longTurns)/studentTurns.length*100):0;
+  const objectionMoments=s.transcript.filter(x=>x.role==="assistant"&&/not interested|already|expensive|busy|no time|send.*info|think about|not sure|don't need|dont need/i.test(x.text)).length;
+  const pressureFlags=studentTurns.filter(x=>/guarantee|definitely|must|need to book|just book|trust me|no brainer/i.test(x)).length;
+  data.conversation_intelligence={student_turns:studentTurns.length,total_words:totalWords,avg_words_per_turn:avgWords,question_rate:questionRate,concise_turn_rate:conciseRate,objection_moments:objectionMoments,pressure_flags:pressureFlags};
+  data.replay_markers=(data.message_feedback||[]).map((x,i)=>({turn:i+1,rating:x.rating,label:x.rating==="weak"?"COACHING MOMENT":x.rating==="strong"?"STRONG MOMENT":"REVIEW",student_text:x.student_text,feedback:x.feedback,better_line:x.better_line}));
   // Persist completed work when the student is signed into a platform account.
   const user=await currentUser(req).catch(()=>null);
   if(user&&pool){
