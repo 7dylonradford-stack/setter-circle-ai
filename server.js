@@ -88,7 +88,8 @@ app.get("/api/profile",requireUser,async(req,res)=>{try{
  const completed=p.rows[0]?.completed||0,roleReady=completed>=30&&reps>=10&&average>=65;
  res.json({profile:u.rows[0],programme_completed:completed,reps,average,skills,role_ready:roleReady,readiness:{programme:Math.min(100,Math.round(completed/40*100)),practice:Math.min(100,Math.round(reps/20*100)),performance:average}});
  }catch(e){console.error("Profile failed",e);res.status(500).json({error:"Could not load Setter Profile"})}});
-const referralRewards=[100,100,100,100,200,200,200,200,300,400,500,600,700,800,900,1000];
+// 50 equal wheel slots. Lower rewards occupy more slots; £1,000 appears exactly 4 times.
+const referralRewards=[...Array(7).fill(100),...Array(6).fill(200),...Array(6).fill(300),...Array(5).fill(400),...Array(5).fill(500),...Array(5).fill(600),...Array(4).fill(700),...Array(4).fill(800),...Array(4).fill(900),...Array(4).fill(1000)];
 const referralDurations=[1,7,7,7,14,14,21,28];
 function randomItem(items){return items[crypto.randomInt(0,items.length)]}
 app.get("/api/referral-challenge",requireUser,async(req,res)=>{try{
