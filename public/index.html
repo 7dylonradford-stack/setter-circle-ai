@@ -107,7 +107,7 @@ window.addEventListener('offline',()=>toast('You are offline — reconnect to co
 window.addEventListener('online',()=>toast('Back online'));
 
 let setupMode=null,setupDifficulty=null;
-function openTrainer(m){pendingMode=m||null;if(!accessToken){$('accessGate').classList.remove('hidden');document.body.style.overflow='hidden';setTimeout(()=>$('accessPassword').focus(),50);return}openSetup(m)}
+function openTrainer(m){pendingMode=m||null;if(!accountToken){openAccount();toast('Sign in to access member training');return}openSetup(m)}
 function openSetup(prefill){setupMode=null;setupDifficulty=null;$('setupDifficulty').classList.add('hidden');$('setupContinue').classList.add('hidden');document.querySelectorAll('.setupchoice,.diffchoice').forEach(x=>x.classList.remove('selected'));$('simSetup').classList.remove('hidden');document.body.style.overflow='hidden';if(prefill&&['network','client','role'].includes(prefill)){let el=document.querySelector('.setupchoice[data-mode="'+prefill+'"]');chooseSetupMode(prefill,el)}}
 function chooseSetupMode(m,el){setupMode=m;document.querySelectorAll('.setupchoice').forEach(x=>x.classList.toggle('selected',x===el));$('setupDifficulty').classList.remove('hidden');$('setupDifficulty').scrollIntoView({behavior:'smooth',block:'nearest'});setupDifficulty=null;$('setupContinue').classList.add('hidden');document.querySelectorAll('.diffchoice').forEach(x=>x.classList.remove('selected'))}
 function chooseSetupDifficulty(d,el){setupDifficulty=d;document.querySelectorAll('.diffchoice').forEach(x=>x.classList.toggle('selected',x===el));$('setupContinue').classList.remove('hidden')}
