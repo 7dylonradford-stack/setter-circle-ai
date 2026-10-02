@@ -22,7 +22,7 @@ export async function initDb(){
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
  );
  CREATE INDEX IF NOT EXISTS simulation_results_user_created ON simulation_results(user_id,created_at DESC);
- CREATE TABLE IF NOT EXISTS daily_attempts(\n  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE, challenge_date DATE NOT NULL, simulation_id UUID REFERENCES simulation_results(id) ON DELETE SET NULL, score INTEGER NOT NULL, created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(), PRIMARY KEY(user_id,challenge_date)\n );\n CREATE TABLE IF NOT EXISTS achievements(
+ CREATE TABLE IF NOT EXISTS daily_attempts(\n  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE, challenge_date DATE NOT NULL, simulation_id UUID REFERENCES simulation_results(id) ON DELETE SET NULL, score INTEGER NOT NULL, created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(), PRIMARY KEY(user_id,challenge_date)\n );\n CREATE TABLE IF NOT EXISTS password_reset_tokens(\n  token_hash TEXT PRIMARY KEY, user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,\n  expires_at TIMESTAMPTZ NOT NULL, used_at TIMESTAMPTZ, created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()\n );\n CREATE INDEX IF NOT EXISTS password_reset_user_created ON password_reset_tokens(user_id,created_at DESC);\n CREATE TABLE IF NOT EXISTS achievements(
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE, code TEXT NOT NULL,
   unlocked_at TIMESTAMPTZ NOT NULL DEFAULT NOW(), PRIMARY KEY(user_id,code)
  );
