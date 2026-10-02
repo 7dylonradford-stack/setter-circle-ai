@@ -265,19 +265,23 @@ function makePreloadedProspect(index,mode,difficulty){
  const friction=preloadFrictions[(index*5+(mode==="role"?2:0))%preloadFrictions.length];
  const opening=preloadOpenings[mode][(index*3)%preloadOpenings[mode].length];
  const objective=mode==="network"?"Build a genuine professional connection and uncover mutual relevance without forcing a job ask.":mode==="client"?"Diagnose whether there is a genuine commercial gap and earn the right to progress.":"Understand the lead, qualify fit and progress only when the next step is earned.";
+ const niches=["fitness coaching","sales recruitment","marketing agency","business consulting","e-commerce education","property investing","career coaching","creative agency","online education","SaaS growth"];
+ const niche=niches[(index*17)%niches.length],followers=1200+((index*791)%48200),posts=24+((index*19)%420);
+ const profile={handle:"@"+name.toLowerCase().replace(/[^a-z0-9]/g,"")+"_"+String((index*37)%997).padStart(2,"0"),bio:mode==="network"?role+" | Remote sales | Building better conversations":mode==="client"?role+" | "+niche+" | Helping clients get measurable results":role+" | Interested in "+niche,followers,following:180+((index*43)%1600),posts,website:mode==="client"?"www."+name.toLowerCase().replace(/[^a-z0-9]/g,"")+"hq.com":null,highlights:mode==="client"?["Results","Clients","About","Q&A"]:["Work","Wins","Life"],recent_posts:mode==="network"?["A lesson from this week in sales","Why good conversations beat scripts","A recent team win"]:mode==="client"?["Client result: what changed","Behind the scenes of the offer","3 mistakes I keep seeing in "+niche]:["Why I started looking into this","A recent personal win","Questions I had before taking action"],avatar_seed:(index*13)%24};
  return {id:"preloaded_"+mode+"_"+index,name,role:role+" · "+p[0],objective,
-  brief:p[1]+". Hidden reality: "+friction+". Difficulty "+difficulty+". Reveal this gradually only when earned.",
+  brief:p[1]+". Hidden reality: "+friction+". Difficulty "+difficulty+". Reveal this gradually only when earned. The public profile below is visible to the student; if they reference it, respond consistently with it.",
   opening,public_context:mode==="network"?"You reached out after seeing this person in the remote-sales space.":mode==="client"?"You researched the business and initiated a cold DM.":"You are handling this lead as the setter for the offer.",
-  public_known:role,contact_type:mode==="network"?"Cold network contact":mode==="client"?"Cold outbound":"Lead conversation"};
+  public_known:role,contact_type:mode==="network"?"Cold network contact":mode==="client"?"Cold outbound":"Lead conversation",profile};
 }
 const generatedScenarioSchema={
  type:"object",additionalProperties:false,
  properties:{
   name:{type:"string"},role:{type:"string"},objective:{type:"string"},
   brief:{type:"string"},opening:{type:"string"},
-  public_context:{type:"string"},public_known:{type:"string"},contact_type:{type:"string"}
+  public_context:{type:"string"},public_known:{type:"string"},contact_type:{type:"string"},
+  profile:{type:"object",additionalProperties:false,properties:{handle:{type:"string"},bio:{type:"string"},followers:{type:"integer"},following:{type:"integer"},posts:{type:"integer"},website:{type:["string","null"]},highlights:{type:"array",items:{type:"string"},minItems:2,maxItems:5},recent_posts:{type:"array",items:{type:"string"},minItems:3,maxItems:3},avatar_seed:{type:"integer"}},required:["handle","bio","followers","following","posts","website","highlights","recent_posts","avatar_seed"]}
  },
- required:["name","role","objective","brief","opening","public_context","public_known","contact_type"]
+ required:["name","role","objective","brief","opening","public_context","public_known","contact_type","profile"]
 };
 
 app.post("/api/prospect", requireTrainingAccess, async (req,res)=>{
@@ -299,7 +303,9 @@ Difficulty: ${DIFFICULTY[difficulty]}
 
 Make this prospect materially different from generic sales-training characters. Randomise personality, communication style, patience, sophistication, hidden motivation, objection, commercial situation and openness. Possible personalities include warm, blunt, skeptical, analytical, distracted, guarded, chatty, impatient, experienced, cautious, defensive, curious, confident, price-sensitive and combinations of these.
 
-The private brief must contain the personality and hidden reality the student has to discover. Do NOT put hidden information in public_context or public_known. The opening must be a natural short DM that establishes a concrete starting point. Do not mention AI, simulation, scoring or training. UK/international contemporary DM language is fine. Avoid making every character say "mate".`;
+Create a realistic PUBLIC social profile too: handle, bio, plausible follower/following/post counts, optional website, 2-5 highlights, exactly 3 recent post captions/topics, and avatar_seed from 0-23. Put useful but non-secret clues in it that a student could genuinely notice before messaging. The prospect must remain consistent with this visible profile and should recognise accurate references to it.
+
+The private brief must contain the personality and hidden reality the student has to discover. Do NOT put hidden information in public_context, public_known or profile. The opening must be a natural short DM that establishes a concrete starting point. Do not mention AI, simulation, scoring or training. UK/international contemporary DM language is fine. Avoid making every character say "mate".`;
   const g=await client.responses.create({
    model:process.env.PROSPECT_MODEL||"gpt-5.6-terra",
    input:prompt,reasoning:{effort:"low"},max_output_tokens:550,
