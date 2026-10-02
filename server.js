@@ -409,6 +409,22 @@ Return JSON only.`;
  }catch(e){console.error("Guidance AI failed",e?.status,e?.code,e?.message);res.status(500).json({error:"Guidance unavailable"})}
 });
 
+app.post("/api/voice/transcribe",requireTrainingAccess,async(req,res)=>{try{
+ const session=sessions.get(req.query.session_id);if(!session)return res.status(404).json({error:"Session expired"});
+ const chunks=[];let total=0;req.on("data",c=>{total+=c.length;if(total<=8*1024*1024)chunks.push(c)});req.on("end",async()=>{try{
+  if(total>8*1024*1024)return res.status(413).json({error:"Voice clip is too large"});
+  const type=String(req.headers["content-type"]||"audio/webm").split(";")[0],ext=type.includes("mp4")?"m4a":type.includes("ogg")?"ogg":type.includes("wav")?"wav":"webm";
+  const file=new File([Buffer.concat(chunks)],"voice."+ext,{type});
+  const tr=await client.audio.transcriptions.create({file,model:process.env.TRANSCRIBE_MODEL||"gpt-4o-mini-transcribe"});
+  const text=String(tr.text||"").trim().slice(0,2500);if(!text)return res.status(400).json({error:"I could not hear a clear message"});
+  res.json({text});
+ }catch(e){console.error("Voice transcription failed",e?.status,e?.code,e?.message);res.status(500).json({error:"Voice transcription unavailable"})}});req.on("error",()=>res.status(400).json({error:"Voice upload failed"}));
+ }catch(e){res.status(500).json({error:"Voice service unavailable"})}});
+app.post("/api/voice/speak",requireTrainingAccess,async(req,res)=>{try{
+ const text=String(req.body?.text||"").trim().slice(0,1800);if(!text)return res.status(400).json({error:"Nothing to speak"});
+ const speech=await client.audio.speech.create({model:process.env.TTS_MODEL||"gpt-4o-mini-tts",voice:String(req.body?.voice||"alloy"),input:text,instructions:"Sound like a real prospect in a natural UK sales conversation. Conversational, concise, not theatrical.",response_format:"mp3"});
+ const buf=Buffer.from(await speech.arrayBuffer());res.setHeader("Content-Type","audio/mpeg");res.setHeader("Cache-Control","no-store");res.send(buf);
+ }catch(e){console.error("Voice speech failed",e?.status,e?.code,e?.message);res.status(500).json({error:"Voice playback unavailable"})}});
 app.post("/api/message", requireTrainingAccess, async (req,res)=>{
  const s=sessions.get(req.body.session_id);
  if(!s)return res.status(404).json({error:"Session expired"});
