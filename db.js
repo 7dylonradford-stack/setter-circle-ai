@@ -12,6 +12,12 @@ export async function initDb(){
  );
  ALTER TABLE users ADD COLUMN IF NOT EXISTS access_status TEXT NOT NULL DEFAULT 'active';
  ALTER TABLE users ADD COLUMN IF NOT EXISTS access_expires_at TIMESTAMPTZ;
+ CREATE TABLE IF NOT EXISTS member_invites(
+  id UUID PRIMARY KEY, email TEXT UNIQUE NOT NULL, status TEXT NOT NULL DEFAULT 'approved',
+  created_by UUID REFERENCES users(id) ON DELETE SET NULL, used_by UUID REFERENCES users(id) ON DELETE SET NULL,
+  used_at TIMESTAMPTZ, created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+ );
+ CREATE INDEX IF NOT EXISTS member_invites_status ON member_invites(status);
  CREATE TABLE IF NOT EXISTS auth_sessions(
   token_hash TEXT PRIMARY KEY, user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   expires_at TIMESTAMPTZ NOT NULL, created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
