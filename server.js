@@ -27,7 +27,22 @@ async function currentUser(req){const a=String(req.headers.authorization||"");co
 async function requireUser(req,res,next){try{const u=await currentUser(req);if(!u)return res.status(401).json({error:"Sign in required"});req.user=u;next()}catch(e){res.status(500).json({error:"Account service unavailable"})}}
 async function requireAdmin(req,res,next){try{const u=await currentUser(req);if(!u)return res.status(401).json({error:"Sign in required"});const adminEmail=String(process.env.ADMIN_EMAIL||"").trim().toLowerCase();const isAdmin=u.role==="admin"||(adminEmail&&String(u.email||"").toLowerCase()===adminEmail);if(!isAdmin)return res.status(403).json({error:"Admin access required"});req.user=u;next()}catch(e){res.status(500).json({error:"Account service unavailable"})}}
 const registrationAttempts=new Map();
-app.post("/api/account/register",async(req,res)=>{try{if(!pool)return res.status(503).json({error:"Accounts are being prepared"});const rk=String(req.ip||"unknown"),last=registrationAttempts.get(rk)||0;if(Date.now()-last<15000)return res.status(429).json({error:"Please wait before creating another account"});registrationAttempts.set(rk,Date.now());const email=String(req.body?.email||"").trim().toLowerCase(),name=String(req.body?.name||"").trim(),password=String(req.body?.password||""),invite=String(req.body?.invite_code||"");if(!process.env.TRAINING_PASSWORD||!safeEqual(invite,process.env.TRAINING_PASSWORD))return res.status(403).json({error:"A valid Setter Circle member code is required"});if(!email.includes("@")||name.length<2||password.length<8)return res.status(400).json({error:"Use a valid name, email and password of at least 8 characters"});const id=crypto.randomUUID();await q("INSERT INTO users(id,email,name,password_hash) VALUES($1,$2,$3,$4)",[id,email,name,hashPassword(password)]);res.json({ok:true})}catch(e){res.status(e.code==="23505"?409:500).json({error:e.code==="23505"?"An account already exists for that email":"Could not create account"})}});
+app.post("/api/account/register",async(req,res)=>{try{
+ if(!pool)return res.status(503).json({error:"Accounts are being prepared"});
+ const rk=String(req.ip||"unknown"),last=registrationAttempts.get(rk)||0;if(Date.now()-last<15000)return res.status(429).json({error:"Please wait before creating another account"});registrationAttempts.set(rk,Date.now());
+ const email=String(req.body?.email||"").trim().toLowerCase(),name=String(req.body?.name||"").trim(),password=String(req.body?.password||"");
+ if(!email.includes("@")||name.length<2||password.length<8)return res.status(400).json({error:"Use a valid name, email and password of at least 8 characters"});
+ const approved=await q("SELECT id FROM member_invites WHERE email=$1 AND status='approved' AND used_at IS NULL",[email]);
+ if(!approved.rows[0])return res.status(403).json({error:"This email has not been approved for Setter Circle access. Contact the team to get access."});
+ const id=crypto.randomUUID();
+ await q("BEGIN");try{
+  await q("INSERT INTO users(id,email,name,password_hash) VALUES($1,$2,$3,$4)",[id,email,name,hashPassword(password)]);
+  const used=await q("UPDATE member_invites SET status='used',used_by=$1,used_at=NOW() WHERE id=$2 AND status='approved' AND used_at IS NULL RETURNING id",[id,approved.rows[0].id]);
+  if(!used.rows[0])throw new Error("Invite already used");
+  await q("COMMIT");
+ }catch(e){await q("ROLLBACK");throw e}
+ res.json({ok:true});
+ }catch(e){res.status(e.code==="23505"?409:500).json({error:e.code==="23505"?"An account already exists for that email":"Could not create account"})}});
 const loginAttempts=new Map();
 async function sendPasswordResetEmail(to,link){
  const key=process.env.RESEND_API_KEY,from=process.env.RESET_FROM_EMAIL||"The Setter Circle <onboarding@resend.dev>";
@@ -192,6 +207,21 @@ app.post("/api/interview/message",requireUser,async(req,res)=>{
   x.history.push({role:"interviewer",text:msg});return res.json({complete:false,message:msg,turn:x.turn,fallback:true});
  }
 });
+app.get("/api/admin/invites",requireAdmin,async(req,res)=>{try{const r=await q("SELECT id,email,status,used_at,created_at FROM member_invites ORDER BY created_at DESC LIMIT 250");res.json({invites:r.rows})}catch(e){res.status(500).json({error:"Could not load approved emails"})}});
+app.post("/api/admin/invites",requireAdmin,async(req,res)=>{try{
+ const email=String(req.body?.email||"").trim().toLowerCase();
+ if(!email.includes("@"))return res.status(400).json({error:"Enter a valid email address"});
+ const existing=await q("SELECT id,access_status FROM users WHERE email=$1",[email]);
+ if(existing.rows[0])return res.status(409).json({error:"That email already has a Setter Circle account"});
+ const id=crypto.randomUUID();
+ const r=await q("INSERT INTO member_invites(id,email,status,created_by) VALUES($1,$2,'approved',$3) ON CONFLICT(email) DO UPDATE SET status='approved',used_by=NULL,used_at=NULL RETURNING id,email,status,created_at",[id,email,req.user.id]);
+ res.json({ok:true,invite:r.rows[0]});
+ }catch(e){console.error("Invite create failed",e);res.status(500).json({error:"Could not approve email"})}});
+app.delete("/api/admin/invites/:id",requireAdmin,async(req,res)=>{try{
+ const r=await q("DELETE FROM member_invites WHERE id=$1 AND status='approved' AND used_at IS NULL RETURNING id",[req.params.id]);
+ if(!r.rows[0])return res.status(404).json({error:"Unused approval not found"});
+ res.json({ok:true});
+ }catch(e){res.status(500).json({error:"Could not remove approval"})}});
 app.get("/api/admin/students",requireUser,async(req,res)=>{
  if(req.user.role!=="admin")return res.status(403).json({error:"Admin access required"});
  const r=await q("SELECT u.id,u.name,u.email,u.xp,u.streak,u.last_active,u.access_status,u.access_expires_at,COUNT(sr.id)::int reps,COALESCE(ROUND(AVG(sr.overall_score)),0)::int average FROM users u LEFT JOIN simulation_results sr ON sr.user_id=u.id WHERE u.role='student' GROUP BY u.id ORDER BY u.last_active DESC NULLS LAST,u.created_at DESC");
