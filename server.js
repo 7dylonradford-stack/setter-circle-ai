@@ -12,32 +12,18 @@ const ACCESS_TTL = 1000 * 60 * 60 * 24 * 14;
 function safeEqual(a,b){const aa=Buffer.from(String(a||"")),bb=Buffer.from(String(b||""));return aa.length===bb.length && crypto.timingSafeEqual(aa,bb)}
 async function requireTrainingAccess(req,res,next){
  try{
-  const accountToken=String(req.headers["x-account-token"]||"");
-  if(accountToken&&pool){
-   const r=await q("SELECT u.id,u.email,u.name,u.role,u.xp,u.streak FROM auth_sessions s JOIN users u ON u.id=s.user_id WHERE s.token_hash=$1 AND s.expires_at>NOW()",[hashToken(accountToken)]);
-   if(r.rows[0]){req.user=r.rows[0];return next()}
-  }
-  const auth=String(req.headers.authorization||"");
-  const token=auth.startsWith("Bearer ")?auth.slice(7):"";
-  const exp=accessTokens.get(token);
-  if(!token||!exp||exp<Date.now()){if(token)accessTokens.delete(token);return res.status(401).json({error:"Member sign in required"})}
-  next();
+  const u=await currentUser(req);
+  if(!u)return res.status(401).json({error:"Active member sign in required"});
+  req.user=u;next();
  }catch(e){res.status(500).json({error:"Account service unavailable"})}
 }
-app.post("/api/access", (req,res)=>{
- const configured=process.env.TRAINING_PASSWORD;
- if(!configured)return res.status(503).json({error:"Member access is not configured"});
- if(!safeEqual(req.body?.password,configured))return res.status(401).json({error:"Incorrect access password"});
- const token=crypto.randomBytes(32).toString("hex");
- accessTokens.set(token,Date.now()+ACCESS_TTL);
- res.json({token,expires_in:ACCESS_TTL});
-});
+app.post("/api/access", (req,res)=>res.status(410).json({error:"Shared access has been retired. Sign in with your Setter Circle account."}));
 const client = new OpenAI({apiKey: process.env.OPENAI_API_KEY});
 const sessions = new Map();
 function hashToken(t){return crypto.createHash("sha256").update(t).digest("hex")}
 function hashPassword(p,salt=crypto.randomBytes(16).toString("hex")){return salt+":"+crypto.scryptSync(String(p),salt,64).toString("hex")}
 function verifyPassword(p,stored){const [salt,key]=String(stored).split(":");if(!salt||!key)return false;const got=crypto.scryptSync(String(p),salt,64);const want=Buffer.from(key,"hex");return got.length===want.length&&crypto.timingSafeEqual(got,want)}
-async function currentUser(req){const a=String(req.headers.authorization||"");const t=String(req.headers["x-account-token"]||"")||(a.startsWith("Account ")?a.slice(8):"");if(!t||!pool)return null;const r=await q("SELECT u.id,u.email,u.name,u.role,u.xp,u.streak FROM auth_sessions s JOIN users u ON u.id=s.user_id WHERE s.token_hash=$1 AND s.expires_at>NOW()",[hashToken(t)]);return r.rows[0]||null}
+async function currentUser(req){const a=String(req.headers.authorization||"");const t=String(req.headers["x-account-token"]||"")||(a.startsWith("Account ")?a.slice(8):"");if(!t||!pool)return null;const r=await q("SELECT u.id,u.email,u.name,u.role,u.xp,u.streak,u.access_status,u.access_expires_at FROM auth_sessions s JOIN users u ON u.id=s.user_id WHERE s.token_hash=$1 AND s.expires_at>NOW() AND (u.role='admin' OR (u.access_status='active' AND (u.access_expires_at IS NULL OR u.access_expires_at>NOW())))",[hashToken(t)]);return r.rows[0]||null}
 async function requireUser(req,res,next){try{const u=await currentUser(req);if(!u)return res.status(401).json({error:"Sign in required"});req.user=u;next()}catch(e){res.status(500).json({error:"Account service unavailable"})}}
 async function requireAdmin(req,res,next){try{const u=await currentUser(req);if(!u)return res.status(401).json({error:"Sign in required"});const adminEmail=String(process.env.ADMIN_EMAIL||"").trim().toLowerCase();const isAdmin=u.role==="admin"||(adminEmail&&String(u.email||"").toLowerCase()===adminEmail);if(!isAdmin)return res.status(403).json({error:"Admin access required"});req.user=u;next()}catch(e){res.status(500).json({error:"Account service unavailable"})}}
 const registrationAttempts=new Map();
@@ -73,7 +59,7 @@ app.post("/api/account/reset-password",async(req,res)=>{try{
 
 function loginBlocked(key){const x=loginAttempts.get(key);return Boolean(x&&x.until>Date.now())}
 function recordLoginFailure(key){const x=loginAttempts.get(key)||{count:0,until:0};x.count++;if(x.count>=8){x.until=Date.now()+900000;x.count=0}loginAttempts.set(key,x)}
-app.post("/api/account/login",async(req,res)=>{try{if(!pool)return res.status(503).json({error:"Accounts are being prepared"});const attemptKey=String(req.ip||"unknown")+"|"+String(req.body?.email||"").toLowerCase();if(loginBlocked(attemptKey))return res.status(429).json({error:"Too many sign-in attempts. Try again later"});const email=String(req.body?.email||"").trim().toLowerCase(),password=String(req.body?.password||"");const r=await q("SELECT * FROM users WHERE email=$1",[email]),u=r.rows[0];if(!u||!verifyPassword(password,u.password_hash)){recordLoginFailure(attemptKey);return res.status(401).json({error:"Incorrect email or password"})}loginAttempts.delete(attemptKey);const adminEmail=String(process.env.ADMIN_EMAIL||"").trim().toLowerCase();if(adminEmail&&email===adminEmail&&u.role!=="admin"){await q("UPDATE users SET role='admin' WHERE id=$1",[u.id]);u.role='admin'}const token=crypto.randomBytes(32).toString("hex");await q("INSERT INTO auth_sessions(token_hash,user_id,expires_at) VALUES($1,$2,NOW()+INTERVAL '30 days')",[hashToken(token),u.id]);res.json({token,user:{name:u.name,email:u.email,role:u.role,xp:u.xp,streak:u.streak}})}catch(e){res.status(500).json({error:"Could not sign in"})}});
+app.post("/api/account/login",async(req,res)=>{try{if(!pool)return res.status(503).json({error:"Accounts are being prepared"});const attemptKey=String(req.ip||"unknown")+"|"+String(req.body?.email||"").toLowerCase();if(loginBlocked(attemptKey))return res.status(429).json({error:"Too many sign-in attempts. Try again later"});const email=String(req.body?.email||"").trim().toLowerCase(),password=String(req.body?.password||"");const r=await q("SELECT * FROM users WHERE email=$1",[email]),u=r.rows[0];if(!u||!verifyPassword(password,u.password_hash)){recordLoginFailure(attemptKey);return res.status(401).json({error:"Incorrect email or password"})}loginAttempts.delete(attemptKey);const adminEmail=String(process.env.ADMIN_EMAIL||"").trim().toLowerCase();if(adminEmail&&email===adminEmail&&u.role!=="admin"){await q("UPDATE users SET role='admin' WHERE id=$1",[u.id]);u.role='admin'}if(u.role!=="admin"&&(u.access_status!=="active"||(u.access_expires_at&&new Date(u.access_expires_at)<=new Date())))return res.status(403).json({error:u.access_status==="suspended"?"Your Setter Circle access has been suspended. Contact the team if you think this is a mistake.":"Your Setter Circle access has ended. Contact the team if you think this is a mistake."});const token=crypto.randomBytes(32).toString("hex");await q("INSERT INTO auth_sessions(token_hash,user_id,expires_at) VALUES($1,$2,NOW()+INTERVAL '30 days')",[hashToken(token),u.id]);res.json({token,user:{name:u.name,email:u.email,role:u.role,xp:u.xp,streak:u.streak,access_status:u.access_status,access_expires_at:u.access_expires_at}})}catch(e){res.status(500).json({error:"Could not sign in"})}});
 app.get("/api/account/me",requireUser,async(req,res)=>{const h=await q("SELECT overall_score,mode,difficulty,prospect_name,prospect_role,scores,created_at FROM simulation_results WHERE user_id=$1 ORDER BY created_at DESC LIMIT 20",[req.user.id]);const a=await q("SELECT code,unlocked_at FROM achievements WHERE user_id=$1 ORDER BY unlocked_at DESC",[req.user.id]);res.json({user:req.user,history:h.rows,achievements:a.rows})});
 app.post("/api/account/logout",requireUser,async(req,res)=>{const t=String(req.headers["x-account-token"]||"");if(t)await q("DELETE FROM auth_sessions WHERE token_hash=$1",[hashToken(t)]);res.json({ok:true})});
 app.get("/api/account/export",requireUser,async(req,res)=>{const h=await q("SELECT mode,difficulty,prospect_name,prospect_role,overall_score,scores,transcript,debrief,created_at FROM simulation_results WHERE user_id=$1 ORDER BY created_at",[req.user.id]);const a=await q("SELECT code,unlocked_at FROM achievements WHERE user_id=$1 ORDER BY unlocked_at",[req.user.id]);res.json({profile:{name:req.user.name,email:req.user.email,xp:req.user.xp,streak:req.user.streak},simulations:h.rows,achievements:a.rows})});
@@ -208,10 +194,20 @@ app.post("/api/interview/message",requireUser,async(req,res)=>{
 });
 app.get("/api/admin/students",requireUser,async(req,res)=>{
  if(req.user.role!=="admin")return res.status(403).json({error:"Admin access required"});
- const r=await q("SELECT u.id,u.name,u.email,u.xp,u.streak,u.last_active,COUNT(sr.id)::int reps,COALESCE(ROUND(AVG(sr.overall_score)),0)::int average FROM users u LEFT JOIN simulation_results sr ON sr.user_id=u.id WHERE u.role='student' GROUP BY u.id ORDER BY u.last_active DESC NULLS LAST,u.created_at DESC");
+ const r=await q("SELECT u.id,u.name,u.email,u.xp,u.streak,u.last_active,u.access_status,u.access_expires_at,COUNT(sr.id)::int reps,COALESCE(ROUND(AVG(sr.overall_score)),0)::int average FROM users u LEFT JOIN simulation_results sr ON sr.user_id=u.id WHERE u.role='student' GROUP BY u.id ORDER BY u.last_active DESC NULLS LAST,u.created_at DESC");
  res.json({students:r.rows});
 });
 
+app.post("/api/admin/student/:id/access",requireAdmin,async(req,res)=>{try{
+ const status=String(req.body?.status||"").toLowerCase(),allowed=["active","suspended","expired"];
+ if(!allowed.includes(status))return res.status(400).json({error:"Invalid access status"});
+ const expires=req.body?.expires_at?new Date(req.body.expires_at):null;
+ if(expires&&Number.isNaN(expires.getTime()))return res.status(400).json({error:"Invalid expiry date"});
+ const r=await q("UPDATE users SET access_status=$1,access_expires_at=$2 WHERE id=$3 AND role='student' RETURNING id,name,email,access_status,access_expires_at",[status,expires?expires.toISOString():null,req.params.id]);
+ if(!r.rows[0])return res.status(404).json({error:"Student not found"});
+ if(status!=="active")await q("DELETE FROM auth_sessions WHERE user_id=$1",[req.params.id]);
+ res.json({ok:true,student:r.rows[0]});
+ }catch(e){console.error("Student access update failed",e);res.status(500).json({error:"Could not update student access"})}});
 app.get("/api/admin/student/:id",requireUser,async(req,res)=>{
  if(req.user.role!=="admin")return res.status(403).json({error:"Admin access required"});
  const u=await q("SELECT id,name,email,xp,streak,last_active,created_at FROM users WHERE id=$1 AND role='student'",[req.params.id]);
