@@ -115,15 +115,15 @@ body.member-shell-active:not(.member-focus-mode) #workspace.sc9-root .sc9-root-c
 .sc9-orbit-track{stroke:rgba(206,244,108,.16);stroke-width:.7;fill:none}
 .sc9-orbit-trace{stroke:rgba(223,255,143,.46);stroke-width:1;stroke-dasharray:27 73;fill:none;stroke-linecap:round;transform-origin:24px 24px;animation:sc9Orbit 22s linear infinite}
 .sc9-detail-dot{stroke:none;fill:#d0f83b;filter:drop-shadow(0 0 3px rgba(208,248,59,.4))}
-body.member-shell-active:not(.member-focus-mode) #workspace.sc9-root .sc9-root-card-copy{position:relative;z-index:2;min-width:0;gap:6px!important}
+body.member-shell-active:not(.member-focus-mode) #workspace.sc9-root .member-root-card-copy{position:relative;z-index:2;min-width:0;gap:6px!important}
 .sc9-typelabel{color:#aac37c;font-size:9px;font-weight:810;letter-spacing:.14em;margin:0 0 4px}
-body.member-shell-active:not(.member-focus-mode) #workspace.sc9-root .sc9-root-card-copy strong{
+body.member-shell-active:not(.member-focus-mode) #workspace.sc9-root .member-root-card-copy strong{
  color:#f2f5e9;font-size:18px;line-height:1.18;font-weight:770;letter-spacing:-.036em;
 }
-body.member-shell-active:not(.member-focus-mode) #workspace.sc9-root .sc9-root-card-copy>span:not(.sc9-typelabel):not(.sc9-inline-cta){
+body.member-shell-active:not(.member-focus-mode) #workspace.sc9-root .member-root-card-copy>span:not(.sc9-typelabel):not(.sc9-inline-cta){
  font-size:11.5px;color:#a6b29c;line-height:1.55;max-width:480px
 }
-body.member-shell-active:not(.member-focus-mode) #workspace.sc9-root .sc9-root-card.is-featured .sc9-root-card-copy strong{font-size:23px}
+body.member-shell-active:not(.member-focus-mode) #workspace.sc9-root .sc9-root-card.is-featured .member-root-card-copy strong{font-size:23px}
 .sc9-inline-cta{font-size:10px;color:#d2f081;letter-spacing:.025em;font-weight:750;margin-top:8px;position:relative}
 .sc9-inline-cta:after{content:"↗";display:inline-block;margin-left:7px;transition:transform .23s}
 .sc9-root-card:hover .sc9-inline-cta:after{transform:translate(3px,-2px)}
@@ -301,15 +301,15 @@ body.member-shell-active:not(.member-focus-mode) #memberAppNav .member-nav-item:
   width:66px!important;height:66px!important;flex:0 0 66px!important;border-radius:15px!important
  }
  .sc9-vector{width:47px!important;height:47px!important}
- body.member-shell-active:not(.member-focus-mode) #workspace.sc9-root .sc9-root-card-copy{
+ body.member-shell-active:not(.member-focus-mode) #workspace.sc9-root .member-root-card-copy{
   gap:4px!important;padding-right:15px
  }
  .sc9-typelabel{font-size:8px;letter-spacing:.085em;margin-bottom:2px}
- body.member-shell-active:not(.member-focus-mode) #workspace.sc9-root .sc9-root-card-copy strong,
- body.member-shell-active:not(.member-focus-mode) #workspace.sc9-root .sc9-root-card.is-featured .sc9-root-card-copy strong{
+ body.member-shell-active:not(.member-focus-mode) #workspace.sc9-root .member-root-card-copy strong,
+ body.member-shell-active:not(.member-focus-mode) #workspace.sc9-root .sc9-root-card.is-featured .member-root-card-copy strong{
   font-size:16px;line-height:1.19;letter-spacing:-.034em
  }
- body.member-shell-active:not(.member-focus-mode) #workspace.sc9-root .sc9-root-card-copy>span:not(.sc9-typelabel):not(.sc9-inline-cta){
+ body.member-shell-active:not(.member-focus-mode) #workspace.sc9-root .member-root-card-copy>span:not(.sc9-typelabel):not(.sc9-inline-cta){
   font-size:10.5px;line-height:1.37;color:#b0baaa
  }
  .sc9-inline-cta{font-size:10px;margin-top:7px}
@@ -353,7 +353,7 @@ body.member-shell-active:not(.member-focus-mode) #memberAppNav .member-nav-item:
  body.member-shell-active:not(.member-focus-mode) #workspace.sc9-root .member-root-card-icon.sc9-visual-tile{
   width:56px!important;height:56px!important;flex:0 0 56px!important
  }
- body.member-shell-active:not(.member-focus-mode) #workspace.sc9-root .sc9-root-card-copy{
+ body.member-shell-active:not(.member-focus-mode) #workspace.sc9-root .member-root-card-copy{
   padding-right:0
  }
  .sc9-vector{width:43px!important;height:43px!important}
