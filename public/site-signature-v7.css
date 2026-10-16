@@ -1,0 +1,59 @@
+
+/* Setter Circle public site — signature finish v7
+   Extends existing site styles without altering content or CTA destinations. */
+#site{--sc-canvas:#090f0b;--sc-moss:#a9d8b1}
+#site nav{background:rgba(8,14,10,.93)!important;border-bottom:1px solid rgba(143,204,153,.15)!important;box-shadow:0 11px 36px #0002}
+#site .navin .brandmark{box-shadow:0 0 27px rgba(124,185,137,.11);border-color:#567a5d!important}
+#site .logo{letter-spacing:.10em!important;font-weight:800}
+#site .links a{transition:color .2s ease!important}
+#site .links a:hover{color:#e5f6e8!important}
+#site .hero{position:relative;overflow:hidden;background:
+ radial-gradient(ellipse 67% 58% at 99% -12%,rgba(106,174,123,.16),transparent 79%),
+ radial-gradient(ellipse 58% 65% at 0% 91%,rgba(61,123,83,.07),transparent 78%),
+ linear-gradient(147deg,#09120d,#090e0b 71%,#080d09)!important}
+#site .hero:before{content:"";position:absolute;z-index:0;top:-250px;right:-210px;width:810px;height:810px;border-radius:50%;
+ background:radial-gradient(circle,rgba(132,208,151,.08),transparent 67%);
+ animation:publicHalo 16s ease-in-out infinite alternate;pointer-events:none}
+#site .hero .hero-grid{position:relative;z-index:1}
+#site .hero .eyebrow{font-size:10px!important;letter-spacing:.18em!important}
+#site .hero h1{font-weight:820;letter-spacing:-.066em!important;text-wrap:balance;text-shadow:0 2px 35px #0005}
+#site .hero p{font-size:clamp(14px,1.5vw,17px)!important;line-height:1.75!important;max-width:630px}
+#site .hero .actions{gap:12px}
+#site .btn{font-weight:780!important;transition:transform .23s ease,background .23s,border-color .23s,box-shadow .23s}
+#site .hero .btn:not(.ghost){box-shadow:0 7px 30px #0004,0 0 18px rgba(142,220,154,.075)}
+#site .hero .btn:not(.ghost):hover{box-shadow:0 12px 33px #0006,0 0 26px rgba(142,220,154,.16)}
+#site .hero .preview{filter:drop-shadow(0 28px 50px rgba(0,0,0,.3))}
+#site .hero .preview .phone{border-color:#4c7754!important;box-shadow:0 30px 90px #0008,0 0 50px rgba(88,161,105,.07)!important;
+ transition:transform .5s cubic-bezier(.2,.8,.2,1),box-shadow .5s}
+#site .hero .preview .phone:hover{transform:translateY(-5px) rotate(.2deg)}
+#site .sectiontop{max-width:740px}
+#site .sectiontop h2{letter-spacing:-.06em!important;line-height:1.08}
+#site section.pad{position:relative}
+#site .cards{gap:15px}
+#site .cards .card{overflow:hidden;position:relative;isolation:isolate;transition:transform .26s,border-color .26s,box-shadow .26s}
+#site .cards .card:before{content:"";position:absolute;top:-100px;right:-120px;width:260px;height:260px;
+ border-radius:50%;background:radial-gradient(circle,rgba(156,216,166,.105),transparent 69%);opacity:.5;transition:opacity .3s;z-index:-1}
+#site .cards .card:hover:before{opacity:1}
+#site .cards .card:hover{box-shadow:0 14px 40px #0004,0 0 20px rgba(106,188,127,.06)}
+#site .cards .card .num{font-weight:820;letter-spacing:.14em}
+#site .cta{background:
+ radial-gradient(ellipse 50% 70% at 100% 0%,rgba(141,204,153,.12),transparent 79%),
+ linear-gradient(120deg,#183022,#0b1811)!important;border-color:#416b4c!important;
+ box-shadow:inset 0 1px rgba(208,255,210,.07),0 25px 70px #0003!important;overflow:hidden}
+#site .cta h2{font-weight:790;letter-spacing:-.054em}
+#site .cta .btn{box-shadow:0 8px 30px #0004}
+#site footer{border-top-color:#2a4232}
+#site a:focus-visible,#site button:focus-visible{outline:2px solid #aee6b8;outline-offset:4px}
+@keyframes publicHalo{from{transform:translate(-15px,9px) scale(.96);opacity:.5}to{transform:translate(15px,-12px) scale(1.11);opacity:.95}}
+@media(max-width:900px){
+ #site .hero{padding-top:55px!important}
+ #site .hero h1{letter-spacing:-.058em!important}
+ #site .hero .preview .phone:hover{transform:none}
+ #site .cards .card{min-height:0!important}
+ #site .cards .card:hover{transform:none}
+ #site .hero .actions .btn{min-height:42px}
+}
+@media(prefers-reduced-motion:reduce){
+ #site .hero:before{animation:none!important}
+ #site .cards .card,#site .hero .preview .phone,#site .btn{transition:none!important}
+}
