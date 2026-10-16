@@ -32,7 +32,8 @@ practice:{eyebrow:'YOUR TRAINING GROUND',summary:'Realistic situations. Better c
 ['career','Virtual Workplace','Handle prospects, CRM tasks, bookings and shift reporting.','workplace','Enter workplace'],
 ['coach','Mock Interview','Practise hiring questions before a real interview.','startInterview','Start interview'],
 ['academy','Conversation Clinic','Learn from common mistakes and improve your replies.','showConversationClinic','Enter clinic'],
-['calendar','Pre-Shift Checklist','Prepare for a productive practice session.','showPreShift','Open checklist']]},
+['calendar','Pre-Shift Checklist','Prepare for a productive practice session.','showPreShift','Open checklist'],
+['practice','Resume Training','Return to an unfinished AI roleplay after leaving the page.','showResumeTraining','Resume a session']]},
 progress:{eyebrow:'YOUR DEVELOPMENT',summary:'Track your performance, understand your strongest skills and know what to practise next.',cards:[
 ['progress','Performance Lab','Visual breakdowns of your simulations and skills.','showPerformanceLab','Review results'],
 ['coach','Personal AI Coach','Targeted suggestions based on your training history.','showPersonalCoach','Open coach'],
