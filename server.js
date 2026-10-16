@@ -437,7 +437,7 @@ The private brief must contain the personality and hidden reality the student ha
 app.get("/api/training/active",requireTrainingAccess,async(req,res)=>{
  try{
   const r=await q("SELECT id,state,updated_at FROM training_sessions WHERE user_id=$1 AND expires_at>NOW() ORDER BY updated_at DESC LIMIT 8",[req.user.id]);
-  res.set("Cache-Control","no-store").json({sessions:r.rows.map(x=>({id:x.id,updated_at:x.updated_at,mode:x.state?.mode,difficulty:x.state?.difficulty,scenario:x.state?.scenario,transcript:x.state?.transcript||[],state:x.state?.state||{}}))});
+  res.set("Cache-Control","no-store").json({sessions:r.rows.map(x=>({id:x.id,updated_at:x.updated_at,mode:x.state?.mode,difficulty:x.state?.difficulty,scenario:x.state?.scenario?{id:x.state.scenario.id,name:x.state.scenario.name,role:x.state.scenario.role,opening:x.state.scenario.opening,objective:x.state.scenario.objective}:null,transcript:x.state?.transcript||[],state:x.state?.state||{}}))});
  }catch(e){console.error("Training session retrieval failed",e);res.status(503).json({error:"Saved sessions temporarily unavailable"})}
 });
 app.post("/api/session", requireTrainingAccess, async (req,res)=>{
