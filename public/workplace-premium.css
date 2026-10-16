@@ -1,0 +1,67 @@
+
+/* The Setter Circle / Virtual Workplace — layout refinement */
+:root{color-scheme:dark}
+html{scroll-behavior:smooth}
+body{background:#080d0a}
+button,select,input,textarea{transition:border-color .18s ease,background .18s ease,box-shadow .18s ease}
+button:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid #bdeec8;outline-offset:3px}
+button:not(:disabled):hover{border-color:#769e78}
+#app>.row{background:#111b15;border:1px solid #273f2f;border-radius:14px;padding:15px;gap:11px;margin:16px 0}
+#app>.row>label{min-width:190px;flex:1;color:#a5c6ab;font-weight:700;font-size:12px;line-height:1.6}
+#app>.row>label>select{margin-top:5px;font-weight:700;font-size:14px;display:block;min-height:46px}
+#app>.row>#reset{background:#152218;border-color:#395b40;color:#cde6d0;font-size:12px}
+.workspace-head{
+  background:linear-gradient(105deg,#152a1c,#111a14 80%);
+  border-color:#385a40;box-shadow:none;margin-top:14px;padding:20px 22px;border-radius:16px
+}
+.workspace-head .ey{color:#a4d9ad;letter-spacing:.14em;font-size:10px}
+.workspace-head h2{font-size:clamp(20px,2.7vw,28px)!important;letter-spacing:-.035em;line-height:1.2;margin:7px 0!important}
+.workspace-head p{font-size:12px;line-height:1.55;margin:7px 0 13px}
+.workstat{margin:10px 0 0;gap:7px}
+.workstat span{font-size:10px;padding:7px 9px;border-color:#37513b;background:#112017}
+.training-progress{margin-top:12px;background:#253b29}
+.training-progress>span{background:#a3dcac}
+.stepbar{display:flex!important;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:thin;gap:8px;padding:4px 0 10px}
+.step{flex:1 0 145px;padding:12px 13px;font-size:11px;border-color:#344b39;background:#121f16;border-radius:12px}
+.step strong{font-size:12px;line-height:1.4}
+.step.active{border-color:#83bc89;background:#213b28}
+.step.locked{opacity:.55}
+#app .card{background:#121d15;border-color:#2f4435;border-radius:15px;padding:18px}
+#app .card .card{background:#0e1711;margin-top:10px;border-color:#293d2e}
+#app .card h2{font-size:19px;line-height:1.3;margin:6px 0 8px}
+#app .card h2.stage-title{font-size:clamp(19px,2.7vw,25px);letter-spacing:-.025em}
+#app .card p{font-size:13px;line-height:1.65}
+#app .stage-note{border-left-color:#9ad7a3;border-radius:0 11px 11px 0}
+#app .tabs{gap:7px;padding:12px 1px}
+#app .tabs .btn{font-size:12px;padding:11px 13px;border-radius:10px}
+#app .tabs .btn.primary{background:#aee4ae;border-color:#aee4ae}
+#app #onboarding .lesson-row{font-size:13px;line-height:1.5}
+#app #onboarding .grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+body.embedded main{padding:5px 10px 26px;max-width:none}
+body.embedded #app>.ey,body.embedded #app>h1,body.embedded #app>p{display:none}
+body.embedded .workspace-head{margin-top:10px}
+body.embedded .workspace-head .ey{font-size:9px}
+body.embedded .workspace-head p{font-size:12px}
+body.embedded #app>.row{margin:8px 0}
+body.embedded nav{display:none!important}
+@media(max-width:800px){
+ #app .grid{grid-template-columns:minmax(0,1fr)!important}
+ #app .card{padding:15px;margin-top:10px}
+ #app #onboarding .grid{grid-template-columns:1fr!important;gap:7px}
+ #app>.row{padding:12px;align-items:stretch}
+ #app>.row>label{flex:1 1 100%;min-width:0}
+ #app>.row>#reset{align-self:flex-start;padding:9px 12px}
+ .workspace-head{padding:15px 16px;border-radius:14px}
+ .workspace-head h2{font-size:20px!important}
+ .workspace-head p{font-size:12px;margin-bottom:10px}
+ .workstat{margin-top:9px}
+ .workstat span{font-size:10px;padding:6px 8px}
+ .step{flex:0 0 126px;padding:10px}
+ body.embedded main{padding:5px 10px 35px!important}
+ body.embedded #app>.row{margin:3px 0 8px}
+ body.embedded .workspace-head p{display:none}
+ body.embedded .workspace-head{padding:13px 15px;margin-top:10px}
+ body.embedded .workspace-head h2{font-size:18px!important}
+ body.embedded .stepbar{margin:9px 0}
+}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}button,select,input,textarea{transition:none}}
