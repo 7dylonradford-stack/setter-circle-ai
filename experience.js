@@ -193,7 +193,7 @@ export function registerExperience(app, client, requireAdmin) {
   });
 
   const contentLimits = {
-    dylon_bio:2000,amar_bio:2000,
+    dylon_bio:2000,amar_bio:2000,dylon_photo_x:3,dylon_photo_y:3,amar_photo_x:3,amar_photo_y:3,
     dylon_photo:1500,amar_photo:1500,dylon_video_url:1500,amar_video_url:1500,
     booking_url:1500,
     testimonial_1_name:100,testimonial_1_text:600,
