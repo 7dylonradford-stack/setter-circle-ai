@@ -192,6 +192,38 @@ async function performance(){
   call('Performance Lab','Evidence-based trends from your real practice.',layout('',c),'PROGRESS / SKILL INTELLIGENCE');
  }catch(e){notice(e.message)}
 }
+
+async function coachPlan(){
+ call('Personal AI Coach','A targeted three-step practice plan based on measured results.',loading('coach'),'PROGRESS / COACHING');
+ try{
+  const d=await api('/api/profile'),rec=d.recommendation||{};
+  const weakness=d.weakest?.skill||null,score=d.weakest?.score;
+  const lookup={
+   conversational_awareness:{module:4,drill:'Listen for what the prospect actually means before choosing a question.',target:'Respond to the exact preceding message and ask just one useful question.'},
+   rapport:{module:4,drill:'Build genuine relevance through the prospect’s own words.',target:'Show comprehension without fake mirroring or over-familiarity.'},
+   discovery:{module:5,drill:'Uncover context, challenges and goals before introducing a solution.',target:'Ask follow-up questions that reveal why the situation matters.'},
+   qualification:{module:6,drill:'Check fit, interest and readiness without turning the conversation into a checklist.',target:'Find relevant evidence of suitability before suggesting a meeting.'},
+   objection_handling:{module:7,drill:'Acknowledge resistance, clarify its cause, and respond without pressure.',target:'Diagnose the actual concern instead of deploying a scripted rebuttal.'},
+   positioning:{module:8,drill:'Connect the offer to what was discovered in the conversation.',target:'Never make guarantees or claim unverified results.'},
+   cta:{module:9,drill:'Earn the transition to a next step only when sufficient interest is established.',target:'Use a clear, low-pressure invitation.'},
+   naturalness:{module:4,drill:'Keep replies short, relevant and conversational.',target:'Avoid stacked questions and robotic frameworks.'}
+  };
+  const plan=lookup[weakness]||{module:1,drill:'Build one high-quality conversation from the start.',target:'Actively listen and prioritise relevance.'};
+  let c=heading('PERSONALISED COACHING',rec.title||'Your next area to improve','Your practice plan is based on your completed training—not a random daily challenge.');
+  c+='<div class="studio-mini-metrics">'+box('AVERAGE SCORE',d.reps?d.average+'/100':'Not established')+
+   box('CURRENT FOCUS',weakness?weakness.replaceAll('_',' '):'Foundations')+
+   box('EVIDENCE',String(d.reps||0)+' reps')+'</div>';
+  c+='<div class="studio-main-card"><span class="studio-overline">RECOMMENDED TRAINING PLAN</span><h3>'+esc(rec.title||'Build your baseline')+'</h3><p>'+esc(rec.detail||'Complete a focused simulation to establish a reliable starting point.')+'</p>';
+  c+='<div class="studio-list">'+[
+   ['01','Learn the concept','Study module '+plan.module+': '+modules[plan.module-1]+'.'],
+   ['02','Practise deliberately',plan.drill],
+   ['03','Check improvement','Complete three focused simulations, compare your new skill scores, and reflect on feedback.']
+  ].map(x=>'<div class="studio-list-row"><span class="studio-list-index">'+x[0]+'</span><span class="studio-list-copy"><strong>'+esc(x[1])+'</strong><small>'+esc(x[2])+'</small></span></div>').join('')+'</div>';
+  c+='<div class="studio-note"><strong>What good performance looks like</strong><p>'+esc(plan.target)+'</p></div>';
+  c+='<div class="studio-toolbar">'+action('coach-learn','Open related lesson','data-module="'+plan.module+'"')+action('coach-practise','Start focused practice')+'</div></div>';
+  call('Personal AI Coach','A learning plan based on actual training history.',layout('',c),'PROGRESS / COACHING');
+ }catch(e){notice(e.message)}
+}
 async function adminStudio(){
  call('Lesson studio','Admin tools for uploading and publishing lessons.',loading('lessons'),'ADMIN / CURRICULUM');
  try{
@@ -260,7 +292,7 @@ if(typeof originalOpen==='function')window.openAccount=async function(){const r=
 const originalLoad=window.loadAccount;
 if(typeof originalLoad==='function')window.loadAccount=async function(){const r=await originalLoad.apply(this,arguments);if(!$('profilePanel')?.classList.contains('hidden')){dashboardSummary();enableAdmin()}return r};
 Object.assign(window,{
- showAcademy:academy,showProgramme:programme,showWeeklyReview:weeklyReview,showOpportunities:jobBoard,showPerformanceLab:performance,
+ showAcademy:academy,showProgramme:programme,showWeeklyReview:weeklyReview,showOpportunities:jobBoard,showPerformanceLab:performance,showPersonalCoach:coachPlan,
  showMentorDesk:mentorDesk,showFinalAssessment:assessment,showAdminLessonStudio:adminStudio,showAdminMentorDesk:mentorAdmin
 });
 document.addEventListener('click',async e=>{
@@ -323,6 +355,10 @@ document.addEventListener('click',async e=>{
    await api(endpoint+id,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({status,feedback})});
    notice('Mentor decision saved');return mentorAdmin();
   }
+  if(key==='coach-learn'){
+   await academy();return moduleView(Number(b.dataset.module)||1);
+  }
+  if(key==='coach-practise')return window.startRecommendedTraining?.();
   if(key==='roleplay')return window.openAIStage?.();
   if(key==='coach')return window.showPersonalCoach?.();
   if(key==='admin-studio')return adminStudio();
