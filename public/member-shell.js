@@ -34,6 +34,7 @@ practice:{eyebrow:'YOUR TRAINING GROUND',summary:'Realistic situations. Better c
 ['academy','Conversation Clinic','Learn from common mistakes and improve your replies.','showConversationClinic','Enter clinic'],
 ['calendar','Pre-Shift Checklist','Prepare for a productive practice session.','showPreShift','Open checklist'],
 ['practice','Resume Training','Return to an unfinished AI roleplay after leaving the page.','showResumeTraining','Resume a session'],
+['practice','Replay Studio','Revisit previous conversations and practise correcting difficult moments.','showReplayStudio','Review conversation'],
 ['practice','Advanced AI Studio','Continue fictional prospects across channels and practise voice calls.','showAdvancedStudio','Open advanced training']]},
 progress:{eyebrow:'YOUR DEVELOPMENT',summary:'Track your performance, understand your strongest skills and know what to practise next.',cards:[
 ['progress','Performance Lab','Visual breakdowns of your simulations and skills.','showPerformanceLab','Review results'],
