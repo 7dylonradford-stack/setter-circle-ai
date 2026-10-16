@@ -1,0 +1,115 @@
+
+/* THE SETTER CIRCLE — ADVANCED STUDIO
+   Text-led premium product, consistent electric-lime brand.
+*/
+.aa-root{--aa-lime:#D0F83B;--aa-surface:#131b11;--aa-border:#3f5231;color:#f1f6e8;
+ width:100%;margin:auto;padding:0 0 65px;max-width:1180px;font-family:inherit}
+.aa-root *{box-sizing:border-box}
+.aa-section{border-bottom:1px solid var(--aa-border);padding:0 0 24px;margin:0 0 25px}
+.aa-section>span,.aa-overline{font:800 10px/1.4 inherit;letter-spacing:.16em;color:#d0f83b}
+.aa-section h3{color:#f8f9f0;font-size:clamp(27px,4.5vw,42px);letter-spacing:-.058em;line-height:1.1;margin:10px 0 7px}
+.aa-section p{font-size:13px;line-height:1.7;color:#afbba3;max-width:700px;margin:0}
+.aa-group{margin:0 0 34px}
+.aa-group-header{margin:22px 0 15px}
+.aa-group-header span{font-size:9px;letter-spacing:.16em;color:#c2d979;font-weight:800}
+.aa-group-header h3{font-size:22px;font-weight:760;color:#f4f6ea;letter-spacing:-.055em;margin:8px 0 6px}
+.aa-group-header p{color:#a7b6a2;font-size:12px;line-height:1.55;margin:0}
+.aa-cards,.aa-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:12px 0}
+.aa-card{min-height:153px;text-align:left;display:flex;flex-direction:column;position:relative;
+ color:#f5f8ee;background:linear-gradient(135deg,#1d2915 0%,#101610 75%);
+ padding:22px;border:1px solid #465733;border-radius:17px;overflow:hidden;
+ cursor:pointer;transition:transform .22s,border-color .22s,box-shadow .22s}
+.aa-card:before{content:"";position:absolute;inset:0;pointer-events:none;
+ background:radial-gradient(ellipse 80% 70% at 0 0,rgba(208,248,59,.07),transparent 80%)}
+.aa-card>span{font-size:9px;color:#c7e579;font-weight:800;letter-spacing:.12em;position:relative}
+.aa-card strong{font-weight:780;font-size:20px;line-height:1.2;letter-spacing:-.04em;margin:18px 0 8px;position:relative}
+.aa-card small{font-size:11px;line-height:1.58;color:#a7b69e;max-width:380px;position:relative}
+.aa-card b{position:absolute;right:17px;top:14px;font-size:17px;font-weight:500;color:#d0f83b}
+.aa-card:hover,.aa-card:focus-visible{transform:translateY(-3px);border-color:#a6c941;box-shadow:0 15px 30px #0004,0 0 28px rgba(208,248,59,.08)}
+.aa-panel{background:linear-gradient(135deg,#192416,#0c140b);border:1px solid #465c34;
+ border-radius:17px;padding:24px;margin:14px 0;min-width:0}
+.aa-panel h3{font-size:22px;color:#f2f7e8;margin:12px 0;letter-spacing:-.037em}
+.aa-panel p{font-size:12.5px;color:#afbea8;line-height:1.65;white-space:pre-wrap;overflow-wrap:anywhere}
+.aa-panel small{color:#a6b999;font-size:11px}
+.aa-empty{padding:28px 20px;background:linear-gradient(135deg,#172214,#10160e);
+ border:1px solid #34492a;border-radius:14px;color:#b5c5a6;font-size:13px;line-height:1.7}
+.aa-empty strong{color:#edf8d9;font-size:17px;display:block;margin-bottom:5px}
+.aa-empty p{margin:0;color:#aeb9a2}
+.aa-pulse{display:inline-block;width:7px;height:7px;border-radius:50%;background:#d0f83b;
+ box-shadow:0 0 18px rgba(208,248,59,.4);margin-right:8px;animation:aaPulse 1.5s alternate infinite}
+.aa-note{margin:14px 0;padding:15px 18px;border:1px solid #536c37;border-left:3px solid #d0f83b;
+ border-radius:12px;background:#1c2b15;line-height:1.5}
+.aa-note strong{font-size:12px;color:#e2f2b1}
+.aa-note p{font-size:12px;color:#bacba6;line-height:1.62;margin:7px 0 0}
+.aa-field{display:flex;flex-direction:column;gap:7px;color:#c6d99a;font-size:10px;font-weight:800;
+ letter-spacing:.08em;margin:11px 0 15px}
+.aa-field input,.aa-field textarea,.aa-field select{
+ display:block;width:100%;min-width:0;padding:12px 13px;resize:vertical;
+ background:#0e170d;border:1px solid #50613b;border-radius:10px;color:#f4faeb;
+ font:500 13px/1.5 inherit;letter-spacing:0;outline:none}
+.aa-field input:focus,.aa-field textarea:focus,.aa-field select:focus{border-color:#d0f83b;
+ box-shadow:0 0 0 3px rgba(208,248,59,.10)}
+.aa-field input::placeholder,.aa-field textarea::placeholder{color:#849878}
+.aa-check{display:flex;align-items:flex-start;gap:10px;color:#c4d5b6;font-size:12px;line-height:1.5;margin:14px 0}
+.aa-check input{width:17px;height:17px;flex:0 0 17px;accent-color:#d0f83b}
+.aa-actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:17px 0 2px}
+.aa-btn{display:inline-flex;align-items:center;justify-content:space-between;gap:19px;
+ background:#d0f83b;border:1px solid #d0f83b;color:#17230a;font-size:12px;
+ font-weight:800;min-height:42px;padding:10px 14px;border-radius:10px;cursor:pointer;
+ transition:transform .18s,box-shadow .18s;max-width:100%}
+.aa-btn:hover{transform:translateY(-2px);box-shadow:0 0 31px rgba(208,248,59,.2)}
+.aa-btn:disabled{opacity:.55;cursor:wait}
+.aa-btn:focus-visible,.aa-card:focus-visible,.aa-outlink:focus-visible{outline:2px solid #d0f83b;outline-offset:3px}
+.aa-outlink{font-size:12px;color:#e1f3b0;font-weight:770;text-decoration:none}
+.aa-thread{padding:20px}
+.aa-thread-top{display:flex;align-items:center;justify-content:space-between;gap:18px;color:#c5d89b;font-size:12px}
+.aa-thread-top .aa-field{min-width:210px}
+.aa-messages{display:flex;flex-direction:column;gap:11px;max-height:510px;min-height:230px;
+ overflow-y:auto;padding:16px;background:#0b110b;border:1px solid #34422b;border-radius:13px;
+ overscroll-behavior:contain}
+.aa-message{display:block;max-width:85%;padding:12px 15px;border-radius:14px;
+ border:1px solid #455a3c;align-self:flex-start;background:#1a281d}
+.aa-message.mine{align-self:flex-end;background:#c9ee57;border-color:#d0f83b;color:#162108}
+.aa-message.mine p,.aa-message.mine small{color:#162108}
+.aa-message.info{align-self:center;background:#131d12;max-width:100%}
+.aa-message small{color:#a5c188;letter-spacing:.09em;font-weight:800;font-size:8px}
+.aa-message p{color:#e6f1dd;font-size:13px;margin:6px 0 0;line-height:1.65;white-space:pre-wrap}
+.aa-steps{display:grid;gap:8px}
+.aa-step{display:flex;align-items:center;gap:13px;min-width:0;background:#111b11;border:1px solid #334729;border-radius:12px;padding:15px}
+.aa-step>span{font-size:11px;color:#d1f47b;font-weight:800;letter-spacing:.1em}
+.aa-step>div{flex:1;display:flex;flex-direction:column;gap:5px;min-width:0}
+.aa-step strong{color:#f2f6e8;font-size:13px}
+.aa-step small{color:#9fb393;font-size:11px}
+.aa-step .aa-btn{min-height:35px;font-size:10px;padding:8px 10px}
+.aa-standards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}
+.aa-standards>div{background:#111b10;border:1px solid #364829;border-radius:11px;padding:13px}
+.aa-standards strong{font-size:13px;color:#e3f2bd}
+.aa-standards p{font-size:11px;margin:5px 0 0}
+.aa-tags{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.aa-tags span{padding:8px 10px;border-radius:9px;border:1px solid #617c39;color:#d1ee88;background:#25391a;font-size:11px}
+.aa-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+.aa-metrics>div{border:1px solid #465a32;border-radius:12px;background:#182215;padding:16px}
+.aa-metrics small{display:block;font-size:9px;color:#a7bc8e;letter-spacing:.08em}
+.aa-metrics strong{display:block;margin-top:7px;font-size:26px;letter-spacing:-.05em;color:#edf6d9}
+@keyframes aaPulse{to{opacity:.45;transform:scale(.7)}}
+@media(max-width:1000px){.aa-cards,.aa-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:720px){
+ .aa-root{padding-bottom:calc(145px + env(safe-area-inset-bottom,0px))}
+ .aa-section{padding-bottom:15px;margin-bottom:16px}
+ .aa-section h3{font-size:27px}
+ .aa-group{margin-bottom:26px}
+ .aa-cards,.aa-grid{grid-template-columns:1fr;gap:10px}
+ .aa-card{min-height:124px;padding:17px 19px;border-radius:14px}
+ .aa-card strong{font-size:18px;margin:12px 0 6px}
+ .aa-panel{padding:16px 14px;border-radius:14px}
+ .aa-standards{grid-template-columns:1fr}
+ .aa-thread-top{align-items:stretch;flex-direction:column;gap:3px}
+ .aa-thread-top .aa-field{min-width:0}
+ .aa-messages{min-height:190px;max-height:390px;padding:10px}
+ .aa-message{max-width:92%}
+ .aa-step{padding:11px 9px;gap:7px}
+ .aa-step strong{font-size:12px}
+ .aa-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:360px){.aa-step{flex-wrap:wrap}.aa-step .aa-btn{margin-left:auto}}
+@media(prefers-reduced-motion:reduce){.aa-card,.aa-btn,.aa-pulse{transition:none!important;animation:none!important}}
