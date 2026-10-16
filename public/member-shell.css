@@ -1,0 +1,111 @@
+
+/* Setter Circle member experience — navigation shell v2 */
+#memberAppNav{display:none}
+body.member-shell-active:not(.member-focus-mode) #memberAppNav{display:flex}
+#memberAppNav{position:fixed;inset:0 auto 0 0;width:254px;height:100dvh;z-index:180;flex-direction:column;background:#090d0d;border-right:1px solid #222d29;color:#eaf1e9;font-family:Inter,system-ui,sans-serif;box-sizing:border-box}
+#memberAppNav *,#memberAppNav *:before,#memberAppNav *:after{box-sizing:border-box}
+#memberAppNav .member-nav-brand{display:flex;align-items:center;gap:11px;padding:27px 20px 23px;border-bottom:1px solid #1d2824}
+#memberAppNav .member-nav-brand img{width:34px;height:34px;object-fit:contain}
+#memberAppNav .member-nav-brand b{font-size:11px;letter-spacing:.105em;line-height:1.5}
+#memberAppNav .member-nav-brand b span{color:#9ad1a4}
+#memberAppNav .member-nav-brand small{display:block;color:#708078;font-size:9px;letter-spacing:.17em;margin-top:4px}
+#memberAppNav .member-nav-caption{margin:27px 21px 12px;font-size:9px;letter-spacing:.22em;font-weight:800;color:#6e7e74}
+#memberAppNav .member-nav-main{display:flex;flex-direction:column;gap:4px;padding:0 12px}
+#memberAppNav button{font-family:inherit}
+#memberAppNav .member-nav-item{appearance:none;background:transparent;border:1px solid transparent;color:#9faea4;display:flex;align-items:center;text-align:left;gap:13px;border-radius:11px;padding:13px 13px;width:100%;font-size:12px;font-weight:650;cursor:pointer;transition:background .16s,border-color .16s,color .16s}
+#memberAppNav .member-nav-item:hover,#memberAppNav .member-nav-item:focus-visible{background:#151e19;color:#f1faf2;outline:none}
+#memberAppNav .member-nav-item.is-active{background:#17251c;border-color:#294733;color:#d9f4dc}
+#memberAppNav .member-nav-item svg{height:18px;width:18px;flex:none;stroke:currentColor;stroke-width:1.8;fill:none;stroke-linecap:round;stroke-linejoin:round}
+#memberAppNav .member-nav-item.is-active svg{stroke:#79cb91}
+#memberAppNav .member-nav-footer{margin-top:auto;padding:18px 12px 22px;border-top:1px solid #1d2824}
+#memberAppNav .member-nav-footer p{margin:0 12px 14px;color:#748379;font-size:11px;line-height:1.6}
+#memberAppNav .member-nav-mobile-more,#memberAppNav .member-nav-more-panel{display:none}
+body.member-shell-active:not(.member-focus-mode) #accountModal{display:block;background:#080c0b;padding:0;overflow:hidden}
+body.member-shell-active:not(.member-focus-mode) #accountModal.hidden{display:none!important}
+body.member-shell-active:not(.member-focus-mode) #accountModal .accountbox.memberbox{width:calc(100% - 254px);max-width:none;height:100dvh;max-height:100dvh;margin:0 0 0 254px;background:#080c0b;border:0;border-radius:0;padding:0;box-shadow:none;overflow-y:auto;overscroll-behavior:contain}
+body.member-shell-active:not(.member-focus-mode) #accountModal .accountbox.memberbox>div:first-child{display:none!important}
+body.member-shell-active:not(.member-focus-mode) #profilePanel{width:min(1200px,100%);margin:0 auto;padding:43px 52px 90px}
+body.member-shell-active:not(.member-focus-mode) #workspace{z-index:145!important;padding:46px 52px 90px 306px;background:#080c0b;overscroll-behavior:contain}
+body.member-shell-active:not(.member-focus-mode) #workspace .workspaceinner{width:min(1160px,100%);max-width:none}
+body.member-shell-active:not(.member-focus-mode) #workspace .workhead{align-items:flex-start;gap:20px;margin-bottom:28px;padding-bottom:19px;border-bottom:1px solid #213028}
+body.member-shell-active:not(.member-focus-mode) #workspace .workhead h2{font-size:clamp(26px,3vw,38px)!important;line-height:1.12;letter-spacing:-.035em}
+body.member-shell-active:not(.member-focus-mode) #workspace .workhead>button{background:#141c17;border-color:#2b4031;border-radius:10px;font-size:11px}
+body.member-shell-active:not(.member-focus-mode) .memberhero{padding:0 0 20px;border-color:#26342a}
+body.member-shell-active:not(.member-focus-mode) .memberhero h2{font-size:clamp(25px,3vw,37px)}
+body.member-shell-active:not(.member-focus-mode) .memberhero .eyebrow{font-size:10px;color:#79bd89}
+body.member-shell-active:not(.member-focus-mode) .accountstats{max-width:680px;gap:10px;margin:24px 0}
+body.member-shell-active:not(.member-focus-mode) .accountstat{background:#101713;border:1px solid #223629;padding:16px}
+body.member-shell-active:not(.member-focus-mode) .accountstat b{color:#a8daa9}
+body.member-shell-active:not(.member-focus-mode) .todaycard{border-color:#315a3f;background:linear-gradient(120deg,#152a1d,#0e1512 70%);box-shadow:none;padding:29px;border-radius:18px}
+body.member-shell-active:not(.member-focus-mode) .todaycard:after{background:radial-gradient(circle,rgba(111,196,130,.10),transparent 70%)}
+body.member-shell-active:not(.member-focus-mode) .todaycard h2{font-size:clamp(23px,3vw,32px);line-height:1.15}
+body.member-shell-active:not(.member-focus-mode) .todaycard .btn{background:#b8e3bc;border-color:#b8e3bc;color:#0b170f;border-radius:10px;min-height:42px}
+body.member-shell-active:not(.member-focus-mode) .pathstrip,
+body.member-shell-active:not(.member-focus-mode) .dashsection,
+body.member-shell-active:not(.member-focus-mode) .essentialgrid,
+body.member-shell-active:not(.member-focus-mode) .explorebar,
+body.member-shell-active:not(.member-focus-mode) .exploretools{display:none!important}
+body.member-shell-active:not(.member-focus-mode) .membergrid.slimdash{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:22px}
+body.member-shell-active:not(.member-focus-mode) .membercard{background:#101612;border-color:#25382b;border-radius:16px}
+body.member-shell-active:not(.member-focus-mode) .memberfooter{border-top:1px solid #22302a;margin-top:23px;padding-top:20px}
+.member-shell-quick-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin:30px 0 13px}
+.member-shell-quick-head h3{font-size:20px;letter-spacing:-.03em;margin:3px 0}
+.member-shell-quick-head span{font-size:11px;color:#8d9e93}
+.member-shell-quick-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:11px}
+.member-shell-quick-card{display:flex;flex-direction:column;align-items:flex-start;text-align:left;gap:10px;min-height:137px;padding:18px;border:1px solid #28372e;border-radius:15px;background:#101612;color:#ebf4ed;cursor:pointer;transition:transform .14s,border-color .14s,background .14s}
+.member-shell-quick-card:hover,.member-shell-quick-card:focus-visible{transform:translateY(-2px);border-color:#548460;background:#15231a;outline:none}
+.member-shell-quick-card .quick-icon{display:grid;place-items:center;width:34px;height:34px;border-radius:10px;background:#1b3123;color:#8dce9a}
+.member-shell-quick-card .quick-icon svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.member-shell-quick-card strong{font-size:14px}
+.member-shell-quick-card small{font-size:10px;color:#98a99c;line-height:1.4}
+.member-shell-section-intro{margin:0 0 20px;padding:17px 20px;background:#122019;border:1px solid #294435;border-radius:13px;color:#b5ccba;font-size:12px;line-height:1.65}
+.member-shell-section-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
+.member-shell-feature{padding:24px;border:1px solid #293b2f;border-radius:17px;background:#101812;display:flex;flex-direction:column;align-items:flex-start;text-align:left;gap:9px;color:#edf7ef;cursor:pointer;min-height:168px;transition:background .15s,border-color .15s,transform .15s}
+.member-shell-feature:hover,.member-shell-feature:focus-visible{outline:none;background:#18281d;border-color:#598b68;transform:translateY(-2px)}
+.member-shell-feature .member-feature-icon{display:flex;align-items:center;justify-content:center;width:38px;height:38px;background:#1c3324;border-radius:11px;color:#96d5a0;margin-bottom:7px}
+.member-shell-feature .member-feature-icon svg{height:20px;width:20px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.member-shell-feature strong{font-size:16px;letter-spacing:-.015em}
+.member-shell-feature span{color:#9caf9f;font-size:12px;line-height:1.5}
+.member-shell-feature em{color:#acdcb0;font-size:11px;font-style:normal;font-weight:650;margin-top:auto;padding-top:12px}
+.member-workplace-frame{border:1px solid #2b4835;border-radius:16px;overflow:hidden;background:#0a100c}
+.member-workplace-frame iframe{display:block;width:100%;height:min(80dvh,950px);min-height:620px;border:0;background:#0b100d}
+body.member-shell-active:not(.member-focus-mode) .member-mobile-heading{display:none}
+@media(max-width:1050px){
+ body.member-shell-active:not(.member-focus-mode) #profilePanel{padding:35px 27px 90px}
+ body.member-shell-active:not(.member-focus-mode) #workspace{padding:38px 25px 80px 279px}
+ .member-shell-quick-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:720px){
+ body.member-shell-active:not(.member-focus-mode) #memberAppNav{inset:auto 0 0 0;width:100%;height:73px;flex-direction:row;align-items:stretch;justify-content:stretch;border-top:1px solid #243b2c;border-right:0;background:#0b120e;box-shadow:0 -8px 35px #0008;z-index:180}
+ #memberAppNav .member-nav-brand,#memberAppNav .member-nav-caption,#memberAppNav .member-nav-footer{display:none!important}
+ #memberAppNav .member-nav-main{flex:1;display:flex;flex-direction:row;justify-content:space-around;padding:5px 5px max(5px,env(safe-area-inset-bottom));gap:2px}
+ #memberAppNav .member-nav-item{min-width:0;flex:1;flex-direction:column;gap:3px;justify-content:center;border-radius:9px;padding:5px 2px;font-size:9px;letter-spacing:0;line-height:1.2;text-align:center}
+ #memberAppNav .member-nav-item svg{height:19px;width:19px}
+ #memberAppNav .member-nav-desktop-extra{display:none!important}
+ #memberAppNav .member-nav-mobile-more{display:flex}
+ #memberAppNav .member-nav-more-panel{display:none;position:absolute;bottom:81px;right:10px;left:10px;padding:13px;border:1px solid #31513a;background:#101b14;border-radius:15px;box-shadow:0 15px 40px #000a;gap:5px;flex-direction:column}
+ #memberAppNav .member-nav-more-panel.is-open{display:flex}
+ #memberAppNav .member-nav-more-panel .member-nav-item{display:flex;flex-direction:row;justify-content:flex-start;padding:14px 15px;font-size:12px;text-align:left}
+ body.member-shell-active:not(.member-focus-mode) #accountModal .accountbox.memberbox{width:100%;margin:0;height:100dvh;max-height:100dvh}
+ body.member-shell-active:not(.member-focus-mode) #profilePanel{padding:26px 15px 110px}
+ body.member-shell-active:not(.member-focus-mode) #workspace{padding:25px 14px 112px;z-index:145!important}
+ body.member-shell-active:not(.member-focus-mode) .memberhero{align-items:flex-start;flex-direction:column;gap:13px}
+ body.member-shell-active:not(.member-focus-mode) .accountstats{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+ body.member-shell-active:not(.member-focus-mode) .accountstat{padding:12px 8px}
+ body.member-shell-active:not(.member-focus-mode) .accountstat b{font-size:19px}
+ body.member-shell-active:not(.member-focus-mode) .accountstat span{font-size:9px;letter-spacing:0}
+ body.member-shell-active:not(.member-focus-mode) .todaycard{padding:20px 15px}
+ body.member-shell-active:not(.member-focus-mode) .membergrid.slimdash{grid-template-columns:1fr}
+ body.member-shell-active:not(.member-focus-mode) #workspace .workhead{gap:10px;flex-direction:column}
+ body.member-shell-active:not(.member-focus-mode) #workspace .workhead>button{padding:10px 12px}
+ .member-shell-quick-grid,.member-shell-section-grid{grid-template-columns:1fr 1fr;gap:9px}
+ .member-shell-quick-card{min-height:123px;padding:13px}
+ .member-shell-quick-card strong{font-size:12px}
+ .member-shell-feature{min-height:155px;padding:15px}
+ .member-shell-feature strong{font-size:13px}
+ .member-shell-feature span{font-size:11px}
+ .member-shell-feature em{font-size:10px}
+ .member-workplace-frame iframe{height:75dvh;min-height:490px}
+}
+@media(max-width:380px){.member-shell-section-grid{grid-template-columns:1fr}.member-shell-feature{min-height:126px}}
+@media(prefers-reduced-motion:reduce){.member-shell-quick-card,.member-shell-feature,#memberAppNav .member-nav-item{transition:none!important}}
