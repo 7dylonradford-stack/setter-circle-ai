@@ -43,6 +43,7 @@ function decorateWorkspace(title){
  const ws=$('workspace'), content=$('workContent');
  if(!ws||!content)return;
  ws.classList.remove('module-page','workplace-page','roleplay-page');
+ ws.classList.toggle('member-root-page',sectionTitles.has(title));
  const isAcademy=title==='Setter Academy';
  if(isAcademy)ws.classList.add('module-page');
  ws.scrollTop=0;
@@ -84,7 +85,7 @@ if(typeof originalRoleplay==='function'){
   if(prefill)return result;
   const ws=$('workspace'), content=$('workContent');
   if(!ws||ws.classList.contains('hidden')||!content)return result;
-  ws.classList.remove('module-page','workplace-page');
+  ws.classList.remove('module-page','workplace-page','member-root-page');
   ws.classList.add('roleplay-page');
   $('workEyebrow').textContent='PRACTICE / AI ROLEPLAY LAB';
   $('workTitle').textContent='Choose your training scenario';
@@ -110,7 +111,7 @@ if(typeof origWorkplace==='function'){
   const result=origWorkplace.apply(this,arguments);
   const ws=$('workspace'),frame=ws?.querySelector('.member-workplace-frame');
   if(!ws||!frame)return result;
-  ws.classList.remove('module-page','roleplay-page');
+  ws.classList.remove('module-page','roleplay-page','member-root-page');
   ws.classList.add('workplace-page');
   const bar=document.createElement('div');
   bar.className='member-workplace-toolbar';
