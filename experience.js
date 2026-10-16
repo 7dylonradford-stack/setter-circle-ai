@@ -133,6 +133,41 @@ export function registerExperience(app, client, requireAdmin) {
 
 
   // Self-service content editor: only administrator-approved testimonials are public.
+  // Founder portraits are resized client-side and stored in Postgres rather than on Render's ephemeral filesystem.
+  const allowedSlots=new Set(["dylon","amar"]);
+  app.get("/api/experience/photo/:slot",async(req,res)=>{
+    if(!allowedSlots.has(req.params.slot))return reject(res,404,"Image not found");
+    if(!pool)return reject(res,503,"Photo storage unavailable");
+    try{
+      const r=await q("SELECT media_type,photo FROM experience_photos WHERE slot=$1",[req.params.slot]);
+      const p=r.rows[0];if(!p)return reject(res,404,"No photo uploaded");
+      res.set("Content-Type",p.media_type);
+      res.set("Cache-Control","public, max-age=3600");
+      res.set("X-Content-Type-Options","nosniff");
+      res.send(p.photo);
+    }catch(error){console.error("Founder photo read failed",error?.message);reject(res,503,"Could not load photo");}
+  });
+  app.post("/api/admin/experience/photo/:slot",requireAdmin,async(req,res)=>{
+    const slot=String(req.params.slot||"");
+    if(!allowedSlots.has(slot))return reject(res,400,"Unknown founder");
+    if(!pool)return reject(res,503,"Photo storage is currently unavailable");
+    const value=String(req.body?.image||"");
+    const match=/^data:image\/(webp|jpeg|png);base64,([A-Za-z0-9+/=]+)$/.exec(value);
+    if(!match)return reject(res,400,"Upload a JPEG, PNG or WebP photo");
+    const mime="image/"+match[1],photo=Buffer.from(match[2],"base64");
+    if(photo.length<100 || photo.length>750000)return reject(res,413,"Please use an image smaller than 750KB after resizing");
+    const isJpeg=photo.subarray(0,3).equals(Buffer.from([0xff,0xd8,0xff]));
+    const isPng=photo.subarray(0,8).equals(Buffer.from([137,80,78,71,13,10,26,10]));
+    const isWebp=photo.subarray(0,4).toString("ascii")==="RIFF"&&photo.subarray(8,12).toString("ascii")==="WEBP";
+    if(!(mime==="image/jpeg"&&isJpeg||mime==="image/png"&&isPng||mime==="image/webp"&&isWebp))return reject(res,400,"The uploaded image format is invalid");
+    const url="/api/experience/photo/"+slot+"?v="+Date.now();
+    try{
+      await q("INSERT INTO experience_photos(slot,media_type,photo,updated_at) VALUES($1,$2,$3,NOW()) ON CONFLICT(slot) DO UPDATE SET media_type=$2,photo=$3,updated_at=NOW()",[slot,mime,photo]);
+      await q("INSERT INTO experience_content(content_key,data,updated_at) VALUES('public',$1::jsonb,NOW()) ON CONFLICT(content_key) DO UPDATE SET data=experience_content.data || $1::jsonb,updated_at=NOW()",[JSON.stringify({[slot+"_photo"]:url})]);
+      res.set("Cache-Control","no-store").json({ok:true,url});
+    }catch(error){console.error("Founder photo upload failed",error?.message);reject(res,503,"Could not save the uploaded photo");}
+  });
+
   const contentLimits = {
     dylon_bio:2000,amar_bio:2000,
     dylon_photo:1500,amar_photo:1500,dylon_video_url:1500,amar_video_url:1500,
@@ -160,7 +195,7 @@ export function registerExperience(app, client, requireAdmin) {
     const data={};
     for(const [key,limit] of Object.entries(contentLimits)){
       const input=clean(req.body?.[key],limit);
-      data[key]=key.endsWith("_photo")||key.endsWith("_url")?safeUrl(input):input;
+      data[key]=key.endsWith("_photo") && /^\/api\/experience\/photo\/(dylon|amar)\?v=\d{10,17}$/.test(input) ? input : (key.endsWith("_photo")||key.endsWith("_url")?safeUrl(input):input);
     }
     for(let i=1;i<=3;i++) data["testimonial_"+i+"_approved"] = req.body?.["testimonial_"+i+"_approved"]===true;
     try {
