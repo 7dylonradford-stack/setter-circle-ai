@@ -1,7 +1,7 @@
 
 import crypto from "node:crypto";
 import {q} from "./db.js";
-const id=x=>/^[0-9a-f-]{36}$/i.test(String(x||""));
+const id=x=>/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(x||""));
 const cut=(x,n=800)=>String(x??"").trim().slice(0,n);
 const bad=(res,e)=>{console.error("Community studio",e?.message);res.status(500).json({error:"Community service temporarily unavailable"})};
 const when=x=>{const d=new Date(x);return Number.isNaN(d.getTime())?null:d};
