@@ -27,6 +27,11 @@
     if(icon)icon.innerHTML=soundIcon(soundOn);
   });
  }
+ window.addEventListener('storage',e=>{
+  if(e.key!==AUDIO_PREF)return;
+  soundOn=e.newValue!=='off';
+  updateSoundControls();
+ });
  function soundToggle(){
   soundOn=!soundOn;
   try{localStorage.setItem(AUDIO_PREF,soundOn?'on':'off')}catch(e){}
