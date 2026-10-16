@@ -31,13 +31,25 @@
   if(e.key!==AUDIO_PREF)return;
   soundOn=e.newValue!=='off';
   updateSoundControls();
+  window.dispatchEvent(new CustomEvent('setter:sound-change',{detail:{enabled:soundOn}}));
  });
  function soundToggle(){
   soundOn=!soundOn;
   try{localStorage.setItem(AUDIO_PREF,soundOn?'on':'off')}catch(e){}
   updateSoundControls();
+  window.dispatchEvent(new CustomEvent('setter:sound-change',{detail:{enabled:soundOn}}));
   if(soundOn)playBubble(true);
  }
+ window.setterCircleToggleSound=soundToggle;
+ window.setterCircleSoundEnabled=()=>soundOn;
+ window.setterCircleAudioContext=function(){
+  if(!soundOn||!AudioEngine)return null;
+  try{
+   if(!audio)audio=new AudioEngine();
+   if(audio.state==='suspended')audio.resume().catch(()=>{});
+   return audio;
+  }catch(e){return null}
+ };
  function buildSoundButton(mobile,extra){
   const btn=document.createElement('button');
   btn.type='button';
