@@ -112,6 +112,27 @@ e.preventDefault();var b=$('leadSubmit');b.disabled=true;$('leadStatus').textCon
 try{var result=await post('/api/experience/enquiry',{name:$('leadName').value,email:$('leadEmail').value,goal:$('leadGoal').value,website:$('website').value,contact_consent:$('contactConsent').checked,marketing_consent:$('marketingConsent').checked});$('leadStatus').textContent=result.message||'Enquiry sent.';$('leadForm').reset();track('enquiry_submitted');}
 catch(err){$('leadStatus').textContent=err.message+' Alternatively message us on Instagram.';}finally{b.disabled=false;}
 });
+
+function validLink(value){try{var url=new URL(value);return ['https:','http:'].indexOf(url.protocol)!==-1?url.href:null;}catch(e){return null;}}
+fetch('/api/experience/content').then(function(r){return r.json();}).then(function(data){
+var c=data.content||{},founders=document.querySelectorAll('.founder');
+[['dylon',founders[0]],['amar',founders[1]]].forEach(function(item){
+var p=item[0],card=item[1];if(!card)return;
+if(c[p+'_bio'])card.querySelector('p').textContent=c[p+'_bio'];
+var photo=validLink(c[p+'_photo']);
+if(photo){var portrait=document.createElement('img');portrait.src=photo;portrait.alt=p==='dylon'?'Dylon portrait':'Amar portrait';portrait.loading='lazy';portrait.style.cssText='width:68px;height:68px;object-fit:cover;border-radius:14px;border:1px solid #47634b';card.querySelector('.initials').replaceWith(portrait);}
+var video=validLink(c[p+'_video_url']);
+if(video){var area=card.querySelector('.placeholder');area.textContent='';var link=document.createElement('a');link.href=video;link.target='_blank';link.rel='noopener noreferrer';link.textContent='Watch introduction ↗';area.appendChild(link);}
+});
+var cards=document.querySelectorAll('.testimonial-grid .quote');
+for(var i=1;i<=3;i++){var prefix='testimonial_'+i+'_',card=cards[i-1];
+if(!card||!c[prefix+'approved']||!c[prefix+'name']||!c[prefix+'text'])continue;
+card.querySelector('strong').textContent=c[prefix+'name'];card.querySelector('p').textContent='“'+c[prefix+'text']+'”';card.querySelector('.placeholder').classList.add('hidden');
+}
+var booking=validLink(c.booking_url);
+if(booking){var link=document.createElement('a');link.href=booking;link.target='_blank';link.rel='noopener noreferrer';link.className='btn';link.textContent='Book a call with Amar ↗';link.style.margin='0 12px 12px 0';var contact=$('instagramContact');contact.parentNode.insertBefore(link,contact);var note=contact.parentNode.querySelector('.small.muted');if(note)note.textContent='You can also request a conversation by email using the form.';link.addEventListener('click',function(){track('contact_clicked');});}
+}).catch(function(){});
+
 })();
 </script>
 </body>
