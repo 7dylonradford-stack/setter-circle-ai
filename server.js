@@ -2,6 +2,8 @@ import express from "express";
 import OpenAI from "openai";
 import crypto from "crypto";
 import path from "path";
+import {readFileSync} from "node:fs";
+import {registerRoleplayReplay} from "./roleplay-replay-routes.js";
 import { fileURLToPath } from "url";
 import { initDb, q, pool } from "./db.js";
 import { registerExperience } from "./experience.js";
@@ -11,6 +13,7 @@ import { registerCommunityStudio } from "./advanced-community-routes.js";
 import { registerCareerStudio } from "./advanced-career-routes.js";
 import { registerAdvancedAdmin } from "./advanced-admin-routes.js";
 
+const trustedScenarios=JSON.parse(readFileSync(new URL("./trusted-scenarios.json",import.meta.url),"utf8"));
 const app = express();
 // Allow larger JSON only for authenticated image uploads; keep other API payloads small.
 app.use("/api/admin/experience/photo",express.json({limit:"1.5mb"}));
@@ -326,6 +329,11 @@ NON-NEGOTIABLE ROLEPLAY RULES
 - Avoid polished corporate prose and avoid sounding like ChatGPT.
 - Usually 1-3 short sentences. Occasionally one-word/short replies are realistic. Never write essays.
 - Do not overuse "mate", "fair enough", "got you", or any repeated filler.
+- Keep the same character traits, professional incentives, availability, earlier commitments and objections throughout the exchange.
+- Emotional state changes gradually based on the student's actual behavior, not random changes.
+- Remember the prospect's previously stated facts and what information remains undisclosed.
+- Do not reward scripts, shallow questions, flattery or contradictions with easy bookings.
+- On hard difficulties require strong relevance, credibility and genuine discovery; difficulty should not mean abuse.
 - Keep factual continuity perfectly.
 
 CONVERSATION START
@@ -411,7 +419,8 @@ app.post("/api/prospect", requireTrainingAccess, async (req,res)=>{
   const difficulty=Math.max(1,Math.min(4,Number(req.body?.difficulty)||2));
   const requestedIndex=Number(req.body?.preloaded_index);
   if(Number.isInteger(requestedIndex)&&requestedIndex>=0&&requestedIndex<PRELOADED_PROSPECT_COUNT){
-   return res.json({scenario:makePreloadedProspect(requestedIndex,mode,difficulty),source:"preloaded"});
+   const {brief,...visible}=makePreloadedProspect(requestedIndex,mode,difficulty);
+   return res.json({scenario:visible,source:"preloaded"});
   }
   const modeBrief={
    network:"The student is networking in the appointment-setting / remote-sales space. Create a setter, closer, recruiter, sales manager, SDR, AE, sales trainer, founder, team lead or another realistic sales contact.",
@@ -433,8 +442,11 @@ The private brief must contain the personality and hidden reality the student ha
    text:{format:{type:"json_schema",name:"generated_prospect",strict:true,schema:generatedScenarioSchema}}
   });
   const scenario=JSON.parse(g.output_text);
-  scenario.id="generated_"+crypto.randomUUID();
-  res.json({scenario});
+  const prospectId=crypto.randomUUID();
+  scenario.id="generated_"+prospectId;
+  await q("INSERT INTO pending_training_prospects(id,user_id,mode,difficulty,scenario) VALUES($1,$2,$3,$4,$5::jsonb)",[prospectId,req.user.id,mode,difficulty,JSON.stringify(scenario)]);
+  const {brief,...visible}=scenario;
+  res.set("Cache-Control","no-store").json({scenario:visible});
  }catch(e){console.error(e);res.status(500).json({error:"Could not generate prospect"})}
 });
 
@@ -446,10 +458,23 @@ app.get("/api/training/active",requireTrainingAccess,async(req,res)=>{
 });
 app.post("/api/session", requireTrainingAccess, async (req,res)=>{
  try{
-  const {mode,difficulty,scenario}=req.body;
-  if(!scenario?.name) return res.status(400).json({error:"Invalid scenario"});
+  const mode=req.body?.mode,difficulty=Number(req.body?.difficulty);
+  if(!["network","client","role"].includes(mode)||!Number.isInteger(difficulty)||difficulty<1||difficulty>4)return res.status(400).json({error:"Invalid mode or difficulty"});
+  const selected=String(req.body?.scenario?.id||req.body?.scenario_id||"").slice(0,100);
+  let scenario=null;
+  const preloaded=selected.match(/^preloaded_(network|client|role)_(\d{1,3})$/);
+  if(preloaded&&preloaded[1]===mode&&Number(preloaded[2])<PRELOADED_PROSPECT_COUNT){
+   scenario=makePreloadedProspect(Number(preloaded[2]),mode,difficulty);
+  }else if(/^generated_[0-9a-f-]{36}$/i.test(selected)){
+   const pendingId=selected.slice("generated_".length);
+   const pending=await q("DELETE FROM pending_training_prospects WHERE id=$1 AND user_id=$2 AND mode=$3 AND difficulty=$4 AND expires_at>NOW() RETURNING scenario",[pendingId,req.user.id,mode,difficulty]);
+   scenario=pending.rows[0]?.scenario||null;
+  }else{
+   scenario=trustedScenarios[mode]?.find(x=>x.id===selected)||null;
+  }
+  if(!scenario?.name||!scenario?.brief)return res.status(400).json({error:"Prospect unavailable. Choose a new one."});
   const id=crypto.randomUUID();
-  const createdSession={user_id:req.user.id,mode,difficulty:Math.max(1,Math.min(4,difficulty||2)),scenario,transcript:[{role:"prospect",text:scenario.opening}],state:{trust:45,interest:45,patience:80},responseId:null,created:Date.now()};
+  const createdSession={user_id:req.user.id,mode,difficulty,scenario,transcript:[{role:"prospect",text:scenario.opening}],state:{trust:45,interest:45,patience:80},responseId:null,created:Date.now()};
   await storeTrainingSession(id,createdSession);sessions.set(id,createdSession);
   res.json({session_id:id});
  }catch(e){res.status(500).json({error:"Could not create session"})}
@@ -619,7 +644,7 @@ ${s.transcript.map(x=>`${x.role.toUpperCase()}: ${x.text}`).join("\n")}`;
   const words=studentTurns.map(x=>String(x).trim().split(/\s+/).filter(Boolean).length),totalWords=words.reduce((a,b)=>a+b,0),avgWords=studentTurns.length?Math.round(totalWords/studentTurns.length):0;
   const questions=studentTurns.filter(x=>String(x).includes("?")).length,questionRate=studentTurns.length?Math.round(questions/studentTurns.length*100):0;
   const longTurns=words.filter(x=>x>=35).length,conciseRate=studentTurns.length?Math.round((studentTurns.length-longTurns)/studentTurns.length*100):0;
-  const objectionMoments=s.transcript.filter(x=>x.role==="prospect"||x.role==="assistant"&&/not interested|already|expensive|busy|no time|send.*info|think about|not sure|don't need|dont need/i.test(x.text)).length;
+  const objectionMoments=s.transcript.filter(x=>(x.role==="prospect"||x.role==="assistant")&&/not interested|already (?:have|got|use)|expensive|too much|busy|no time|send.*info|think about|not sure|don't need|dont need|not a priority|can't afford|cant afford/i.test(String(x.text))).length;
   const pressureFlags=studentTurns.filter(x=>/guarantee|definitely|must|need to book|just book|trust me|no brainer/i.test(x)).length;
   data.conversation_intelligence={student_turns:studentTurns.length,total_words:totalWords,avg_words_per_turn:avgWords,question_rate:questionRate,concise_turn_rate:conciseRate,objection_moments:objectionMoments,pressure_flags:pressureFlags};
   data.replay_markers=(data.message_feedback||[]).map((x,i)=>({turn:i+1,rating:x.rating,label:x.rating==="weak"?"COACHING MOMENT":x.rating==="strong"?"STRONG MOMENT":"REVIEW",student_text:x.student_text,feedback:x.feedback,better_line:x.better_line}));
@@ -681,6 +706,7 @@ app.put("/api/workplace/progress",requireTrainingAccess,async(req,res)=>{
  }catch(e){console.error("Workplace progress save",e);res.status(503).json({error:"Could not save progress"})}
 });
 registerPlatformRoutes(app,{requireUser,requireAdmin});
+registerRoleplayReplay(app,{requireUser,client});
 registerAdvancedTraining(app,{requireUser,client});
 registerCommunityStudio(app,{requireUser,requireAdmin});
 registerCareerStudio(app,{requireUser,requireAdmin});
