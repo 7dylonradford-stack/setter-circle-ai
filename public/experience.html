@@ -113,7 +113,7 @@ try{var result=await post('/api/experience/enquiry',{name:$('leadName').value,em
 catch(err){$('leadStatus').textContent=err.message+' Alternatively message us on Instagram.';}finally{b.disabled=false;}
 });
 
-function validLink(value){try{var url=new URL(value);return ['https:','http:'].indexOf(url.protocol)!==-1?url.href:null;}catch(e){return null;}}
+function validLink(value){try{var url=new URL(value,location.origin);return ['https:','http:'].indexOf(url.protocol)!==-1?url.href:null;}catch(e){return null;}}
 fetch('/api/experience/content').then(function(r){return r.json();}).then(function(data){
 var c=data.content||{},founders=document.querySelectorAll('.founder');
 [['dylon',founders[0]],['amar',founders[1]]].forEach(function(item){
