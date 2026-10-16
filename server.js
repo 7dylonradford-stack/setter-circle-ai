@@ -5,6 +5,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { initDb, q, pool } from "./db.js";
 import { registerExperience } from "./experience.js";
+import { registerPlatformRoutes } from "./platform-routes.js";
 
 const app = express();
 // Allow larger JSON only for authenticated image uploads; keep other API payloads small.
@@ -24,6 +25,29 @@ async function requireTrainingAccess(req,res,next){
 app.post("/api/access", (req,res)=>res.status(410).json({error:"Shared access has been retired. Sign in with your Setter Circle account."}));
 const client = new OpenAI({apiKey: process.env.OPENAI_API_KEY});
 const sessions = new Map();
+
+const SESSION_TTL=12*60*60*1000;
+const liveSessionId=v=>/^[0-9a-f]{8}-[0-9a-f-]{27,36}$/i.test(String(v||""));
+async function storeTrainingSession(id,s){
+ if(!pool)return;
+ await q("INSERT INTO training_sessions(id,user_id,state,expires_at) VALUES($1,$2,$3::jsonb,NOW()+INTERVAL '12 hours') ON CONFLICT(id) DO UPDATE SET state=$3::jsonb,expires_at=NOW()+INTERVAL '12 hours',updated_at=NOW()",[id,s.user_id,JSON.stringify(s)]);
+}
+async function loadTrainingSession(id,user){
+ if(!liveSessionId(id))return null;
+ const existing=sessions.get(id);
+ if(existing){
+  if(String(existing.user_id)!==String(user.id)||Date.now()-existing.created>SESSION_TTL)return null;
+  return existing;
+ }
+ if(!pool)return null;
+ const r=await q("SELECT state FROM training_sessions WHERE id=$1 AND user_id=$2 AND expires_at>NOW()",[id,user.id]);
+ if(!r.rows[0])return null;
+ const s=r.rows[0].state;
+ if(Date.now()-s.created>SESSION_TTL)return null;
+ sessions.set(id,s);return s;
+}
+async function closeTrainingSession(id,user){sessions.delete(id);if(pool)await q("DELETE FROM training_sessions WHERE id=$1 AND user_id=$2",[id,user.id])}
+
 function hashToken(t){return crypto.createHash("sha256").update(t).digest("hex")}
 function hashPassword(p,salt=crypto.randomBytes(16).toString("hex")){return salt+":"+crypto.scryptSync(String(p),salt,64).toString("hex")}
 function verifyPassword(p,stored){const [salt,key]=String(stored).split(":");if(!salt||!key)return false;const got=crypto.scryptSync(String(p),salt,64);const want=Buffer.from(key,"hex");return got.length===want.length&&crypto.timingSafeEqual(got,want)}
@@ -172,7 +196,7 @@ app.get("/api/skills",requireUser,async(req,res)=>{
  const ranked=Object.entries(out).filter(([,v])=>v!==null).sort((a,b)=>a[1]-b[1]);
  res.json({skills:out,weakest:ranked[0]?.[0]||null,strongest:ranked.at(-1)?.[0]||null});
 });
-app.get("/api/progression",requireUser,async(req,res)=>{const r=await q("SELECT scores,overall_score FROM simulation_results WHERE user_id=$1 ORDER BY created_at DESC LIMIT 30",[req.user.id]);const reps=r.rows.length,avg=reps?Math.round(r.rows.reduce((a,x)=>a+x.overall_score,0)/reps):0;const stages=[{id:"foundations",name:"Foundations",need:0},{id:"discovery",name:"Discovery",need:3},{id:"objections",name:"Objections",need:8},{id:"qualification",name:"Qualification",need:15},{id:"advanced",name:"Advanced Conversations",need:25},{id:"elite",name:"Elite Setter",need:40}];res.json({reps,average:avg,stages:stages.map(x=>({...x,unlocked:reps>=x.need})),next:stages.find(x=>reps<x.need)||null})});
+app.get("/api/progression",requireUser,async(req,res)=>{const r=await q("SELECT scores,overall_score FROM simulation_results WHERE user_id=$1 ORDER BY created_at DESC",[req.user.id]);const reps=r.rows.length,avg=reps?Math.round(r.rows.reduce((a,x)=>a+x.overall_score,0)/reps):0;const stages=[{id:"foundations",name:"Foundations",need:0},{id:"discovery",name:"Discovery",need:3},{id:"objections",name:"Objections",need:8},{id:"qualification",name:"Qualification",need:15},{id:"advanced",name:"Advanced Conversations",need:25},{id:"elite",name:"Elite Setter",need:40}];res.json({reps,average:avg,stages:stages.map(x=>({...x,unlocked:reps>=x.need})),next:stages.find(x=>reps<x.need)||null})});
 app.post("/api/practice/weakness",requireUser,async(req,res)=>{const r=await q("SELECT scores FROM simulation_results WHERE user_id=$1 ORDER BY created_at DESC LIMIT 30",[req.user.id]);const keys=["conversational_awareness","rapport","discovery","qualification","objection_handling","positioning","cta","naturalness"],avgs={};for(const k of keys){const v=r.rows.map(x=>Number(x.scores?.[k])).filter(Number.isFinite);avgs[k]=v.length?v.reduce((a,b)=>a+b,0)/v.length:50}const weak=Object.entries(avgs).sort((a,b)=>a[1]-b[1])[0][0],mode=["rapport","naturalness"].includes(weak)?"network":["discovery","positioning"].includes(weak)?"client":"role",scenario=makePreloadedProspect(Math.abs([...weak].reduce((a,c)=>a+c.charCodeAt(0),0))%PRELOADED_PROSPECT_COUNT,mode,3);scenario.objective="Targeted practice: improve "+weak.replaceAll("_"," ")+". "+scenario.objective;scenario.brief+=" Privately create at least one natural opportunity to test "+weak.replaceAll("_"," ")+", but never tell the student the test.";res.json({weakness:weak,mode,difficulty:3,scenario})});
 const interviewSchema={type:"object",additionalProperties:false,properties:{score:{type:"integer",minimum:0,maximum:100},communication:{type:"integer",minimum:0,maximum:100},commercial_awareness:{type:"integer",minimum:0,maximum:100},coachability:{type:"integer",minimum:0,maximum:100},strengths:{type:"array",items:{type:"string"},maxItems:4},improvements:{type:"array",items:{type:"string"},maxItems:4},verdict:{type:"string"}},required:["score","communication","commercial_awareness","coachability","strengths","improvements","verdict"]};
 const interviewSessions=new Map();
@@ -196,9 +220,9 @@ app.post("/api/interview/message",requireUser,async(req,res)=>{
   }catch(e){
    console.error("Interview evaluation AI failed:",e?.status,e?.code,e?.message);
    const answers=x.history.filter(h=>h.role==="candidate").map(h=>h.text),words=answers.join(" ").trim().split(/\s+/).filter(Boolean).length;
-   const score=Math.max(45,Math.min(78,50+Math.round(words/18)));
+   const score=null;
    interviewSessions.delete(req.body.session_id);
-   return res.json({complete:true,review:{score,communication:score,commercial_awareness:Math.max(40,score-5),coachability:score,strengths:["Completed the full mock interview","Gave direct answers under interview conditions"],improvements:["Use specific examples and measurable evidence","Show clearer understanding of setter KPIs and qualification","Structure scenario answers as action, reasoning and outcome"],verdict:"Mock interview completed. AI scoring was temporarily unavailable, so this is a basic fallback review rather than a full AI assessment."}});
+   return res.json({complete:true,review:{score,communication:null,commercial_awareness:null,coachability:null,strengths:["Completed the full mock interview","Gave direct answers under interview conditions"],improvements:["Use specific examples and measurable evidence","Show clearer understanding of setter KPIs and qualification","Structure scenario answers as action, reasoning and outcome"],verdict:"Mock interview completed. AI scoring was temporarily unavailable. This interview remains unscored until it can be reviewed."}});
   }
  }
  try{
@@ -414,13 +438,14 @@ app.post("/api/session", requireTrainingAccess, async (req,res)=>{
   const {mode,difficulty,scenario}=req.body;
   if(!scenario?.name) return res.status(400).json({error:"Invalid scenario"});
   const id=crypto.randomUUID();
-  sessions.set(id,{mode,difficulty:Math.max(1,Math.min(4,difficulty||2)),scenario,transcript:[{role:"prospect",text:scenario.opening}],state:{trust:45,interest:45,patience:80},responseId:null,created:Date.now()});
+  const createdSession={user_id:req.user.id,mode,difficulty:Math.max(1,Math.min(4,difficulty||2)),scenario,transcript:[{role:"prospect",text:scenario.opening}],state:{trust:45,interest:45,patience:80},responseId:null,created:Date.now()};
+  await storeTrainingSession(id,createdSession);sessions.set(id,createdSession);
   res.json({session_id:id});
  }catch(e){res.status(500).json({error:"Could not create session"})}
 });
 
 app.post("/api/guidance",requireTrainingAccess,async(req,res)=>{
- const ss=sessions.get(req.body.session_id);if(!ss)return res.status(404).json({error:"Session expired"});
+ const ss=await loadTrainingSession(req.body.session_id,req.user);if(!ss)return res.status(404).json({error:"Session expired"});
  const message=String(req.body.message||"").trim().slice(0,1200);if(!message)return res.status(400).json({error:"Empty message"});
  try{
   const last=[...ss.transcript].reverse().find(x=>x.role==="prospect")?.text||ss.scenario.opening;
@@ -441,7 +466,7 @@ Return JSON only.`;
 });
 
 app.post("/api/voice/transcribe",requireTrainingAccess,async(req,res)=>{try{
- const session=sessions.get(req.query.session_id);if(!session)return res.status(404).json({error:"Session expired"});
+ const session=await loadTrainingSession(req.query.session_id,req.user);if(!session)return res.status(404).json({error:"Session expired"});
  const chunks=[];let total=0;req.on("data",c=>{total+=c.length;if(total<=8*1024*1024)chunks.push(c)});req.on("end",async()=>{try{
   if(total>8*1024*1024)return res.status(413).json({error:"Voice clip is too large"});
   const type=String(req.headers["content-type"]||"audio/webm").split(";")[0],ext=type.includes("mp4")?"m4a":type.includes("ogg")?"ogg":type.includes("wav")?"wav":"webm";
@@ -457,7 +482,7 @@ app.post("/api/voice/speak",requireTrainingAccess,async(req,res)=>{try{
  const buf=Buffer.from(await speech.arrayBuffer());res.setHeader("Content-Type","audio/mpeg");res.setHeader("Cache-Control","no-store");res.send(buf);
  }catch(e){console.error("Voice speech failed",e?.status,e?.code,e?.message);res.status(500).json({error:"Voice playback unavailable"})}});
 app.post("/api/message", requireTrainingAccess, async (req,res)=>{
- const s=sessions.get(req.body.session_id);
+ const s=await loadTrainingSession(req.body.session_id,req.user);
  if(!s)return res.status(404).json({error:"Session expired"});
  const message=String(req.body.message||"").slice(0,2500);
  if(!message.trim())return res.status(400).json({error:"Empty message"});
@@ -519,6 +544,7 @@ ${s.transcript.map(x=>`${x.role.toUpperCase()}: ${x.text}`).join("\n")}`;
    });
    const evaluation=JSON.parse(ev.output_text);
    s.state={trust:evaluation.trust,interest:evaluation.interest,patience:evaluation.patience};
+   await storeTrainingSession(req.body.session_id,s);
    res.json({prospect_reply:prospectReply,evaluation});
  }catch(e){
    console.error(e);
@@ -550,7 +576,7 @@ const debriefSchema={
 };
 
 app.post("/api/debrief", requireTrainingAccess, async(req,res)=>{
- const s=sessions.get(req.body.session_id);
+ const s=await loadTrainingSession(req.body.session_id,req.user);
  if(!s)return res.status(404).json({error:"Session expired"});
  try{
   const prompt=`Act as a demanding senior appointment-setting coach reviewing a completed roleplay.
@@ -575,11 +601,11 @@ ${s.transcript.map(x=>`${x.role.toUpperCase()}: ${x.text}`).join("\n")}`;
    text:{format:{type:"json_schema",name:"session_debrief",strict:true,schema:debriefSchema}}
   });
   const data=JSON.parse(r.output_text);
-  const studentTurns=s.transcript.filter(x=>x.role==="user").map(x=>x.text);
+  const studentTurns=s.transcript.filter(x=>x.role==="student"||x.role==="user").map(x=>x.text);
   const words=studentTurns.map(x=>String(x).trim().split(/\s+/).filter(Boolean).length),totalWords=words.reduce((a,b)=>a+b,0),avgWords=studentTurns.length?Math.round(totalWords/studentTurns.length):0;
   const questions=studentTurns.filter(x=>String(x).includes("?")).length,questionRate=studentTurns.length?Math.round(questions/studentTurns.length*100):0;
   const longTurns=words.filter(x=>x>=35).length,conciseRate=studentTurns.length?Math.round((studentTurns.length-longTurns)/studentTurns.length*100):0;
-  const objectionMoments=s.transcript.filter(x=>x.role==="assistant"&&/not interested|already|expensive|busy|no time|send.*info|think about|not sure|don't need|dont need/i.test(x.text)).length;
+  const objectionMoments=s.transcript.filter(x=>x.role==="prospect"||x.role==="assistant"&&/not interested|already|expensive|busy|no time|send.*info|think about|not sure|don't need|dont need/i.test(x.text)).length;
   const pressureFlags=studentTurns.filter(x=>/guarantee|definitely|must|need to book|just book|trust me|no brainer/i.test(x)).length;
   data.conversation_intelligence={student_turns:studentTurns.length,total_words:totalWords,avg_words_per_turn:avgWords,question_rate:questionRate,concise_turn_rate:conciseRate,objection_moments:objectionMoments,pressure_flags:pressureFlags};
   data.replay_markers=(data.message_feedback||[]).map((x,i)=>({turn:i+1,rating:x.rating,label:x.rating==="weak"?"COACHING MOMENT":x.rating==="strong"?"STRONG MOMENT":"REVIEW",student_text:x.student_text,feedback:x.feedback,better_line:x.better_line}));
@@ -593,7 +619,7 @@ ${s.transcript.map(x=>`${x.role.toUpperCase()}: ${x.text}`).join("\n")}`;
    const unlock=[];if(stats.rows[0].reps>=1)unlock.push("FIRST_REP");if(stats.rows[0].reps>=10)unlock.push("TEN_REPS");if(stats.rows[0].reps>=50)unlock.push("FIFTY_REPS");if(stats.rows[0].best>=80)unlock.push("SCORE_80");if(stats.rows[0].best>=90)unlock.push("SCORE_90");
    for(const code of unlock)await q("INSERT INTO achievements(user_id,code) VALUES($1,$2) ON CONFLICT DO NOTHING",[user.id,code]);
   }
-  sessions.delete(req.body.session_id); res.json(data);
+  await closeTrainingSession(req.body.session_id,req.user); res.json(data);
  }catch(e){console.error(e);res.status(500).json({error:"Debrief failed"})}
 });
 
@@ -640,6 +666,7 @@ app.put("/api/workplace/progress",requireTrainingAccess,async(req,res)=>{
   res.json({ok:true});
  }catch(e){console.error("Workplace progress save",e);res.status(503).json({error:"Could not save progress"})}
 });
+registerPlatformRoutes(app,{requireUser,requireAdmin});
 registerExperience(app,client,requireAdmin);
 app.get("/{*splat}",(req,res)=>res.sendFile(path.join(__dirname,"public","index.html")));
 const port=process.env.PORT||3000;
