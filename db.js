@@ -102,6 +102,7 @@ export async function initDb(){
    submitted_at TIMESTAMPTZ NOT NULL DEFAULT NOW(), reviewed_at TIMESTAMPTZ
  );
  CREATE INDEX IF NOT EXISTS mentor_submissions_user ON mentor_submissions(user_id,submitted_at DESC);
+ ALTER TABLE mentor_submissions ADD COLUMN IF NOT EXISTS acknowledged_at TIMESTAMPTZ;
  CREATE TABLE IF NOT EXISTS weekly_reviews(
    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
    week_start DATE NOT NULL, review JSONB NOT NULL,
