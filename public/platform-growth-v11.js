@@ -292,7 +292,7 @@ if(typeof originalOpen==='function')window.openAccount=async function(){const r=
 const originalLoad=window.loadAccount;
 if(typeof originalLoad==='function')window.loadAccount=async function(){const r=await originalLoad.apply(this,arguments);if(!$('profilePanel')?.classList.contains('hidden')){dashboardSummary();enableAdmin()}return r};
 Object.assign(window,{
- showAcademy:academy,showProgramme:programme,showWeeklyReview:weeklyReview,showOpportunities:jobBoard,showPerformanceLab:performance,showPersonalCoach:coachPlan,
+ showAcademy:academy,openAcademyLesson:async(id)=>{await academy();if(lessons.some(l=>l.id===id))lessonView(id);},showProgramme:programme,showWeeklyReview:weeklyReview,showOpportunities:jobBoard,showPerformanceLab:performance,showPersonalCoach:coachPlan,
  showMentorDesk:mentorDesk,showFinalAssessment:assessment,showAdminLessonStudio:adminStudio,showAdminMentorDesk:mentorAdmin
 });
 document.addEventListener('click',async e=>{
