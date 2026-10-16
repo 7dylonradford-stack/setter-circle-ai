@@ -134,7 +134,7 @@ export function registerExperience(app, client, requireAdmin) {
 
   // Self-service content editor: only administrator-approved testimonials are public.
   const contentLimits = {
-    dylon_bio:350,amar_bio:350,
+    dylon_bio:2000,amar_bio:2000,
     dylon_photo:1500,amar_photo:1500,dylon_video_url:1500,amar_video_url:1500,
     booking_url:1500,
     testimonial_1_name:100,testimonial_1_text:600,
