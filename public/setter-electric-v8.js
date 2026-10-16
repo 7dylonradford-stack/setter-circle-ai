@@ -14,7 +14,9 @@
  let audio=null,lastSound=0,seed=0;
  const AudioEngine=window.AudioContext||window.webkitAudioContext;
  const controls=[];
- const soundIcon=(on)=>on?'◖))':'◖×';
+ const soundIcon=(on)=>on
+ ? '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4V5ZM15 9a5 5 0 0 1 0 6M18 6a9 9 0 0 1 0 12"/></svg>'
+ : '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4V5ZM17 9l5 6M22 9l-5 6"/></svg>';
  function updateSoundControls(){
   controls.forEach(btn=>{
     btn.setAttribute('aria-pressed',String(soundOn));
@@ -22,7 +24,7 @@
     btn.setAttribute('title',soundOn?'Mute interaction sounds':'Enable interaction sounds');
     const label=btn.querySelector('.sc-sound-caption'),icon=btn.querySelector('.sc-sound-icon');
     if(label)label.textContent=soundOn?'Sound on':'Sound off';
-    if(icon)icon.textContent=soundIcon(soundOn);
+    if(icon)icon.innerHTML=soundIcon(soundOn);
   });
  }
  function soundToggle(){
