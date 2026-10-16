@@ -680,4 +680,4 @@ registerPlatformRoutes(app,{requireUser,requireAdmin});
 registerExperience(app,client,requireAdmin);
 app.get("/{*splat}",(req,res)=>res.sendFile(path.join(__dirname,"public","index.html")));
 const port=process.env.PORT||3000;
-initDb().catch(console.error).finally(()=>app.listen(port,()=>console.log(`Setter Circle AI running on ${port}`)));
+initDb().then(()=>app.listen(port,()=>console.log(`Setter Circle AI running on ${port}`))).catch(e=>{console.error('Database migration failed; refusing to start uninitialized API',e);process.exitCode=1;});
