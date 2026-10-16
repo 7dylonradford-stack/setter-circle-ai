@@ -23,31 +23,31 @@ file:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6
 const svg=name=>'<svg aria-hidden="true" viewBox="0 0 24 24">'+(icons[name]||icons.arrow)+'</svg>';
 const names={dashboard:'Dashboard',academy:'Academy',practice:'Practice',progress:'Progress',career:'Career',community:'Community'};
 const sections={
-academy:{title:'Learn with a clear plan',summary:'Your foundations, lessons and structured 40-day action plan live together here.',cards:[
-['academy','Setter Academy','Build the fundamentals through your training modules.','showAcademy','View lessons'],
-['calendar','40-Day Programme','Complete the daily activities that turn learning into action.','showProgramme','Open roadmap'],
-['file','Resources & Playbooks','Practical frameworks and guides to support your development.','showResources','Explore resources']]},
-practice:{title:'Train for real conversations',summary:'Practise, receive feedback and develop the skills required for actual setter work.',cards:[
-['practice','AI Roleplay Lab','Choose a scenario, test your conversation skills and review your feedback.','openAIStage','Start AI training'],
-['career','Virtual Workplace','Handle simulated leads, manage a CRM, book calls and complete shift reviews.','workplace','Enter workplace'],
-['coach','Mock Interview','Practise answering questions from a simulated hiring manager.','startInterview','Start interview'],
-['academy','Conversation Clinic','Learn from realistic conversation problems and common mistakes.','showConversationClinic','Open clinic'],
-['calendar','Pre-Shift Checklist','Check your preparation before your next practice session.','showPreShift','Get ready']]},
-progress:{title:'Know exactly how you are improving',summary:'All your feedback, development evidence and recommended next steps in one place.',cards:[
-['progress','Performance Lab','Review detailed behaviour and roleplay performance.','showPerformanceLab','See analysis'],
-['coach','Personal AI Coach','Get a recommended training focus based on your results.','showPersonalCoach','View recommendation'],
-['file','Results Vault','Review your training records and completed milestones.','showResultsVault','View evidence'],
-['calendar','Weekly Review','Reflect on your activity, actions and consistency.','showWeeklyReview','Open review'],
-['trophy','Progression Path','See which development stages you have unlocked.','showProgression','See pathway']]},
-career:{title:'Prepare for your next opportunity',summary:'Build your profile, practise interviews and work towards real opportunities as they become available.',cards:[
-['career','Setter Profile','Present the skills and evidence you have developed.','showSetterProfile','Open profile'],
-['progress','Placement Path','See the milestones between training and job readiness.','showPlacementPath','View pathway'],
-['academy','Setter Opportunities','Browse any currently shared roles and opportunities.','showOpportunities','Explore roles'],
-['coach','Interview Preparation','Build confidence before speaking to employers.','startInterview','Practice interview']]},
-community:{title:'Stay connected and accountable',summary:'Community tools, friendly competition and member resources.',cards:[
-['trophy','Weekly Leaderboard','See the weekly training leaderboard.','showLeaderboard','View rankings'],
-['calendar','Referral Challenge','Open your daily member referral challenge.','showReferralChallenge','View challenge'],
-['file','Member Resources','Explore practical guides for your development.','showResources','Browse guides']]}
+academy:{eyebrow:'LEARNING',summary:'Build your foundations, follow the 40-day roadmap and keep useful resources close.',cards:[
+['academy','Training library','Core modules, practical lessons and essential setter skills.','showAcademy','Explore lessons'],
+['calendar','40-Day Programme','A clear daily roadmap from learning to real-world execution.','showProgramme','Open roadmap'],
+['file','Playbooks & resources','Frameworks, objection guides and practical reference materials.','showResources','Browse resources']]},
+practice:{eyebrow:'YOUR TRAINING GROUND',summary:'Realistic situations. Better conversations. Skills you can use on the job.',cards:[
+['practice','AI Roleplay Lab','Practice conversations with adaptive fictional prospects.','openAIStage','Start roleplay'],
+['career','Virtual Workplace','Handle prospects, CRM tasks, bookings and shift reporting.','workplace','Enter workplace'],
+['coach','Mock Interview','Practise hiring questions before a real interview.','startInterview','Start interview'],
+['academy','Conversation Clinic','Learn from common mistakes and improve your replies.','showConversationClinic','Enter clinic'],
+['calendar','Pre-Shift Checklist','Prepare for a productive practice session.','showPreShift','Open checklist']]},
+progress:{eyebrow:'YOUR DEVELOPMENT',summary:'Track your performance, understand your strongest skills and know what to practise next.',cards:[
+['progress','Performance Lab','Visual breakdowns of your simulations and skills.','showPerformanceLab','Review results'],
+['coach','Personal AI Coach','Targeted suggestions based on your training history.','showPersonalCoach','Open coach'],
+['file','Results Vault','Your completed training and evidence of progress.','showResultsVault','View your evidence'],
+['calendar','Weekly Review','Reflect, review and plan your next actions.','showWeeklyReview','Open review'],
+['trophy','Progression Path','Track your stages from foundation to job readiness.','showProgression','View your path']]},
+career:{eyebrow:'ROLE READINESS',summary:'Build credible skills, prepare for interviews and explore shared opportunities.',cards:[
+['career','Setter Profile','Your personal training record and professional profile.','showSetterProfile','View profile'],
+['progress','Placement Path','Your progression towards becoming role ready.','showPlacementPath','View your path'],
+['academy','Opportunities','Browse roles shared with Setter Circle students.','showOpportunities','Explore roles'],
+['coach','Interview Preparation','Practise with a simulated hiring manager.','startInterview','Prepare now']]},
+community:{eyebrow:'THE COMMUNITY',summary:'Learn alongside other members, celebrate progress and stay connected.',cards:[
+['trophy','Weekly Leaderboard','See how members are getting on this week.','showLeaderboard','View leaderboard'],
+['calendar','Referral Challenge','Your daily member referral challenge.','showReferralChallenge','View challenge'],
+['file','Member Resources','Guides and tools to help you keep developing.','showResources','Open resources']]}
 };
 let currentSection='dashboard';
 const item=(id,extra)=>'<button type="button" class="member-nav-item '+(extra||'')+'" data-member-section="'+id+'" aria-label="'+names[id]+'">'+svg(id)+'<span>'+names[id]+'</span></button>';
@@ -102,8 +102,17 @@ function viewDashboard(){
 function showSection(id){
  const s=sections[id];if(!s)return viewDashboard();
  setActive(id);
- const cards=s.cards.map(c=>'<button type="button" class="member-shell-feature" data-member-action="'+c[3]+'"><span class="member-feature-icon">'+svg(c[0])+'</span><strong>'+c[1]+'</strong><span>'+c[2]+'</span><em>'+c[4]+' →</em></button>').join('');
- window.openWorkspace(names[id],s.summary,'<div class="member-shell-section-intro">'+s.title+'</div><div class="member-shell-section-grid">'+cards+'</div>','THE SETTER CIRCLE · '+names[id].toUpperCase());
+ const cards=s.cards.map((c,i)=>
+  '<button type="button" class="member-root-card '+(i===0?'is-featured':'')+'" data-member-action="'+c[3]+'" aria-label="'+c[4]+': '+c[1]+'">'+
+  '<span class="member-root-card-icon">'+svg(c[0])+'</span>'+
+  '<span class="member-root-card-copy"><strong>'+c[1]+'</strong><span>'+c[2]+'</span></span>'+
+  '<span class="member-root-card-arrow" aria-hidden="true">'+svg('arrow')+'</span>'+
+  '</button>').join('');
+ const markup='<div class="member-root-main">'+
+  '<div class="member-root-label"><span class="member-root-label-dot"></span><span>EXPLORE '+names[id].toUpperCase()+'</span><span class="member-root-count">'+String(s.cards.length).padStart(2,'0')+' SPACES</span></div>'+
+  '<div class="member-root-grid">'+cards+'</div>'+
+  '<div class="member-root-footnote"><span class="member-root-footnote-mark">SC /</span> Built for progress, not just information.</div></div>';
+ window.openWorkspace(names[id],s.summary,markup,'MEMBER PLATFORM / '+s.eyebrow);
 }
 window.memberGo=function(id){if(id==='dashboard')viewDashboard();else if(sections[id])showSection(id)};
 window.memberOpenWorkplace=function(){
