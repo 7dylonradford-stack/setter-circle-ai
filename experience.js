@@ -196,9 +196,9 @@ export function registerExperience(app, client, requireAdmin) {
     dylon_bio:2000,amar_bio:2000,dylon_photo_x:3,dylon_photo_y:3,amar_photo_x:3,amar_photo_y:3,
     dylon_photo:1500,amar_photo:1500,dylon_video_url:1500,amar_video_url:1500,
     booking_url:1500,
-    testimonial_1_name:100,testimonial_1_text:600,
-    testimonial_2_name:100,testimonial_2_text:600,
-    testimonial_3_name:100,testimonial_3_text:600
+    testimonial_1_name:100,testimonial_1_text:600,testimonial_1_instagram:150,
+    testimonial_2_name:100,testimonial_2_text:600,testimonial_2_instagram:150,
+    testimonial_3_name:100,testimonial_3_text:600,testimonial_3_instagram:150
   };
   const safeUrl = value => {
     if (!value) return "";
@@ -234,6 +234,7 @@ export function registerExperience(app, client, requireAdmin) {
       const input=clean(req.body?.[key],limit);
       data[key]=key.endsWith("_photo") && /^\/api\/experience\/photo\/(dylon|amar)\?v=\d{10,17}$/.test(input) ? input : (key.endsWith("_photo")||key.endsWith("_url")?safeUrl(input):input);
     }
+    for(let i=1;i<=3;i++){const k="testimonial_"+i+"_instagram",v=String(data[k]||"").trim().replace(/^@/,"");if(v){const m=v.match(/^(?:https?:\/\/(?:www\.)?instagram\.com\/)?([A-Za-z0-9._]{1,30})\/?(?:\?.*)?$/i);data[k]=m?"https://www.instagram.com/"+m[1]+"/":"";}}
     for(let i=1;i<=3;i++) data["testimonial_"+i+"_approved"] = req.body?.["testimonial_"+i+"_approved"]===true;
     try {
       await q("INSERT INTO experience_content(content_key,data,updated_at) VALUES('public',$1::jsonb,NOW()) ON CONFLICT(content_key) DO UPDATE SET data=$1::jsonb,updated_at=NOW()",[JSON.stringify(data)]);
