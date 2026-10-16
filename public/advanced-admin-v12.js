@@ -72,13 +72,14 @@ async function renderOutcomeQueue(){
   const d=await api("/api/advanced/admin/outcomes");outcomes=d.outcomes||[];
   let html=section("QUALITY / EVIDENCE","Reported career outcomes","Approve only after checking convincing independent evidence and consent.");
   html+='<div class="aa-grid">'+outcomes.map(x=>'<div class="aa-panel"><span class="aa-overline">'+esc(x.student_name)+' · '+esc(x.status)+'</span><h3>'+esc(x.role_title)+'</h3><p>'+esc(x.company)+'</p><p>Public consent: '+(x.published_consent?"Yes":"No")+'</p>'+
+   textArea("aaVerification_"+x.id,"VERIFICATION NOTE","Record the evidence checked and the basis for your decision.")+
    '<div class="aa-actions">'+btn("aa-verify-outcome","Verified",'data-id="'+esc(x.id)+'"')+btn("aa-reject-outcome","Reject",'data-id="'+esc(x.id)+'"')+'</div></div>').join("")+'</div>';
   view("Outcome Verification","Accountable human verification.",html,"ADMIN / VERIFICATION");
  });
 }
 action("aa-admin-outcomes",renderOutcomeQueue);
-action("aa-verify-outcome",async b=>{await api("/api/advanced/admin/outcomes/"+b.dataset.id,json({status:"verified"},"PATCH"));notice("Verified");return renderOutcomeQueue()});
-action("aa-reject-outcome",async b=>{await api("/api/advanced/admin/outcomes/"+b.dataset.id,json({status:"rejected"},"PATCH"));notice("Rejected");return renderOutcomeQueue()});
+action("aa-verify-outcome",async b=>{await api("/api/advanced/admin/outcomes/"+b.dataset.id,json({status:"verified",verification_note:$("aaVerification_"+b.dataset.id)?.value||""},"PATCH"));notice("Verified");return renderOutcomeQueue()});
+action("aa-reject-outcome",async b=>{await api("/api/advanced/admin/outcomes/"+b.dataset.id,json({status:"rejected",verification_note:$("aaVerification_"+b.dataset.id)?.value||""},"PATCH"));notice("Rejected");return renderOutcomeQueue()});
 action("aa-admin-review",async()=>{
  await show("Employer Assessment Reviews","Human review of practical assignments.",async()=>{
   const d=await api("/api/advanced/admin/projects/reviews");submissions=d.reviews||[];
