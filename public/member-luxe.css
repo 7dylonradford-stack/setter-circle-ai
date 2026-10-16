@@ -1,0 +1,323 @@
+
+/* THE SETTER CIRCLE • DESIGN SYSTEM IV
+   Editorial navigation, quiet luxury, restrained motion, mobile first.
+   All rules are scoped to the authenticated member shell.
+*/
+body.member-shell-active{
+ --sc-bg:#080c0a;--sc-surface:#111915;--sc-surface-2:#141e18;
+ --sc-stroke:#29372e;--sc-stroke-strong:#40584a;
+ --sc-text:#edf3ed;--sc-muted:#98a99c;
+ --sc-accent:#a4d3ab;--sc-accent-strong:#c5ebc8;
+ color:var(--sc-text);
+}
+body.member-shell-active:not(.member-focus-mode) #workspace,
+body.member-shell-active:not(.member-focus-mode) #accountModal,
+body.member-shell-active:not(.member-focus-mode) #accountModal .accountbox.memberbox{
+ background:#080c0a!important;
+}
+body.member-shell-active:not(.member-focus-mode) #workspace:before,
+body.member-shell-active:not(.member-focus-mode) #accountModal:before{
+ content:"";position:absolute;inset:0 0 auto 0;height:380px;
+ background:radial-gradient(ellipse 65% 95% at 72% -38%,rgba(63,116,77,.14),transparent 73%);
+ pointer-events:none;z-index:0
+}
+body.member-shell-active:not(.member-focus-mode) #accountModal .accountbox.memberbox{position:relative}
+body.member-shell-active:not(.member-focus-mode) #profilePanel{position:relative;z-index:1}
+body.member-shell-active:not(.member-focus-mode) #workspace .workspaceinner{
+ position:relative;z-index:1;will-change:auto;animation:scPageEnter .30s cubic-bezier(.2,.75,.25,1) both!important
+}
+body.member-shell-active:not(.member-focus-mode) #workspace .workhead{
+ border-bottom-color:#26372b!important;
+}
+body.member-shell-active:not(.member-focus-mode) #workspace .workhead .eyebrow{
+ color:#8daa93!important;letter-spacing:.17em!important;font-size:9px!important;font-weight:800!important
+}
+body.member-shell-active:not(.member-focus-mode) #workspace .workhead h2{
+ color:#f3f6f1!important;letter-spacing:-.052em!important;font-weight:780
+}
+body.member-shell-active:not(.member-focus-mode) #workspace .workhead p{
+ color:#91a093!important;font-size:13px!important;max-width:590px!important
+}
+body.member-shell-active:not(.member-focus-mode) #workspace .workhead>button{
+ display:inline-flex;align-items:center;justify-content:center;gap:7px;
+ font-size:12px!important;font-weight:650!important;
+}
+body.member-shell-active:not(.member-focus-mode) #workspace .workhead>button:active,
+body.member-shell-active:not(.member-focus-mode) #workspace .member-root-card:active,
+body.member-shell-active:not(.member-focus-mode) #workspace .member-shell-feature:active{transform:scale(.986)!important}
+
+/* Root sections: informational banner replaced with understated editorial navigation. */
+body.member-shell-active:not(.member-focus-mode) #workspace.member-root-page .workhead{
+ margin-bottom:23px!important;padding-bottom:22px!important
+}
+body.member-shell-active:not(.member-focus-mode) #workspace.member-root-page #workContent{
+ isolation:auto!important;animation:none!important
+}
+.member-root-main{width:100%;display:flex;flex-direction:column;gap:0;min-width:0}
+.member-root-label{display:flex;align-items:center;gap:9px;padding:0 2px 16px;
+ font-size:10px;font-weight:760;letter-spacing:.15em;color:#8ca98f
+}
+.member-root-label-dot{width:6px;height:6px;border-radius:50%;background:#a5d9ad;
+ box-shadow:0 0 0 4px rgba(150,205,156,.08)
+}
+.member-root-count{margin-left:auto;color:#68826f;letter-spacing:.14em}
+.member-root-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.member-root-card{
+ --delay:0ms;appearance:none;position:relative;
+ width:100%;min-width:0;display:flex;align-items:center;gap:19px;text-align:left;
+ padding:25px 22px;min-height:148px;
+ border:1px solid #2b3e31;border-radius:16px;
+ background:linear-gradient(125deg,#121b15 0%,#0e1410 100%);
+ color:var(--sc-text);cursor:pointer;overflow:hidden;
+ transition:transform .25s cubic-bezier(.2,.75,.2,1),border-color .25s,background .25s,box-shadow .25s;
+ animation:scTileEnter .44s cubic-bezier(.2,.8,.2,1) var(--delay) both;
+}
+.member-root-card:nth-child(2){--delay:55ms}
+.member-root-card:nth-child(3){--delay:95ms}
+.member-root-card:nth-child(4){--delay:135ms}
+.member-root-card:nth-child(5){--delay:175ms}
+.member-root-card:before{
+ content:"";position:absolute;inset:0;border-radius:inherit;
+ background:radial-gradient(circle at -6% 6%,rgba(145,202,149,.07),transparent 55%);
+ pointer-events:none
+}
+.member-root-card.is-featured{
+ grid-column:span 2;min-height:170px;
+ border-color:#3c5d43;
+ background:linear-gradient(112deg,#192b1e,#101a13 57%,#0e1410)
+}
+.member-root-card.is-featured:after{
+ content:"";position:absolute;right:-100px;top:-180px;
+ width:430px;height:430px;border-radius:50%;
+ background:radial-gradient(circle,rgba(145,204,149,.10),transparent 69%);pointer-events:none
+}
+.member-root-card:hover{border-color:#678d70;background:#192a1e;
+ transform:translateY(-3px);box-shadow:0 12px 32px rgba(0,0,0,.15)
+}
+.member-root-card:focus-visible{outline:2px solid #b6e7bc;outline-offset:3px}
+.member-root-card-icon{width:52px;height:52px;flex:0 0 52px;display:grid;place-items:center;
+ border-radius:14px;background:#1e3325;border:1px solid #2f5139;color:#b5dfb9;position:relative;z-index:1
+}
+.member-root-card.is-featured .member-root-card-icon{background:#243d2b;border-color:#385b40}
+.member-root-card-icon svg,.member-root-card-arrow svg{width:23px;height:23px;
+ fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round
+}
+.member-root-card-copy{min-width:0;display:flex;flex-direction:column;gap:7px;position:relative;z-index:1}
+.member-root-card-copy strong{font-size:18px;line-height:1.18;letter-spacing:-.026em;font-weight:770;color:#edf5ee}
+.member-root-card.is-featured .member-root-card-copy strong{font-size:23px;letter-spacing:-.038em}
+.member-root-card-copy>span{font-size:12px;color:#99ab9c;line-height:1.57;max-width:550px}
+.member-root-card-arrow{display:grid;place-items:center;width:31px;height:31px;flex:0 0 31px;
+ margin-left:auto;border:1px solid #2c4433;border-radius:50%;color:#88b895;position:relative;z-index:1;
+ transition:transform .25s,background .25s,border-color .25s
+}
+.member-root-card-arrow svg{width:15px;height:15px}
+.member-root-card:hover .member-root-card-arrow{transform:translateX(3px);border-color:#6f9f79;background:#243a29;color:#caefcc}
+.member-root-footnote{margin-top:22px;padding:16px 4px;border-top:1px solid #1e3025;
+ display:flex;align-items:center;gap:12px;color:#6d8573;font-size:11px;letter-spacing:.02em
+}
+.member-root-footnote-mark{font-size:10px;letter-spacing:.16em;font-weight:820;color:#a2c4aa}
+
+/* Sidebar / touch navigation */
+#memberAppNav{background:linear-gradient(180deg,#0a100d,#090e0b 65%,#0b120e)!important;border-color:#24352a!important}
+#memberAppNav .member-nav-brand{padding:26px 23px!important;border-bottom:1px solid #203127!important}
+#memberAppNav .member-nav-brand img{width:39px;height:39px;border:1px solid #304b38;border-radius:12px;background:#15221a;object-fit:contain}
+#memberAppNav .member-nav-brand b{color:#e8f3e9;font-size:11px;letter-spacing:.10em}
+#memberAppNav .member-nav-brand small{color:#6a8b73;font-size:9px}
+#memberAppNav .member-nav-caption{color:#66836d;margin:29px 22px 13px}
+#memberAppNav .member-nav-main{gap:4px;padding:0 10px}
+#memberAppNav .member-nav-item{
+ border-radius:11px;transition:color .2s,background .2s,border-color .2s,transform .2s!important;
+ font-weight:650;color:#879c8e
+}
+#memberAppNav .member-nav-item:hover{background:#16221a;color:#edf6ec}
+#memberAppNav .member-nav-item.is-active{
+ color:#eaf6e9!important;border:1px solid #36533c!important;
+ background:linear-gradient(100deg,#1d3223,#142219)!important
+}
+#memberAppNav .member-nav-item.is-active svg{stroke:#a5dbaf!important}
+#memberAppNav .member-nav-footer{border-color:#26372b}
+#memberAppNav .member-nav-footer p{font-size:11px;color:#79907d}
+#memberAppNav .member-nav-more-panel .member-nav-item.is-active{border-color:#42694b!important}
+
+/* Dashboard has one distinct focal point and lighter details */
+body.member-shell-active:not(.member-focus-mode) .memberhero{border:0;padding-bottom:6px}
+body.member-shell-active:not(.member-focus-mode) .memberhero h2{
+ color:#f5f7f3;font-size:clamp(27px,3.5vw,42px);font-weight:760;letter-spacing:-.055em
+}
+body.member-shell-active:not(.member-focus-mode) .memberhero .eyebrow{letter-spacing:.18em;color:#88b390;font-size:10px}
+body.member-shell-active:not(.member-focus-mode) .memberhero #accountWelcome{color:#78917e}
+body.member-shell-active:not(.member-focus-mode) #roleReady{background:#15251b;border:1px solid #3a5540;color:#a8d9ac}
+body.member-shell-active:not(.member-focus-mode) .accountstats{margin:15px 0 22px;max-width:none;grid-template-columns:repeat(3,minmax(0,1fr))}
+body.member-shell-active:not(.member-focus-mode) .accountstat{
+ background:#101813;border:1px solid #273b2d;border-radius:13px;padding:17px 18px
+}
+body.member-shell-active:not(.member-focus-mode) .accountstat b{color:#e6f0e5;font-size:24px;letter-spacing:-.04em;font-weight:770}
+body.member-shell-active:not(.member-focus-mode) .accountstat span{color:#719079;letter-spacing:.11em;font-size:10px}
+body.member-shell-active:not(.member-focus-mode) .todaycard{
+ background:linear-gradient(114deg,#1b3323,#101f17 58%,#0d1510)!important;
+ border:1px solid #45654a!important;border-radius:20px!important;
+ padding:30px 32px!important;box-shadow:0 15px 45px #0002!important
+}
+body.member-shell-active:not(.member-focus-mode) .todaycard:after{width:370px;height:370px;right:-145px;top:-200px;background:radial-gradient(circle,rgba(138,204,146,.12),transparent 67%)}
+body.member-shell-active:not(.member-focus-mode) .todaycard h2{color:#edf6ed;font-weight:780;letter-spacing:-.043em}
+body.member-shell-active:not(.member-focus-mode) .todaycard .eyebrow{color:#addab5}
+body.member-shell-active:not(.member-focus-mode) .todaycard p{color:#a5bbaa;font-size:13px}
+body.member-shell-active:not(.member-focus-mode) .todaycard .btn{
+ background:#b8e6bb!important;color:#102217!important;border-radius:11px;
+ font-size:11px;letter-spacing:.04em;transition:transform .18s,background .18s,box-shadow .18s
+}
+body.member-shell-active:not(.member-focus-mode) .todaycard .btn:hover{transform:translateY(-2px);background:#d1f3d1!important;box-shadow:0 8px 26px #0004}
+body.member-shell-active:not(.member-focus-mode) .todaycard .textlink{color:#aed2b4}
+body.member-shell-active:not(.member-focus-mode) .todaybadge{background:#233a29;border:1px solid #4d7556;color:#bbdfc1}
+body.member-shell-active:not(.member-focus-mode) .member-shell-quick-head{margin:29px 0 15px}
+body.member-shell-active:not(.member-focus-mode) .member-shell-quick-head h3{font-size:21px;letter-spacing:-.035em}
+body.member-shell-active:not(.member-focus-mode) .member-shell-quick-head span{color:#78917e}
+body.member-shell-active:not(.member-focus-mode) .member-shell-quick-card{
+ background:linear-gradient(145deg,#141d17,#0e1410)!important;border:1px solid #2e4234;
+ box-shadow:none!important;min-height:147px;padding:20px;gap:11px;border-radius:16px;
+ animation:scTileEnter .46s ease both;
+}
+body.member-shell-active:not(.member-focus-mode) .member-shell-quick-card:nth-child(2){animation-delay:50ms}
+body.member-shell-active:not(.member-focus-mode) .member-shell-quick-card:nth-child(3){animation-delay:100ms}
+body.member-shell-active:not(.member-focus-mode) .member-shell-quick-card:nth-child(4){animation-delay:150ms}
+body.member-shell-active:not(.member-focus-mode) .member-shell-quick-card .quick-icon{background:#213729;color:#b1ddb6;border-radius:11px}
+body.member-shell-active:not(.member-focus-mode) .member-shell-quick-card strong{font-size:15px;color:#eaf3eb;letter-spacing:-.02em}
+body.member-shell-active:not(.member-focus-mode) .member-shell-quick-card small{font-size:11px;color:#8fa693}
+body.member-shell-active:not(.member-focus-mode) .member-shell-quick-card:hover{background:#192b20!important;border-color:#729779;transform:translateY(-3px)}
+body.member-shell-active:not(.member-focus-mode) .membergrid.slimdash{gap:12px;margin-top:23px}
+body.member-shell-active:not(.member-focus-mode) .membergrid.slimdash .membercard{
+ border:1px solid #273b30!important;background:#111a14!important;padding:22px;border-radius:16px
+}
+body.member-shell-active:not(.member-focus-mode) .membergrid.slimdash .eyebrow{color:#91bd98}
+body.member-shell-active:not(.member-focus-mode) .membergrid.slimdash .skillrow span{color:#9bb19e}
+body.member-shell-active:not(.member-focus-mode) .membergrid.slimdash .scorebar{background:#253b2b}
+body.member-shell-active:not(.member-focus-mode) .membergrid.slimdash .scorebar i{background:#94c79d}
+body.member-shell-active:not(.member-focus-mode) .memberfooter{border-color:#1f3427}
+
+/* Detailed workspaces: standard scale, restrained surfaces and borders */
+body.member-shell-active:not(.member-focus-mode) #workspace .workitem,
+body.member-shell-active:not(.member-focus-mode) #workspace .membercard{
+ border-radius:16px!important;border-color:#2a3d30!important;background:#111914!important
+}
+body.member-shell-active:not(.member-focus-mode) #workspace .workitem h3{letter-spacing:-.023em}
+body.member-shell-active:not(.member-focus-mode) #workspace .workitem:hover{border-color:#435b49}
+body.member-shell-active:not(.member-focus-mode) #workspace .modulebadge{color:#9ac6a0!important}
+body.member-shell-active:not(.member-focus-mode) #workspace .btn:not(.ghost){background:#b8dfba;color:#102218;border-color:#b8dfba}
+body.member-shell-active:not(.member-focus-mode) #workspace .btn.ghost{background:#162319;border-color:#34513b;color:#c5dec8}
+body.member-shell-active:not(.member-focus-mode) #workspace .member-shell-section-grid{gap:13px}
+body.member-shell-active:not(.member-focus-mode) #workspace .member-shell-feature{border-radius:16px;background:linear-gradient(140deg,#141f17,#0e1511)}
+body.member-shell-active:not(.member-focus-mode) #workspace .member-shell-feature .member-feature-icon{border-radius:12px}
+body.member-shell-active:not(.member-focus-mode) #workspace .member-shell-feature:hover{transform:translateY(-2px);background:#1d3023}
+body.member-shell-active:not(.member-focus-mode) #workspace .pm-track span{background:linear-gradient(90deg,#658a6c,#b4dfbb)}
+body.member-shell-active:not(.member-focus-mode) #workspace .pm-ring{background:conic-gradient(#a8d3ac var(--score),#2a4030 0)}
+/* animation: fade and subtle rise, never continual glows */
+@keyframes scPageEnter{from{opacity:.68;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes scTileEnter{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:none}}
+@media(max-width:1050px){
+ .member-root-grid{gap:10px}
+ .member-root-card{padding:22px 17px;gap:13px}
+}
+@media(max-width:720px){
+ body.member-shell-active:not(.member-focus-mode) #workspace{
+  padding:21px 20px calc(112px + env(safe-area-inset-bottom,0px))!important;
+  scrollbar-gutter:auto
+ }
+ body.member-shell-active:not(.member-focus-mode) #workspace .workspaceinner{animation:scPageEnter .22s ease both!important}
+ body.member-shell-active:not(.member-focus-mode) #workspace .workhead{
+  gap:9px!important;padding:0 0 18px!important;margin:0 0 18px!important
+ }
+ body.member-shell-active:not(.member-focus-mode) #workspace .workhead>button{
+  font-size:12px!important;color:#90bc97!important;margin-bottom:2px;
+  justify-content:flex-start!important
+ }
+ body.member-shell-active:not(.member-focus-mode) #workspace .workhead .eyebrow{font-size:9px!important}
+ body.member-shell-active:not(.member-focus-mode) #workspace .workhead h2{
+  font-size:29px!important;line-height:1.08!important;margin:6px 0 8px!important
+ }
+ body.member-shell-active:not(.member-focus-mode) #workspace .workhead p{
+  font-size:12.5px!important;line-height:1.54!important;color:#9aab9c!important
+ }
+ body.member-shell-active:not(.member-focus-mode) #workspace.member-root-page .workhead{
+  padding-bottom:21px!important;margin-bottom:15px!important
+ }
+ .member-root-label{padding:0 1px 11px;font-size:9px;gap:8px}
+ .member-root-grid{grid-template-columns:1fr;gap:9px}
+ .member-root-card,.member-root-card.is-featured{
+  grid-column:span 1;min-height:96px;padding:17px 15px;gap:14px;border-radius:14px
+ }
+ .member-root-card.is-featured{border-color:#436b4d;background:linear-gradient(110deg,#1b3021,#111c16)}
+ .member-root-card-icon{width:42px;height:42px;flex-basis:42px;border-radius:12px}
+ .member-root-card-icon svg{width:20px;height:20px}
+ .member-root-card-copy{gap:5px}
+ .member-root-card-copy strong,.member-root-card.is-featured .member-root-card-copy strong{
+  font-size:16px;line-height:1.2;letter-spacing:-.024em
+ }
+ .member-root-card-copy>span{font-size:11px;line-height:1.43;color:#91a595}
+ .member-root-card-arrow{width:27px;height:27px;flex-basis:27px}
+ .member-root-card-arrow svg{width:14px;height:14px}
+ .member-root-footnote{margin-top:17px;padding:13px 2px;font-size:10px}
+ body.member-shell-active:not(.member-focus-mode) #memberAppNav{
+  width:auto!important;height:66px!important;
+  left:10px!important;right:10px!important;bottom:calc(8px + env(safe-area-inset-bottom,0px))!important;
+  top:auto!important;border:1px solid #315039!important;border-radius:19px!important;
+  background:rgba(12,21,15,.96)!important;
+  box-shadow:0 8px 45px #000b,0 0 0 1px #0007!important;
+  backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+  overflow:visible
+ }
+ #memberAppNav .member-nav-main{width:100%;gap:1px;padding:4px}
+ #memberAppNav .member-nav-item{
+  font-size:9px!important;gap:3px!important;line-height:1.1;min-width:0;
+  border-radius:13px!important;padding:6px 2px!important;transition:color .15s,background .15s!important
+ }
+ #memberAppNav .member-nav-item svg{width:19px;height:19px}
+ #memberAppNav .member-nav-item.is-active{
+  background:linear-gradient(145deg,#213b29,#16291e)!important;
+  border-color:#42664b!important;color:#e6f6e7!important
+ }
+ #memberAppNav .member-nav-more-panel{
+  bottom:72px!important;left:0!important;right:0!important;
+  border-radius:16px!important;background:rgba(15,26,19,.98)!important;
+  border:1px solid #45634b!important;padding:10px!important;box-shadow:0 10px 50px #000a
+ }
+ #memberAppNav .member-nav-more-panel .member-nav-item{padding:13px!important;font-size:12px!important;gap:11px!important}
+ #memberAppNav .member-nav-more-panel .member-nav-item svg{width:17px;height:17px}
+ body.member-shell-active:not(.member-focus-mode) #profilePanel{
+  padding:24px 18px calc(115px + env(safe-area-inset-bottom,0px))
+ }
+ body.member-shell-active:not(.member-focus-mode) .memberhero h2{font-size:30px}
+ body.member-shell-active:not(.member-focus-mode) .memberhero #roleReady{font-size:9px;letter-spacing:.04em}
+ body.member-shell-active:not(.member-focus-mode) .accountstats{margin:14px 0 18px;gap:7px}
+ body.member-shell-active:not(.member-focus-mode) .accountstat{padding:13px 10px;border-radius:12px}
+ body.member-shell-active:not(.member-focus-mode) .accountstat b{font-size:23px}
+ body.member-shell-active:not(.member-focus-mode) .accountstat span{font-size:9px;letter-spacing:.025em}
+ body.member-shell-active:not(.member-focus-mode) .todaycard{padding:21px 19px!important;border-radius:17px!important}
+ body.member-shell-active:not(.member-focus-mode) .todaycard h2{font-size:25px}
+ body.member-shell-active:not(.member-focus-mode) .todaycard p{font-size:12px}
+ body.member-shell-active:not(.member-focus-mode) .member-shell-quick-head{margin:22px 0 12px}
+ body.member-shell-active:not(.member-focus-mode) .member-shell-quick-head h3{font-size:19px}
+ body.member-shell-active:not(.member-focus-mode) .member-shell-quick-head>span{display:none}
+ body.member-shell-active:not(.member-focus-mode) .member-shell-quick-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+ body.member-shell-active:not(.member-focus-mode) .member-shell-quick-card{
+  padding:15px!important;min-height:132px;border-radius:14px!important
+ }
+ body.member-shell-active:not(.member-focus-mode) .member-shell-quick-card strong{font-size:13px}
+ body.member-shell-active:not(.member-focus-mode) .member-shell-quick-card small{font-size:10px}
+ body.member-shell-active:not(.member-focus-mode) .membergrid.slimdash .membercard{padding:19px}
+ body.member-shell-active:not(.member-focus-mode) #workspace.workplace-page{
+  padding:0 0 calc(84px + env(safe-area-inset-bottom,0px))!important
+ }
+ body.member-shell-active:not(.member-focus-mode) #workspace.workplace-page .workspaceinner{animation:none!important}
+}
+@media(max-width:420px){
+ body.member-shell-active:not(.member-focus-mode) #workspace{padding-left:14px!important;padding-right:14px!important}
+ body.member-shell-active:not(.member-focus-mode) #profilePanel{padding-left:14px;padding-right:14px}
+ .member-root-card{padding:15px 13px}
+ .member-root-card-icon{width:40px;height:40px;flex-basis:40px}
+}
+@media(prefers-reduced-motion:reduce){
+ body.member-shell-active #workspace .workspaceinner,body.member-shell-active .member-root-card,
+ body.member-shell-active .member-shell-quick-card{animation:none!important}
+ body.member-shell-active .member-root-card,body.member-shell-active .member-root-card-arrow,
+ body.member-shell-active #memberAppNav .member-nav-item{transition:none!important}
+}
