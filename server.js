@@ -4,9 +4,11 @@ import crypto from "crypto";
 import path from "path";
 import { fileURLToPath } from "url";
 import { initDb, q, pool } from "./db.js";
+import { registerExperience } from "./experience.js";
 
 const app = express();
 app.use(express.json({limit:"200kb"}));
+app.set("trust proxy",1);
 const accessTokens = new Map();
 const ACCESS_TTL = 1000 * 60 * 60 * 24 * 14;
 function safeEqual(a,b){const aa=Buffer.from(String(a||"")),bb=Buffer.from(String(b||""));return aa.length===bb.length && crypto.timingSafeEqual(aa,bb)}
@@ -593,6 +595,7 @@ ${s.transcript.map(x=>`${x.role.toUpperCase()}: ${x.text}`).join("\n")}`;
  }catch(e){console.error(e);res.status(500).json({error:"Debrief failed"})}
 });
 
+registerExperience(app,client,requireAdmin);
 app.get("/{*splat}",(req,res)=>res.sendFile(path.join(__dirname,"public","index.html")));
 const port=process.env.PORT||3000;
 initDb().catch(console.error).finally(()=>app.listen(port,()=>console.log(`Setter Circle AI running on ${port}`)));
