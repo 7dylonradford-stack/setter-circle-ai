@@ -4,6 +4,7 @@ import crypto from "crypto";
 import path from "path";
 import {readFileSync} from "node:fs";
 import {registerRoleplayReplay} from "./roleplay-replay-routes.js";
+import {calibrateDebrief} from "./scoring-guardrails.js";
 import { fileURLToPath } from "url";
 import { initDb, q, pool } from "./db.js";
 import { registerExperience } from "./experience.js";
@@ -547,7 +548,7 @@ app.post("/api/message", requireTrainingAccess, async (req,res)=>{
    s.transcript.push({role:"student",text:message},{role:"prospect",text:prospectReply});
 
    const evaluatorPrompt=`You are the silent senior evaluator for an appointment-setting roleplay.
-Evaluate ONLY observable behavior in the transcript. Do not reward buzzwords or the mere presence of a question.
+Evaluate ONLY observable behavior in the transcript. Treat gibberish, irrelevant responses, repetition and unearned agreement as very poor performance. Do not reward buzzwords or the mere presence of a question.
 Maintain realistic prospect psychology. Previous state: ${JSON.stringify(s.state)}.
 Difficulty: ${s.difficulty}.
 Student objective: ${s.scenario.objective}.
@@ -574,15 +575,21 @@ should_end is true only if the prospect clearly ended/disengaged, a natural outc
 TRANSCRIPT:
 ${s.transcript.map(x=>`${x.role.toUpperCase()}: ${x.text}`).join("\n")}`;
 
-   const ev=await client.responses.create({
+   let evaluation;
+   try{
+    const ev=await client.responses.create({
      model:process.env.EVALUATOR_MODEL||"gpt-5.6-terra",
      input:evaluatorPrompt,
      reasoning:{effort:"medium"},
      max_output_tokens:500,
      text:{format:{type:"json_schema",name:"live_evaluation",strict:true,schema:evalSchema}}
-   });
-   const evaluation=JSON.parse(ev.output_text);
-   s.state={trust:evaluation.trust,interest:evaluation.interest,patience:evaluation.patience};
+    });
+    evaluation=JSON.parse(ev.output_text);
+    s.state={trust:evaluation.trust,interest:evaluation.interest,patience:evaluation.patience};
+   }catch(err){
+    console.error("Live coaching temporarily unavailable",err?.message);
+    evaluation={...s.state,signals:["Coaching temporarily unavailable"],coach_note:"The prospect replied and your message was saved. Coaching is temporarily unavailable; complete the session for a full review.",should_end:false,evidence:[],unscored:true};
+   }
    await storeTrainingSession(req.body.session_id,s);
    res.json({prospect_reply:prospectReply,evaluation});
  }catch(e){
@@ -622,7 +629,7 @@ app.post("/api/debrief", requireTrainingAccess, async(req,res)=>{
 Score evidence, not outcomes. A booking does not automatically mean a good conversation, and no booking does not automatically mean a bad one.
 Use the entire transcript. Penalize scripted replies that ignore context, shallow discovery, question stacking, premature pitching, unearned CTAs, weak objection handling, unsupported claims, excessive verbosity, needy tone, and failure to listen.
 Reward concise relevance, strong sequencing, genuine curiosity, commercially useful discovery, emotional and logical understanding, good objection diagnosis, appropriate positioning, confident low-pressure progression, and natural language.
-Scores must be calibrated: 50 = weak/average novice, 70 = competent, 85 = excellent, 95+ = exceptional and rare.
+Scores must be calibrated: 50 = weak/average novice, 70 = competent, 85 = excellent, 95+ = exceptional and rare. Do not reward placeholder, incoherent or repeated messages. Skills not meaningfully observed should not be given high grades.
 If a category was not meaningfully tested, score based on what was observable and do not invent evidence.
 Give a "better approach" that explains the strategy and includes 1-2 example lines tailored to the exact moments where the student lost leverage.
 Hidden prospect reality must reveal the private brief after the roleplay.\nFor message_feedback, review every student message in order. Rate each strong, okay or weak, explain the specific effect it had in context, and give a concise stronger line. If the original was already strong, better_line can be a polished alternative rather than pretending it failed.
@@ -639,7 +646,7 @@ ${s.transcript.map(x=>`${x.role.toUpperCase()}: ${x.text}`).join("\n")}`;
    input:prompt, reasoning:{effort:"high"}, max_output_tokens:2200,
    text:{format:{type:"json_schema",name:"session_debrief",strict:true,schema:debriefSchema}}
   });
-  const data=JSON.parse(r.output_text);
+  const data=calibrateDebrief(JSON.parse(r.output_text),s.transcript);
   const studentTurns=s.transcript.filter(x=>x.role==="student"||x.role==="user").map(x=>x.text);
   const words=studentTurns.map(x=>String(x).trim().split(/\s+/).filter(Boolean).length),totalWords=words.reduce((a,b)=>a+b,0),avgWords=studentTurns.length?Math.round(totalWords/studentTurns.length):0;
   const questions=studentTurns.filter(x=>String(x).includes("?")).length,questionRate=studentTurns.length?Math.round(questions/studentTurns.length*100):0;
