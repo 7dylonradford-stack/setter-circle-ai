@@ -131,6 +131,15 @@ export function registerExperience(app, client, requireAdmin) {
     }catch{return reject(res,503,"Analytics are currently unavailable.");}
   });
 
+  // Keep enquiry records only for a bounded retention period, unless a shorter legal requirement applies.
+  const purgeOldEnquiries = async () => {
+    if (!pool) return;
+    try { await q("DELETE FROM experience_leads WHERE created_at < NOW() - INTERVAL '180 days'"); }
+    catch (e) { console.error("Prospect retention cleanup failed", e?.message); }
+  };
+  const retentionCleanup = setInterval(purgeOldEnquiries, 24*60*60*1000);
+  retentionCleanup.unref?.();
+
   // Prevent stale sessions and rate-counter buildup.
   const cleanup=setInterval(()=>{
     const now=Date.now();
