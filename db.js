@@ -30,6 +30,18 @@ export async function initDb(){
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(), UNIQUE(user_id,challenge_date)
  );
  CREATE INDEX IF NOT EXISTS referral_challenges_user_created ON referral_challenges(user_id,created_at DESC);
+ CREATE TABLE IF NOT EXISTS experience_content(
+  content_key TEXT PRIMARY KEY, data JSONB NOT NULL DEFAULT '{}'::jsonb, updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+ );
+ CREATE TABLE IF NOT EXISTS experience_leads(
+  id UUID PRIMARY KEY, name TEXT NOT NULL, email TEXT NOT NULL, goal TEXT NOT NULL DEFAULT '',
+  marketing_consent BOOLEAN NOT NULL DEFAULT FALSE, created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+ );
+ CREATE INDEX IF NOT EXISTS experience_leads_created ON experience_leads(created_at DESC);
+ CREATE TABLE IF NOT EXISTS experience_events(
+  id UUID PRIMARY KEY, event_name TEXT NOT NULL, created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+ );
+ CREATE INDEX IF NOT EXISTS experience_events_created ON experience_events(created_at DESC);
  CREATE TABLE IF NOT EXISTS achievements(
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE, code TEXT NOT NULL,
   unlocked_at TIMESTAMPTZ NOT NULL DEFAULT NOW(), PRIMARY KEY(user_id,code)
