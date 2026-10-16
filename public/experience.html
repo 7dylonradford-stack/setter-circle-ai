@@ -21,6 +21,8 @@ body.experience-topic-open .hero,body.experience-topic-open .strip,body.experien
 /* Before Joining opens directly to the topic cards: no welcome hero or example chat. */
 .hero,.strip{display:none!important}.experience-menu{padding-top:38px}body:not(.experience-topic-open) .experience-menu{display:block}body.experience-topic-open .experience-menu{display:none!important}
 .student-instagram{display:inline-flex;margin-top:18px;padding:11px 14px;border:1px solid #6a925b;border-radius:10px;color:#a6e47e;text-decoration:none;font-weight:750;font-size:13px}.student-instagram:hover{background:#182b19}</style>
+<link rel="stylesheet" href="/setter-electric-v8.css?v=8">
+<link rel="stylesheet" href="/experience-electric-v8.css?v=8">
 </head>
 <body>
 <nav class="nav"><div class="wrap navinner">
@@ -157,5 +159,6 @@ if(booking){var link=document.createElement('a');link.href=booking;link.target='
 </script>
 <script>
 (function(){var ids=["discover","roadmap","demo","training","workplace","programme","founders","stories","faq","enquiry"],menu=document.getElementById('experienceMenu'),back=document.getElementById('experienceBack');function show(id,scroll){if(!ids.includes(id))id='';document.querySelectorAll('.experience-panel').forEach(function(el){el.classList.toggle('is-active',el.dataset.panel===id);});menu.hidden=!!id;back.hidden=!id;document.body.classList.toggle('experience-topic-open',!!id);if(scroll)window.scrollTo({top:0,behavior:'instant'});}document.getElementById('backToExperience').addEventListener('click',function(){history.pushState(null,'',location.pathname);show('',true);});document.querySelectorAll('[data-open-section]').forEach(function(b){b.addEventListener('click',function(){location.hash=b.dataset.openSection;});});window.addEventListener('hashchange',function(){show(location.hash.slice(1),true);});document.querySelectorAll('a[href^="#"]').forEach(function(a){a.addEventListener('click',function(){var id=a.getAttribute('href').slice(1);if(ids.includes(id))setTimeout(function(){show(id,true);},0);});});show(location.hash.slice(1),false);})();
-</script><script>fetch('/api/experience/content',{cache:'no-store'}).then(r=>r.json()).then(d=>{const logo=d.photos&&d.photos.logo;if(logo)document.querySelectorAll('img[src="/setter-logo.svg"]').forEach(img=>{img.src=logo;img.onerror=()=>{img.onerror=null;img.src='/setter-logo.svg';};});}).catch(()=>{});</script></body>
+</script><script>fetch('/api/experience/content',{cache:'no-store'}).then(r=>r.json()).then(d=>{const logo=d.photos&&d.photos.logo;if(logo)document.querySelectorAll('img[src="/setter-logo.svg"]').forEach(img=>{img.src=logo;img.onerror=()=>{img.onerror=null;img.src='/setter-logo.svg';};});}).catch(()=>{});</script><script src="/setter-electric-v8.js?v=8"></script>
+</body>
 </html>
