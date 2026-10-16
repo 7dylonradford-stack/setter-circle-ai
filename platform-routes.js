@@ -137,4 +137,44 @@ export function registerPlatformRoutes(app,{requireUser,requireAdmin}){
    updated_at:r.rows[0].updated_at,disclaimer:"Practice-only automated shift review. Not a hiring credential or mentor approval."});
  }catch(e){sendError(res,e)}});
 
+ // Journey V13: actual account-scoped activity, not synthetic scores or credentials.
+ app.get("/api/member/journey",requireUser,async(req,res)=>{try{
+  const [days,nextLesson,lessons,mentor,pending,session,scores,applications,assessment]=await Promise.all([
+   q("SELECT day FROM programme_progress WHERE user_id=$1 AND completed=TRUE ORDER BY day",[req.user.id]),
+   q("SELECT l.id,l.title,l.module_number FROM training_lessons l LEFT JOIN lesson_progress lp ON lp.lesson_id=l.id AND lp.user_id=$1 WHERE l.published=TRUE AND lp.completed_at IS NULL ORDER BY l.module_number,l.sort_order,l.created_at LIMIT 1",[req.user.id]),
+   q("SELECT COUNT(*)::int total,COUNT(lp.completed_at)::int completed FROM training_lessons l LEFT JOIN lesson_progress lp ON lp.lesson_id=l.id AND lp.user_id=$1 WHERE l.published=TRUE",[req.user.id]),
+   q("SELECT id,subject,feedback FROM mentor_submissions WHERE user_id=$1 AND status='needs_changes' AND feedback IS NOT NULL ORDER BY reviewed_at DESC LIMIT 1",[req.user.id]),
+   q("SELECT COUNT(*)::int pending FROM mentor_submissions WHERE user_id=$1 AND status='pending'",[req.user.id]),
+   q("SELECT id,updated_at FROM training_sessions WHERE user_id=$1 AND expires_at>NOW() ORDER BY updated_at DESC LIMIT 1",[req.user.id]),
+   q("SELECT overall_score FROM simulation_results WHERE user_id=$1 ORDER BY created_at DESC LIMIT 50",[req.user.id]),
+   q("SELECT COUNT(*)::int active FROM job_applications WHERE user_id=$1 AND status IN ('applied','interview','offer','placed')",[req.user.id]),
+   q("SELECT status FROM skill_assessments WHERE user_id=$1 ORDER BY created_at DESC LIMIT 1",[req.user.id])
+  ]);
+  const completed=new Set(days.rows.map(x=>Number(x.day)));
+  const day=Array.from({length:40},(_,i)=>i+1).find(n=>!completed.has(n))||null;
+  const recentReps=scores.rows.length;
+  const recentAverage=recentReps?Math.round(scores.rows.reduce((sum,x)=>sum+Number(x.overall_score||0),0)/recentReps):0;
+  const roleReady=completed.size>=30&&recentReps>=10&&recentAverage>=65;
+  const interviewReady=completed.size>=35&&recentReps>=15&&recentAverage>=70;
+  const stage=interviewReady?"INTERVIEW READY":roleReady?"TRAINING ROLE READY":recentReps>=5?"PRACTISING":completed.size>=5?"LEARNING":"FOUNDATIONS";
+  const state={
+   programme_completed:completed.size,programme_total:40,next_day:day,
+   academy_total:lessons.rows[0]?.total||0,academy_completed:lessons.rows[0]?.completed||0,
+   recent_reps:recentReps,recent_average:recentAverage,stage,
+   pending_mentor:pending.rows[0]?.pending||0,applications_active:applications.rows[0]?.active||0,
+   assessment_status:assessment.rows[0]?.status||null
+  };
+  const steps=[];
+  if(mentor.rows[0])steps.push({key:"mentor",eyebrow:"MENTOR FEEDBACK",title:"Apply your mentor's corrections",detail:mentor.rows[0].subject,action:"mentor"});
+  if(session.rows[0])steps.push({key:"resume",eyebrow:"IN PROGRESS",title:"Resume your conversation",detail:"Continue your saved AI roleplay where you stopped.",action:"resume"});
+  if(nextLesson.rows[0]){
+   const lesson=nextLesson.rows[0];
+   steps.push({key:"lesson",eyebrow:"CONTINUE LEARNING",title:lesson.title,detail:"Module "+lesson.module_number+" · Next unfinished published lesson",action:"lesson",lesson_id:lesson.id});
+  }
+  if(day!==null)steps.push({key:"day",eyebrow:"40-DAY PROGRAMME",title:"Complete Day "+day,detail:"Record what you practised and the evidence of your work.",action:"programme"});
+  steps.push({key:"practice",eyebrow:"DELIBERATE PRACTICE",title:recentReps?"Train your weakest measured skill":"Establish your first Setter Score",detail:recentReps?"Use the AI Coach to select your next targeted rep.":"Start a simulated conversation and get actionable feedback.",action:recentReps?"coach":"first-rep"});
+  if(roleReady&&state.assessment_status!=="pending"&&state.assessment_status!=="approved")steps.push({key:"assessment",eyebrow:"NEXT MILESTONE",title:"Request a mentor assessment",detail:"Readiness indicators are not a verified employment credential.",action:"assessment"});
+  res.set("Cache-Control","no-store").json({summary:state,next:steps.slice(0,3),all:steps});
+ }catch(e){sendError(res,e)}});
+
 }
