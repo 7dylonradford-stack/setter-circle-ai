@@ -38,6 +38,12 @@ export async function initDb(){
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(), UNIQUE(user_id,challenge_date)
  );
  CREATE INDEX IF NOT EXISTS referral_challenges_user_created ON referral_challenges(user_id,created_at DESC);
+ CREATE TABLE IF NOT EXISTS experience_photos(
+  slot TEXT PRIMARY KEY CHECK (slot IN ('dylon','amar')),
+  media_type TEXT NOT NULL,
+  photo BYTEA NOT NULL,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+ );
  CREATE TABLE IF NOT EXISTS experience_content(
   content_key TEXT PRIMARY KEY, data JSONB NOT NULL DEFAULT '{}'::jsonb, updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
  );
