@@ -9,8 +9,8 @@
 var token=localStorage.getItem('setterAccountToken'),keys=['dylon_bio','amar_bio','dylon_photo','amar_photo','dylon_video_url','amar_video_url','booking_url'];
 for(var i=1;i<=3;i++){keys.push('testimonial_'+i+'_name','testimonial_'+i+'_text','testimonial_'+i+'_approved');}
 function $(id){return document.getElementById(id);}
-function showPreview(who,value){var p=$(who+'_preview');if(!value){p.style.display='none';p.removeAttribute('src');return;}try{var url=new URL(value,location.origin);if(url.protocol==='https:'||url.protocol==='http:'){p.src=url.href;p.style.display='block';}}catch(e){p.style.display='none';}}
-function load(data){keys.forEach(function(k){var el=$(k);if(!el)return;if(el.type==='checkbox')el.checked=data[k]===true;else el.value=data[k]||'';});['dylon','amar'].forEach(function(w){showPreview(w,data[w+'_photo']);});}
+function showPreview(who,value){var p=$(who+'_preview');if(!value){p.style.display='none';p.removeAttribute('src');return;}try{var url=new URL(value,location.origin);if(url.protocol==='https:'||url.protocol==='http:'){p.onerror=function(){p.style.display='none';$(who+'_uploadStatus').textContent='The stored image could not load. Please try uploading again.';};p.onload=function(){p.style.display='block';};p.src=url.href;p.style.display='block';}}catch(e){p.style.display='none';}}
+function load(data,photos){keys.forEach(function(k){var el=$(k);if(!el)return;if(el.type==='checkbox')el.checked=data[k]===true;else el.value=data[k]||'';});['dylon','amar'].forEach(function(w){var p=(photos||{})[w]||data[w+'_photo'];if(p){$(w+'_photo').value=p;showPreview(w,p);$(w+'_uploadStatus').textContent='Saved photo found. You can replace it any time.';}else{$(w+'_uploadStatus').textContent='No photo uploaded yet. Select a picture, then tap Upload photo.';}});}
 
 async function encodePhoto(file){
  if(!file||file.size>15000000)throw Error('Select a photo under 15MB.');
@@ -36,6 +36,12 @@ async function encodePhoto(file){
 }
 ['dylon','amar'].forEach(function(who){
  var upload=$(who+'_upload'), input=$(who+'_file'), status=$(who+'_uploadStatus');
+ input.addEventListener('change',function(){
+ var file=this.files&&this.files[0];if(!file)return;
+ status.textContent='Photo selected: '+file.name+'. Tap Upload photo to publish it.';
+ var preview=$(who+'_preview');if(preview.dataset.localPreview)URL.revokeObjectURL(preview.dataset.localPreview);
+ preview.dataset.localPreview=URL.createObjectURL(file);preview.src=preview.dataset.localPreview;preview.style.display='block';
+});
  upload.addEventListener('click',async function(){
   var file=input.files&&input.files[0];if(!file){status.textContent='Select a photo from your phone or computer first.';return;}
   if(!token){status.textContent='Sign in as an administrator first.';return;}
@@ -46,6 +52,7 @@ async function encodePhoto(file){
    var d=await r.json();if(!r.ok)throw Error(d.error||'Upload failed');
    $(who+'_photo').value=d.url;
    showPreview(who,d.url);
+   if($(who+'_preview').dataset.localPreview){URL.revokeObjectURL($(who+'_preview').dataset.localPreview);delete $(who+'_preview').dataset.localPreview;}
    status.textContent='Uploaded and published. Your portrait now appears on the public Experience page.';
    input.value='';
   }catch(e){status.textContent=e.message;}
@@ -55,7 +62,7 @@ async function encodePhoto(file){
 });
 
 if(!token){$('loadStatus').textContent='Sign in as an administrator through the member Hub before using this editor.';return;}
-fetch('/api/admin/experience',{headers:{'X-Account-Token':token}}).then(async function(r){if(!r.ok)throw new Error('Only administrators can edit this page.');return fetch('/api/experience/content');}).then(function(r){return r.json();}).then(function(d){load(d.content||{});$('loadStatus').hidden=true;$('editor').hidden=false;}).catch(function(e){$('loadStatus').textContent=e.message;});
+fetch('/api/admin/experience',{headers:{'X-Account-Token':token}}).then(async function(r){if(!r.ok)throw new Error('Only administrators can edit this page.');return fetch('/api/experience/content');}).then(function(r){return r.json();}).then(function(d){load(d.content||{},d.photos||{});$('loadStatus').hidden=true;$('editor').hidden=false;}).catch(function(e){$('loadStatus').textContent=e.message;});
 $('editor').addEventListener('submit',async function(e){e.preventDefault();var data={};keys.forEach(function(k){var el=$(k);data[k]=el.type==='checkbox'?el.checked:el.value.trim();});$('save').disabled=true;$('saveStatus').textContent='Saving content…';try{var r=await fetch('/api/admin/experience/content',{method:'PUT',headers:{'Content-Type':'application/json','X-Account-Token':token},body:JSON.stringify(data)}),d=await r.json();if(!r.ok)throw new Error(d.error||'Could not save');$('saveStatus').textContent='Saved. Your approved content is now available on the Experience page.';}catch(error){$('saveStatus').textContent=error.message;}finally{$('save').disabled=false;}});
 })();
 </script></body></html>
