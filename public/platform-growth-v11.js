@@ -135,7 +135,8 @@ function renderMentor(){
  '<p class="studio-help">Remove real prospects\' personal details before submitting.</p>'+
  action('submit-mentor','Submit for mentor review')+'</div>';
  c+='<div class="studio-section-heading"><span>REVIEW HISTORY</span><h3>Your submissions</h3></div>';
- c+=mentor.length?'<div class="studio-list">'+mentor.map(x=>'<div class="studio-list-row studio-stack"><span class="studio-overline">'+esc(x.category)+' · '+esc(x.status)+' · '+fmtDate(x.submitted_at)+'</span><strong>'+esc(x.subject)+'</strong><p>'+esc(x.submission)+'</p>'+(x.feedback?'<div class="studio-note"><strong>Mentor feedback</strong><p>'+esc(x.feedback)+'</p></div>':'')+'</div>').join('')+'</div>':empty('No submissions yet','Send your first piece of work when you are ready for feedback.');
+ c+=mentor.length?'<div class="studio-list">'+mentor.map(x=>'<div class="studio-list-row studio-stack"><span class="studio-overline">'+esc(x.category)+' · '+esc(x.status)+' · '+fmtDate(x.submitted_at)+'</span><strong>'+esc(x.subject)+'</strong><p>'+esc(x.submission)+'</p>'+(x.feedback?'<div class="studio-note"><strong>Mentor feedback</strong><p>'+esc(x.feedback)+'</p></div>':'')+
+ (x.status==='needs_changes'&&!x.acknowledged_at?'<div class="studio-toolbar">'+action('mentor-acknowledge','Mark feedback reviewed','data-id="'+esc(x.id)+'"')+'</div><p class="studio-help">If changes are requested, you can submit revised evidence using the form above.</p>':'')+'</div>').join('')+'</div>':empty('No submissions yet','Send your first piece of work when you are ready for feedback.');
  call('Mentor feedback','Human support for practical training.',layout('',c),'MENTORSHIP / FEEDBACK');
 }
 async function assessment(){
@@ -328,6 +329,10 @@ document.addEventListener('click',async e=>{
    values.lesson=$('studioWr_lesson')?.value||'';values.target=$('studioWr_target')?.value||'';
    await api('/api/weekly-reviews',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({week_start:b.dataset.week,review:values})});
    notice('Weekly review saved');return weeklyReview();
+  }
+  if(key==='mentor-acknowledge'){
+   await api('/api/mentor/submissions/'+b.dataset.id+'/acknowledge',{method:'POST'});
+   notice('Feedback marked reviewed');return mentorDesk();
   }
   if(key==='submit-mentor'){
    const category=$('studioMentorCategory')?.value,subject=$('studioMentorSubject')?.value,submission=$('studioMentorBody')?.value;
