@@ -39,11 +39,12 @@ export async function initDb(){
  );
  CREATE INDEX IF NOT EXISTS referral_challenges_user_created ON referral_challenges(user_id,created_at DESC);
  CREATE TABLE IF NOT EXISTS experience_photos(
-  slot TEXT PRIMARY KEY CHECK (slot IN ('dylon','amar')),
+  slot TEXT PRIMARY KEY,
   media_type TEXT NOT NULL,
   photo BYTEA NOT NULL,
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
  );
+ ALTER TABLE experience_photos DROP CONSTRAINT IF EXISTS experience_photos_slot_check;
  CREATE TABLE IF NOT EXISTS experience_content(
   content_key TEXT PRIMARY KEY, data JSONB NOT NULL DEFAULT '{}'::jsonb, updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
  );
