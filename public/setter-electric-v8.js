@@ -140,7 +140,7 @@
   };
   register();
   // Content in the public experience can appear after API fetch or tab switch.
-  const root=document.querySelector('.experience-menu')||document.getElementById('site');
+  const root=document.querySelector('.experience-menu')?.closest('main')||document.getElementById('site');
   if(root){
    let queued=false;
    const mutations=new MutationObserver(()=>{
