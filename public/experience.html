@@ -20,7 +20,7 @@ body.experience-topic-open .hero,body.experience-topic-open .strip,body.experien
 
 /* Before Joining opens directly to the topic cards: no welcome hero or example chat. */
 .hero,.strip{display:none!important}.experience-menu{padding-top:38px}body:not(.experience-topic-open) .experience-menu{display:block}body.experience-topic-open .experience-menu{display:none!important}
-</style>
+.student-instagram{display:inline-flex;margin-top:18px;padding:11px 14px;border:1px solid #6a925b;border-radius:10px;color:#a6e47e;text-decoration:none;font-weight:750;font-size:13px}.student-instagram:hover{background:#182b19}</style>
 </head>
 <body>
 <nav class="nav"><div class="wrap navinner">
@@ -147,7 +147,7 @@ var video=validLink(c[p+'_video_url']);founderDetails[p]={bio:bio,photo:photo,vi
 var cards=document.querySelectorAll('.testimonial-grid .quote');
 for(var i=1;i<=3;i++){var prefix='testimonial_'+i+'_',card=cards[i-1];
 if(!card||!c[prefix+'approved']||!c[prefix+'name']||!c[prefix+'text'])continue;
-card.querySelector('strong').textContent=c[prefix+'name'];card.querySelector('p').textContent='“'+c[prefix+'text']+'”';card.querySelector('.placeholder').classList.add('hidden');
+card.querySelector('strong').textContent=c[prefix+'name'];card.querySelector('p').textContent='“'+c[prefix+'text']+'”';card.querySelector('.placeholder').classList.add('hidden');var ig=c[prefix+'instagram'];if(ig){try{var u=new URL(ig);if(u.protocol==='https:'&&/^(www\.)?instagram\.com$/i.test(u.hostname)&&/^\/[A-Za-z0-9._]{1,30}\/$/.test(u.pathname)){var a=document.createElement('a');a.href=u.href;a.target='_blank';a.rel='noopener noreferrer';a.className='student-instagram';a.textContent='View '+c[prefix+'name']+' on Instagram ↗';card.appendChild(a);}}catch(e){}}
 }
 var booking=validLink(c.booking_url);
 if(booking){var link=document.createElement('a');link.href=booking;link.target='_blank';link.rel='noopener noreferrer';link.className='btn';link.textContent='Book a call with Amar ↗';link.style.margin='0 12px 12px 0';var contact=$('instagramContact');contact.parentNode.insertBefore(link,contact);var note=contact.parentNode.querySelector('.small.muted');if(note)note.textContent='You can also request a conversation by email using the form.';link.addEventListener('click',function(){track('contact_clicked');});}
