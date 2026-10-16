@@ -1,0 +1,43 @@
+
+/* Setter Circle Workplace – chartreuse finish & sensory feedback v8 */
+:root{--work-electric:#d0f83b}
+body{background:#080b07;color:#edf5df}
+main{background:radial-gradient(ellipse 85% 35% at 90% 0,rgba(199,243,58,.07),transparent 72%)}
+.ey,.pill,.modulebadge{color:#d0f83b!important}
+.pill{background:#1c2712!important;border-color:#667e32!important;box-shadow:0 0 17px rgba(208,248,59,.06)}
+.btn{transition:border-color .2s,background .2s,transform .2s,box-shadow .2s}
+.btn.primary,.btn.primary:enabled{
+ background:linear-gradient(115deg,#d0f83b,#e7ff88)!important;color:#172006!important;border-color:#d0f83b!important;
+ box-shadow:0 0 20px rgba(208,248,59,.12),0 8px 20px #0003
+}
+.btn.primary:not(:disabled):hover{transform:translateY(-2px);box-shadow:0 0 34px rgba(208,248,59,.3),0 10px 28px #0004!important}
+.btn:not(.primary){background:#1d2916;border-color:#536a32;color:#e6edd8}
+.btn:not(.primary):not(:disabled):hover{background:#2a381c;border-color:#b1d346;box-shadow:0 0 22px rgba(208,248,59,.09)}
+.btn:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{
+ outline:2px solid #d0f83b!important;outline-offset:3px
+}
+.card{background:linear-gradient(142deg,#172015,#0d130d)!important;border-color:#3a4b30!important;box-shadow:inset 0 1px rgba(216,255,150,.035)}
+.card:hover{border-color:#5d723a!important}
+.workspace-head{background:linear-gradient(120deg,#243517,#121c10 82%)!important;border-color:#648038!important;box-shadow:0 0 34px rgba(208,248,59,.07)!important}
+.workspace-head .ey{color:#d0f83b!important}
+.workstat span{border-color:#597336;background:#1c2a14;color:#cce991}
+.training-progress{background:#344124}
+.training-progress>span{background:linear-gradient(90deg,#8dab29,#d0f83b)!important;box-shadow:0 0 12px rgba(208,248,59,.26)}
+.step.active{background:#28391c!important;border-color:#9dbf42!important;box-shadow:0 0 22px rgba(208,248,59,.10)!important}
+.step:not(.locked):hover{border-color:#8da842}
+#app .card .stage-note{border-left-color:#d0f83b!important;background:#1b2912!important}
+.metric{color:#ebf2db}
+input,select,textarea{background:#10170f;border-color:#465c35;color:#f1f7e7}
+input:focus,select:focus,textarea:focus{border-color:#a5c647;box-shadow:0 0 0 3px rgba(208,248,59,.065);outline:none}
+.bubble.mine{background:#d0f83b;color:#142007;border:1px solid #d0f83b;box-shadow:0 0 17px rgba(208,248,59,.11)}
+.tabs .btn.primary{background:#d0f83b!important;color:#152207!important}
+#app .card h2,.workspace-head h2{letter-spacing:-.027em}
+#app .card{transition:border-color .18s,box-shadow .18s}
+#app .card:focus-within{border-color:#849e42!important}
+body.embedded .workspace-head{box-shadow:none!important}
+@media(max-width:800px){
+ .workspace-head{padding:15px;border-radius:13px}
+ .card{padding:15px}
+ .step.active{box-shadow:inset 0 0 16px rgba(208,248,59,.08)!important}
+}
+@media(prefers-reduced-motion:reduce){.btn,.card{transition:none!important}}
