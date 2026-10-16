@@ -187,8 +187,21 @@ export function registerExperience(app, client, requireAdmin) {
     return r.rows[0]?.data || {};
   };
   app.get("/api/experience/content",async(req,res)=>{
-    try {res.set("Cache-Control","no-store").json({content:await readContent()});}
-    catch {res.json({content:{}});}
+    try {
+      const content=await readContent();
+      // The uploaded image record is authoritative; a later content edit must not hide an existing photo.
+      const photos={};
+      if(pool){
+        const found=await q("SELECT slot, EXTRACT(EPOCH FROM updated_at)::bigint AS version FROM experience_photos");
+        for(const row of found.rows){
+          if(allowedSlots.has(row.slot))photos[row.slot]="/api/experience/photo/"+row.slot+"?v="+row.version;
+        }
+      }
+      res.set("Cache-Control","no-store").json({content,photos});
+    } catch(error){
+      console.error("Public experience content read failed",error?.message);
+      res.set("Cache-Control","no-store").json({content:{},photos:{}});
+    }
   });
   app.put("/api/admin/experience/content",requireAdmin,async(req,res)=>{
     if (!pool) return reject(res,503,"The content database is unavailable");
