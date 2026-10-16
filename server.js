@@ -597,6 +597,21 @@ ${s.transcript.map(x=>`${x.role.toUpperCase()}: ${x.text}`).join("\n")}`;
  }catch(e){console.error(e);res.status(500).json({error:"Debrief failed"})}
 });
 
+// Authenticated, per-member Virtual Workplace practice progress.
+app.get("/api/workplace/progress",requireTrainingAccess,async(req,res)=>{
+ try{const r=await q("SELECT state,updated_at FROM workplace_progress WHERE user_id=$1",[req.user.id]);res.set("Cache-Control","no-store").json({state:r.rows[0]?.state||null,updated_at:r.rows[0]?.updated_at||null})}
+ catch(e){console.error("Workplace progress read",e);res.status(503).json({error:"Progress temporarily unavailable"})}
+});
+app.put("/api/workplace/progress",requireTrainingAccess,async(req,res)=>{
+ try{
+  const state=req.body?.state;
+  if(!state||typeof state!=="object"||Array.isArray(state)||!Array.isArray(state.leads)||state.leads.length>50||!Array.isArray(state.bookings)||state.bookings.length>50)return res.status(400).json({error:"Invalid workplace progress"});
+  const raw=JSON.stringify(state);
+  if(raw.length>150000)return res.status(413).json({error:"Progress exceeds size limit"});
+  await q("INSERT INTO workplace_progress(user_id,state,updated_at) VALUES($1,$2::jsonb,NOW()) ON CONFLICT(user_id) DO UPDATE SET state=$2::jsonb,updated_at=NOW()",[req.user.id,raw]);
+  res.json({ok:true});
+ }catch(e){console.error("Workplace progress save",e);res.status(503).json({error:"Could not save progress"})}
+});
 registerExperience(app,client,requireAdmin);
 app.get("/{*splat}",(req,res)=>res.sendFile(path.join(__dirname,"public","index.html")));
 const port=process.env.PORT||3000;
