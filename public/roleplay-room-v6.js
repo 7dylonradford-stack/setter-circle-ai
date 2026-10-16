@@ -43,7 +43,18 @@ function attachNameDisplay(id,metaId,metaClass){
   if(editing)return;
   const label=String(heading.textContent||'');
   const parsed=splitName(label);
-  if(!parsed)return;
+  if(!parsed){
+   if(/generating|loading/i.test(label)){
+    meta.textContent='';
+    if(id==='bName'){
+     const h=$('briefProfileHandle'),bio=$('briefProfileBio'),avatar=$('briefProfileAvatar');
+     if(h)h.textContent='Profile';
+     if(bio)bio.textContent='Loading public details…';
+     if(avatar){avatar.textContent='·';avatar.style.background='';}
+    }
+   }
+   return;
+  }
   editing=true;
   heading.textContent=parsed.name;
   meta.textContent=parsed.role;
@@ -85,6 +96,8 @@ function setLabels(){
  const guide=$('guideMode'),difficulty=$('mobileDifficulty');
  if(guide)guide.setAttribute('aria-label','AI guidance mode');
  if(difficulty)difficulty.setAttribute('aria-label','Simulation difficulty, changes apply to the next prospect');
+ const status=document.querySelector('#trainer .chathead .active');
+ if(status)status.textContent='● Simulated prospect';
  const input=$('input'),send=document.querySelector('#trainer .composer .send');
  if(input)input.setAttribute('aria-label','Your message to the simulated prospect');
  if(send){send.setAttribute('aria-label','Send message');send.setAttribute('title','Send message');}
