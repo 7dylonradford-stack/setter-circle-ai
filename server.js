@@ -6,6 +6,10 @@ import { fileURLToPath } from "url";
 import { initDb, q, pool } from "./db.js";
 import { registerExperience } from "./experience.js";
 import { registerPlatformRoutes } from "./platform-routes.js";
+import { registerAdvancedTraining } from "./advanced-training-routes.js";
+import { registerCommunityStudio } from "./advanced-community-routes.js";
+import { registerCareerStudio } from "./advanced-career-routes.js";
+import { registerAdvancedAdmin } from "./advanced-admin-routes.js";
 
 const app = express();
 // Allow larger JSON only for authenticated image uploads; keep other API payloads small.
@@ -677,6 +681,10 @@ app.put("/api/workplace/progress",requireTrainingAccess,async(req,res)=>{
  }catch(e){console.error("Workplace progress save",e);res.status(503).json({error:"Could not save progress"})}
 });
 registerPlatformRoutes(app,{requireUser,requireAdmin});
+registerAdvancedTraining(app,{requireUser,client});
+registerCommunityStudio(app,{requireUser,requireAdmin});
+registerCareerStudio(app,{requireUser,requireAdmin});
+registerAdvancedAdmin(app,{requireUser,requireAdmin});
 registerExperience(app,client,requireAdmin);
 app.get("/{*splat}",(req,res)=>res.sendFile(path.join(__dirname,"public","index.html")));
 const port=process.env.PORT||3000;
