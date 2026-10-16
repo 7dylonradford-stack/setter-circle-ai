@@ -1,0 +1,202 @@
+
+/* Setter Circle — Roleplay UX v5 & ambient detailing
+   A deliberate, understated glow system. No third-party dependencies.
+*/
+body.member-shell-active:not(.member-focus-mode) #workspace.rp-v5-page{
+ --rp-ink:#eaf4ed;--rp-mint:#b5e3bf;--rp-outline:#385740;--rp-mute:#94aa9b;
+}
+body.member-shell-active:not(.member-focus-mode) #workspace.rp-v5-page .workhead{margin-bottom:20px!important;padding-bottom:20px!important}
+body.member-shell-active:not(.member-focus-mode) #workspace.rp-v5-page .workhead h2{font-size:clamp(27px,3.5vw,38px)!important}
+body.member-shell-active:not(.member-focus-mode) #workspace.rp-v5-page #workContent{isolation:auto!important}
+.rp-flow{position:relative;max-width:1060px;margin:0 auto;min-width:0}
+.rp-topline{display:flex;align-items:center;justify-content:space-between;gap:12px;
+ padding:0 2px 18px;color:#90ac98;font-size:10px;font-weight:760;letter-spacing:.14em
+}
+.rp-signal{display:inline-flex;align-items:center;gap:10px}
+.rp-signal-dot{width:7px;height:7px;border-radius:50%;background:#90d5a2;position:relative;box-shadow:0 0 11px rgba(137,232,158,.38)}
+.rp-signal-dot:after{content:"";position:absolute;inset:-4px;border:1px solid rgba(131,213,150,.23);border-radius:50%}
+.rp-flow-steps{color:#7f9e88}
+.rp-section-header{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:17px}
+.rp-step{display:inline-flex;align-items:center;gap:9px;font-size:10px;font-weight:850;letter-spacing:.145em;color:#9cc7a5}
+.rp-step i{display:inline-block;width:19px;height:1px;background:#59896a}
+.rp-section-header h3{margin:9px 0 0;color:#f1f7ef;font-size:clamp(21px,2.5vw,29px);letter-spacing:-.045em;font-weight:760}
+.rp-section-extra{color:#6e8e78;font-size:11px}
+.rp-stage-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}
+.rp-stage-card{
+ display:flex;flex-direction:column;position:relative;min-width:0;min-height:233px;
+ padding:22px;gap:20px;text-align:left;cursor:pointer;
+ background:linear-gradient(145deg,#15241a,#0d1511 90%);
+ border:1px solid #324a39;border-radius:17px;color:#eaf3e9;
+ transition:transform .23s cubic-bezier(.2,.7,.25,1),border-color .22s,box-shadow .22s,background .22s;
+ overflow:hidden;
+}
+.rp-stage-card:before{content:"";pointer-events:none;position:absolute;inset:0;
+ background:radial-gradient(circle at 13% -9%,rgba(139,204,150,.09),transparent 53%);
+ opacity:.65;transition:opacity .24s
+}
+.rp-stage-card:hover{transform:translateY(-3px);border-color:#638d6a;background:linear-gradient(145deg,#1b3021,#101b15)}
+.rp-stage-card:hover:before{opacity:1}
+.rp-stage-card.is-selected{border:1px solid #8cc99b!important;
+ background:linear-gradient(140deg,#213c2a,#13231a 85%)!important;
+ box-shadow:0 0 0 1px rgba(130,206,150,.15),0 0 30px rgba(109,177,119,.13),inset 0 1px rgba(195,242,205,.10)}
+.rp-stage-card.is-selected:after{content:"";pointer-events:none;position:absolute;inset:0;border-radius:inherit;
+ background:radial-gradient(ellipse at 50% 0%,rgba(144,235,161,.15),transparent 65%);
+ animation:rpGlow 4.3s ease-in-out infinite alternate
+}
+.rp-stage-card:focus-visible,.rp-diff-card:focus-visible,.rp-start-button:focus-visible{
+ outline:2px solid #b3eabc!important;outline-offset:3px!important
+}
+.rp-stage-art{display:grid;place-items:center;width:42px;height:42px;flex:0 0 42px;
+ color:#afd6b6;border:1px solid #365d40;border-radius:12px;background:rgba(42,76,48,.47);
+ position:relative;z-index:1
+}
+.rp-stage-art svg{width:22px;height:22px}
+.rp-stage-copy{min-width:0;position:relative;z-index:1;display:flex;flex-direction:column;gap:9px}
+.rp-stage-tag{color:#8aaf90;font-size:9px;font-weight:820;letter-spacing:.13em}
+.rp-stage-copy strong{font-size:19px;letter-spacing:-.032em;line-height:1.18;font-weight:780;color:#eef7ef}
+.rp-stage-description{font-size:12px;color:#96aa99;line-height:1.5;max-width:310px}
+.rp-stage-check{position:absolute;right:18px;top:18px;width:23px;height:23px;border-radius:50%;
+ border:1px solid #5b926a;background:#2d5a39;color:#c7fad1;display:grid;place-items:center;
+ font-size:13px;opacity:0;transform:scale(.6);transition:opacity .18s,transform .2s;z-index:2
+}
+.rp-stage-card.is-selected .rp-stage-check{opacity:1;transform:scale(1)}
+/* difficulty is revealed inside the SAME content area */
+.rp-difficulty-panel{
+ position:relative;margin-top:23px;padding:24px 26px 21px;
+ background:linear-gradient(130deg,#13241a,#0e1712 68%);
+ border:1px solid #476e50;border-radius:20px;
+ box-shadow:0 0 0 1px rgba(106,176,115,.06),0 15px 48px #0003;
+}
+.rp-difficulty-panel[hidden]{display:none!important}
+.rp-difficulty-panel:before{content:"";position:absolute;pointer-events:none;inset:0;border-radius:inherit;
+ background:radial-gradient(circle at 95% -18%,rgba(145,209,156,.13),transparent 46%);
+}
+.rp-difficulty-panel.rp-appear{animation:rpSlideIn .27s cubic-bezier(.18,.72,.3,1) both}
+.rp-panel-kicker{position:relative;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.rp-chosen-name{border:1px solid #436c4c;background:#203e28;color:#c3e9c7;
+ border-radius:999px;font-size:10px;padding:6px 11px;font-weight:750
+}
+.rp-difficulty-panel h3{position:relative;margin:11px 0 5px;color:#eef6ef;font-size:clamp(21px,2.6vw,27px);letter-spacing:-.035em}
+.rp-panel-desc{position:relative;margin:0 0 19px;color:#97b09c;font-size:12px;line-height:1.5}
+.rp-diff-grid{position:relative;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}
+.rp-diff-card{
+ position:relative;min-width:0;min-height:151px;display:flex;flex-direction:column;gap:11px;
+ color:#e5ede6;text-align:left;border:1px solid #334c3b;background:#101d15;
+ border-radius:13px;padding:16px;cursor:pointer;
+ transition:border-color .18s,background .18s,box-shadow .18s,transform .18s
+}
+.rp-diff-card:hover{border-color:#6a9875;background:#1c2c20;transform:translateY(-2px)}
+.rp-diff-card.is-selected{background:linear-gradient(160deg,#24452c,#172d1e);
+ border-color:#89c795;box-shadow:inset 0 1px rgba(197,245,204,.09),0 0 21px rgba(106,184,126,.11)}
+.rp-diff-indicator{width:17px;height:17px;border-radius:50%;border:1px solid #536e59;background:#111e16}
+.rp-diff-card.is-selected .rp-diff-indicator{border:5px solid #aadab2;background:#1d3a26;box-shadow:0 0 15px rgba(137,220,151,.24)}
+.rp-diff-copy{display:flex;flex-direction:column;gap:6px}
+.rp-diff-copy strong{font-size:14px;font-weight:770;color:#eaf3eb;letter-spacing:-.014em}
+.rp-diff-copy>span{font-size:9px;font-weight:800;letter-spacing:.065em;color:#96c4a0}
+.rp-diff-copy small{font-size:11px;color:#8ba391;line-height:1.4}
+.rp-start-panel{position:relative;display:flex;align-items:center;justify-content:space-between;
+ gap:16px;margin-top:18px;padding-top:17px;border-top:1px solid #314836
+}
+.rp-start-copy{display:flex;flex-direction:column;gap:5px;min-width:0}
+.rp-start-copy>span{color:#82a38a;font-size:9px;font-weight:810;letter-spacing:.12em}
+.rp-start-copy strong{font-size:14px;font-weight:720;color:#dfecdf;line-height:1.3}
+.rp-start-button{display:inline-flex;align-items:center;justify-content:space-between;gap:22px;
+ min-height:48px;padding:13px 19px;border-radius:10px;border:1px solid #c8f0cf;
+ background:linear-gradient(120deg,#b9e5bf,#d0efd0);color:#0e2415;font-size:12px;font-weight:820;
+ cursor:pointer;white-space:nowrap;transition:box-shadow .22s,transform .2s,background .2s
+}
+.rp-start-button span{font-size:18px;font-weight:550}
+.rp-start-button:hover{box-shadow:0 0 22px rgba(156,222,166,.2),0 7px 20px #0004;transform:translateY(-2px)}
+.rp-start-button:disabled{opacity:.6;cursor:wait}
+.rp-bottom-note{display:flex;align-items:flex-start;gap:12px;margin:22px 0 0;
+ font-size:11px;line-height:1.6;color:#778f7d;max-width:660px
+}
+.rp-note-icon{color:#92c5a1;font-size:18px;line-height:1}
+/* refined fallback setup for links that already know which stage a student chose */
+#simSetup.rp-prefilled-setup .simsetupbox{width:min(630px,94vw)}
+#simSetup.rp-prefilled-setup #setupModes{display:none!important}
+#simSetup .simsetupbox{background:linear-gradient(145deg,#131d16,#0c120f);border:1px solid #446549;
+ box-shadow:0 24px 80px rgba(0,0,0,.65),0 0 60px rgba(101,165,112,.07);border-radius:20px
+}
+#simSetup .eyebrow{color:#a2d1aa}
+#simSetup .setupchoice{background:#152219;border-color:#38543e}
+#simSetup .setupchoice.selected,#simSetup .diffchoice.selected{
+ background:#213b28;border-color:#91d0a1;box-shadow:0 0 24px rgba(128,206,143,.12)
+}
+#simSetup .diffchoice{background:#121e16;border-color:#38503f;transition:background .2s,border-color .2s,box-shadow .2s}
+#simSetup .diffchoice:hover{border-color:#82bd8c}
+#simSetup .diffchoice b{color:#f2f7f1}
+#simSetup .diffchoice span{color:#9bac9f}
+#simSetup .setupactions .btn:not(.ghost){background:#b5e4be;color:#102017}
+#simSetup .setupactions .btn.ghost{background:#16251a;border-color:#3a5c41;color:#d5e7d7}
+/* subtle ambient highlights used across the actual app */
+body.member-shell-active:not(.member-focus-mode) #memberAppNav .member-nav-item.is-active{
+ box-shadow:inset 0 1px 0 rgba(204,247,209,.065),0 0 19px rgba(92,164,110,.10)!important
+}
+body.member-shell-active:not(.member-focus-mode) .todaycard{
+ box-shadow:0 16px 55px rgba(0,0,0,.20),0 0 35px rgba(101,178,119,.075)!important
+}
+body.member-shell-active:not(.member-focus-mode) .todaycard:after{
+ animation:rpAmbient 6.5s ease-in-out infinite alternate
+}
+body.member-shell-active:not(.member-focus-mode) #workspace .member-root-card.is-featured{
+ box-shadow:inset 0 1px 0 rgba(202,247,206,.065),0 0 27px rgba(109,180,121,.072)
+}
+body.member-shell-active:not(.member-focus-mode) #workspace .pm-ring{
+ box-shadow:0 0 0 1px rgba(185,232,192,.06),0 0 24px rgba(114,183,125,.13)
+}
+body.member-shell-active:not(.member-focus-mode) #workspace .workitem.done{
+ box-shadow:inset 0 1px 0 rgba(155,227,161,.10),0 0 19px rgba(90,155,105,.08)
+}
+@keyframes rpSlideIn{from{opacity:0;transform:translateY(11px)}to{opacity:1;transform:translateY(0)}}
+@keyframes rpGlow{from{opacity:.45}to{opacity:1}}
+@keyframes rpAmbient{from{transform:scale(.93);opacity:.62}to{transform:scale(1.11);opacity:1}}
+@media(max-width:900px){
+ .rp-stage-grid{grid-template-columns:1fr}
+ .rp-stage-card{min-height:0;flex-direction:row;gap:15px;align-items:center;padding:18px}
+ .rp-stage-copy{gap:6px}
+ .rp-stage-copy strong{font-size:16px}
+ .rp-stage-description{font-size:11px}
+ .rp-stage-art{flex:0 0 44px;width:44px;height:44px}
+ .rp-stage-check{right:13px;top:13px}
+ .rp-diff-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:720px){
+ body.member-shell-active:not(.member-focus-mode) #workspace.rp-v5-page .workhead h2{font-size:26px!important}
+ .rp-topline{font-size:9px;padding:0 0 12px}
+ .rp-section-header{margin-bottom:12px}
+ .rp-section-header h3{font-size:21px}
+ .rp-section-extra{display:none}
+ .rp-stage-grid{gap:9px}
+ .rp-stage-card{min-height:0;gap:13px;padding:15px 13px;border-radius:14px}
+ .rp-stage-art{width:40px;height:40px;flex-basis:40px;border-radius:11px}
+ .rp-stage-art svg{width:20px;height:20px}
+ .rp-stage-tag{font-size:9px}
+ .rp-stage-copy strong{font-size:15px}
+ .rp-stage-description{font-size:11px;line-height:1.45}
+ .rp-difficulty-panel{margin-top:16px;padding:17px 14px;border-radius:15px}
+ .rp-panel-kicker{gap:7px}
+ .rp-step{font-size:9px;letter-spacing:.10em}
+ .rp-chosen-name{font-size:9px}
+ .rp-difficulty-panel h3{font-size:21px;margin:11px 0 5px}
+ .rp-panel-desc{font-size:11px;margin-bottom:14px}
+ .rp-diff-grid{gap:8px}
+ .rp-diff-card{min-height:147px;padding:12px 11px;gap:8px}
+ .rp-diff-copy strong{font-size:12px}
+ .rp-diff-copy>span{font-size:8px;letter-spacing:.035em}
+ .rp-diff-copy small{font-size:10px;line-height:1.4}
+ .rp-start-panel{align-items:stretch;flex-direction:column;gap:14px}
+ .rp-start-button{width:100%;justify-content:center;min-height:48px}
+ .rp-bottom-note{font-size:10px;margin-top:17px}
+ #simSetup .simsetupbox{padding:18px 16px}
+ #simSetup .diffgrid{grid-template-columns:1fr 1fr;gap:8px}
+ #simSetup .diffchoice{padding:13px}
+ #simSetup .diffchoice b{font-size:12px}
+ #simSetup .diffchoice span{font-size:10px}
+}
+@media(max-width:380px){.rp-stage-description{font-size:10px}.rp-diff-grid{grid-template-columns:1fr 1fr}.rp-diff-card{min-height:165px}}
+@media(prefers-reduced-motion:reduce){
+ .rp-stage-card,.rp-stage-card:after,.rp-stage-check,.rp-diff-card,.rp-start-button,
+ body.member-shell-active .todaycard:after{animation:none!important;transition:none!important}
+ .rp-difficulty-panel.rp-appear{animation:none!important}
+}
