@@ -597,6 +597,28 @@ ${s.transcript.map(x=>`${x.role.toUpperCase()}: ${x.text}`).join("\n")}`;
  }catch(e){console.error(e);res.status(500).json({error:"Debrief failed"})}
 });
 
+// AI-driven workplace conversations: server-side only, authenticated, tightly bounded.
+const workplaceRate=new Map();
+app.post("/api/workplace/conversation",requireTrainingAccess,async(req,res)=>{
+ try{
+  const key=String(req.user.id),now=Date.now(),recent=(workplaceRate.get(key)||[]).filter(t=>now-t<60000);
+  if(recent.length>=12)return res.status(429).json({error:"Please wait before sending more practice messages"});
+  recent.push(now);workplaceRate.set(key,recent);
+  const employer=String(req.body?.client||"");
+  const offers={fitness:"A UK online fitness coach offering individual coaching. Prospect fit: interested in coaching and has realistic goals.",agency:"A marketing agency working with established service businesses. Prospect fit: relevant business and genuine marketing challenge.",saas:"A B2B software business selling workflow software. Prospect fit: relevant organisation and an identifiable operational problem."};
+  if(!offers[employer])return res.status(400).json({error:"Unknown training client"});
+  const prospect=String(req.body?.prospect||"").slice(0,70),message=String(req.body?.message||"").trim();
+  const history=req.body?.history;
+  if(!prospect||message.length<2||message.length>1400||!Array.isArray(history)||history.length>45)return res.status(400).json({error:"Invalid practice conversation"});
+  const transcript=history.slice(-24).map(m=>({role:m?.from==="setter"?"assistant":"user",content:String(m?.text||"").slice(0,1400)}));
+  const instruction=`You are simulating a realistic potential customer called ${prospect} for appointment setter training. Employer: ${offers[employer]}.
+Stay in character as the PROSPECT for the reply. Have a plausible, internally consistent background, needs, uncertainty and buying readiness. Respond to the student's exact words and the preceding dialogue. Sometimes ask follow-up questions, raise authentic objections, express disinterest or decline; do not automatically agree to a call. Do not reveal training rubrics in the prospect reply. No guarantees, fabricated testimonials, personal contact details or pressure tactics.
+Separately act as a STRICT evaluator of the student's most recent message. Score 0-100 with 0-20 for nonsense/spam, 20-45 for generic or premature pitches, 45-65 for adequate but shallow work, 65-80 for competent contextual discovery, 80-92 for very strong performance and 93+ only for rare exceptional work. Give concise specific actionable feedback. Qualification may be true ONLY when the transcript contains evidence of the prospect's needs, relevant fit, genuine interest and willingness to take a next step. Never infer qualification solely from the setter's claims. If the setter requests a booking prematurely, resist it. Output valid JSON with keys prospect_reply (string), feedback (string), score (integer 0-100), qualified (boolean), booking_ready (boolean). booking_ready requires clear prospect agreement to a call; if not explicit, false.`;
+  const response=await client.responses.create({model:process.env.WORKPLACE_MODEL||process.env.COACH_MODEL||"gpt-5.6-sol",input:[{role:"developer",content:instruction},...transcript,{role:"assistant",content:message}],max_output_tokens:650,text:{format:{type:"json_schema",name:"workplace_reply",strict:true,schema:{type:"object",additionalProperties:false,properties:{prospect_reply:{type:"string"},feedback:{type:"string"},score:{type:"integer",minimum:0,maximum:100},qualified:{type:"boolean"},booking_ready:{type:"boolean"}},required:["prospect_reply","feedback","score","qualified","booking_ready"]}}}});
+  const data=JSON.parse(response.output_text);
+  res.set("Cache-Control","no-store").json(data);
+ }catch(e){console.error("Workplace AI conversation",e);res.status(503).json({error:"AI prospect temporarily unavailable. Please try again."})}
+});
 // Authenticated, per-member Virtual Workplace practice progress.
 app.get("/api/workplace/progress",requireTrainingAccess,async(req,res)=>{
  try{const r=await q("SELECT state,updated_at FROM workplace_progress WHERE user_id=$1",[req.user.id]);res.set("Cache-Control","no-store").json({state:r.rows[0]?.state||null,updated_at:r.rows[0]?.updated_at||null})}
