@@ -158,7 +158,7 @@ export function registerExperience(app, client, requireAdmin) {
 
   // Self-service content editor: only administrator-approved testimonials are public.
   // Founder portraits are resized client-side and stored in Postgres rather than on Render's ephemeral filesystem.
-  const allowedSlots=new Set(["dylon","amar"]);
+  const allowedSlots=new Set(["dylon","amar","logo"]);
   app.get("/api/experience/photo/:slot",async(req,res)=>{
     if(!allowedSlots.has(req.params.slot))return reject(res,404,"Image not found");
     if(!pool)return reject(res,503,"Photo storage unavailable");
