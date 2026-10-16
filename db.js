@@ -68,7 +68,21 @@ export async function initDb(){
  );
 
  -- Persistent, account-owned practice sessions survive server restarts.
- CREATE TABLE IF NOT EXISTS training_sessions(
+ CREATE TABLE IF NOT EXISTS pending_training_prospects(
+  id UUID PRIMARY KEY,user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  mode TEXT NOT NULL,difficulty INTEGER NOT NULL,
+  scenario JSONB NOT NULL,expires_at TIMESTAMPTZ NOT NULL DEFAULT(NOW()+INTERVAL '30 minutes')
+ );
+ CREATE INDEX IF NOT EXISTS pending_training_prospects_user ON pending_training_prospects(user_id,expires_at);
+ CREATE TABLE IF NOT EXISTS roleplay_rehearsals(
+  id UUID PRIMARY KEY,user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  simulation_id UUID NOT NULL REFERENCES simulation_results(id) ON DELETE CASCADE,
+  student_turn INTEGER NOT NULL, original_text TEXT NOT NULL,rewrite_text TEXT NOT NULL,
+  alternative_reply TEXT NOT NULL,feedback JSONB NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+ );
+ CREATE INDEX IF NOT EXISTS roleplay_rehearsals_user ON roleplay_rehearsals(user_id,simulation_id,created_at DESC);
+  CREATE TABLE IF NOT EXISTS training_sessions(
    id UUID PRIMARY KEY, user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
    state JSONB NOT NULL, updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
    expires_at TIMESTAMPTZ NOT NULL DEFAULT (NOW() + INTERVAL '12 hours')
