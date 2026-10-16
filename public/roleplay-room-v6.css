@@ -1,0 +1,201 @@
+
+/* Setter Circle – Roleplay Room V6
+   Scope: scenario briefing and live conversation only.
+   Existing simulation, coaching and progress logic is unchanged. */
+#trainer,#briefing{
+ --room-bg:#090e0b;--room-panel:#111a14;--room-panel2:#162119;
+ --room-border:#293c2e;--room-border-bright:#436d4c;
+ --room-green:#b4dfb9;--room-text:#edf5ef;--room-muted:#99ae9e;
+ font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+#trainer{height:100dvh;background:#090d0b;color:var(--room-text);overflow:hidden}
+#trainer .trainnav{height:66px;background:#0d1510;border-bottom:1px solid #294030;padding:0 22px;position:relative;z-index:5}
+#trainer .trainnav:after{content:"";position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent 10%,rgba(144,213,159,.32) 50%,transparent 90%);pointer-events:none}
+#trainer .trainnav .logo{letter-spacing:.075em;color:#e8f5ea;font-size:13px;font-weight:800}
+#trainer .trainnav .logo span{color:#b5dfba}
+#trainer .trainnav .brandmark{width:32px;height:32px;border:1px solid #3b6042;box-shadow:0 0 17px rgba(120,193,138,.13)}
+#trainer .trainnav .btn{border:1px solid #304a37;background:#17241b;color:#bcd9c2;border-radius:10px;font-size:12px;font-weight:690;padding:10px 14px;transition:border-color .2s,background .2s}
+#trainer .trainnav .btn:hover{background:#24372a;border-color:#608b68;transform:none}
+#trainer .trainbody{height:calc(100dvh - 66px);min-height:0;grid-template-columns:210px minmax(0,1fr) 244px;background:#090d0b}
+#trainer .side,#trainer .coach{background:#0e1511;border-color:#26382a;padding:20px 15px}
+#trainer .side>.eyebrow,#trainer .coach>.eyebrow{color:#96c9a1;font-size:10px;letter-spacing:.16em}
+#trainer .modebtn{border:1px solid transparent;color:#94a898;background:transparent;border-radius:11px;font-size:12px;font-weight:650;transition:background .2s,border-color .2s,color .2s}
+#trainer .modebtn.sel{color:#d8f1dc;background:linear-gradient(100deg,#1e3525,#142318);border:1px solid #426749;box-shadow:0 0 18px rgba(89,148,100,.07)}
+#trainer .select{background:#142018;color:#dce8dd;border-color:#355441;border-radius:10px}
+#trainer .chatwrap{height:100%;min-height:0;background:
+ radial-gradient(ellipse 70% 58% at 50% 0%,rgba(42,88,54,.075),transparent 75%),#090d0b}
+#trainer .chathead{flex:0 0 76px;height:76px;padding:0 19px;gap:12px;background:rgba(15,23,18,.97);border-bottom:1px solid #27392c;position:relative}
+#trainer .chathead .avatar{width:41px;height:41px;border-radius:13px;flex:0 0 41px;background:linear-gradient(140deg,#c8f0c9,#92c89c);color:#142619;font-weight:850;box-shadow:0 0 0 1px #638e69,0 0 23px rgba(141,217,152,.12)}
+#trainer .chathead .name{font-size:16px;line-height:1.15;color:#f0f6ef;font-weight:780;letter-spacing:-.02em}
+#trainer .chat-person-role{font-size:11px;line-height:1.35;color:#91ad99;max-width:560px;margin:4px 0 0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#trainer .chathead .active{display:inline-flex;color:#9fcdac;font-size:10px;margin-top:3px;gap:4px}
+#trainer .chathead .btn{border:1px solid #345840;background:#1b2d20;border-radius:10px;color:#c5e4ca;font-weight:680;font-size:11px;padding:10px 12px;white-space:nowrap}
+#trainer .chathead .btn:hover{transform:none;border-color:#80b489;background:#26402e}
+#trainer .room-brief-toggle{border:1px solid #314c39;background:#15231a;color:#bad9c0;font-size:11px;font-weight:730;border-radius:10px;padding:10px 12px;cursor:pointer;white-space:nowrap;transition:background .18s,border-color .18s}
+#trainer .room-brief-toggle[aria-expanded="true"]{color:#ddf5e1;background:#284530;border-color:#83b68b}
+#trainer .profilecard{border:0;border-bottom:1px solid #2a3c30;border-radius:0;background:#101811;margin:0;padding:12px 19px;gap:13px;grid-template-columns:repeat(4,minmax(0,1fr))}
+#trainer .profilecard .pf{min-width:0}
+#trainer .profilecard .pf label{color:#84a88d;font-size:9px;font-weight:800;letter-spacing:.11em;line-height:1.4}
+#trainer .profilecard .pf span{display:block;color:#cadbcf;font-size:11px;line-height:1.43;margin-top:5px;overflow-wrap:anywhere}
+#trainer .messages{flex:1;min-height:0;padding:23px 24px 28px;gap:12px;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#365843 transparent}
+#trainer .messages>.bubble{font-size:14px;line-height:1.55;padding:13px 16px;max-width:min(78%,550px);border-radius:17px;letter-spacing:-.005em;overflow-wrap:anywhere;animation:roomMessageIn .22s ease both}
+#trainer .messages>.bubble.them{align-self:flex-start;color:#e4ede5;background:#19221c;border:1px solid #35463a;border-bottom-left-radius:5px}
+#trainer .messages>.bubble.me{align-self:flex-end;color:#112319;background:linear-gradient(125deg,#c5eac7,#a8d2ae);border:1px solid #bbe0be;border-bottom-right-radius:5px}
+#trainer .messages>.bubble.typing{letter-spacing:.12em;color:#b1d2b8;min-width:58px;text-align:center}
+#trainer .guidebar{background:#111c15;border-top:1px solid #2a4030;padding:9px 15px;gap:8px;display:flex;align-items:center;flex-wrap:wrap;min-height:48px}
+#trainer .guidebar .modulebadge{color:#8ebb99;font-size:9px;letter-spacing:.10em}
+#trainer .guidebar select{background:#18281d;border:1px solid #35543d;color:#d1e8d6;border-radius:10px;min-height:35px;font-size:11px;padding:7px 10px;max-width:100%}
+#trainer .guidebar .guidefeedback{color:#8da992;font-size:10px;line-height:1.45;min-width:0;flex:1}
+#trainer .composer{background:#0d1510;border-top:1px solid #2b4431;padding:11px 15px calc(11px + env(safe-area-inset-bottom,0px));gap:10px;min-height:75px}
+#trainer .composer input{background:#151f18;border:1px solid #35543d;border-radius:13px;color:#f1faf0;font-size:15px;min-height:47px;padding:12px 16px;box-shadow:inset 0 1px 4px #0002;transition:border-color .2s,box-shadow .2s}
+#trainer .composer input::placeholder{color:#7c9583}
+#trainer .composer input:focus{border-color:#86c294;box-shadow:0 0 0 3px rgba(122,199,142,.11);outline:none}
+#trainer .composer .send{flex:0 0 49px;height:47px;width:49px;border-radius:13px;background:linear-gradient(135deg,#c9edcb,#a8d7b0);color:#12311c;border:1px solid #c6e9ca;box-shadow:0 0 20px rgba(136,206,147,.12);font-size:20px;transition:transform .18s,box-shadow .18s}
+#trainer .composer .send:hover{transform:translateY(-2px);box-shadow:0 0 26px rgba(136,206,147,.22)}
+#trainer .composer .send:active{transform:scale(.95)}
+#trainer .composer.guidance-green input{border-color:#69cb88}
+#trainer .composer.guidance-orange input{border-color:#e3b16f}
+#trainer .composer.guidance-red input{border-color:#e08888}
+#trainer .coach .objective{background:#162219;border-color:#34523b;color:#bfdec4}
+#trainer .coach .meter{background:#283e2d}
+#trainer .coach .meter i{background:#a8d7b1}
+#trainer .coach .metricrow{color:#9db7a3}
+#trainer .coach .tag{color:#c6ddc7;background:#17251a;border-color:#38543f}
+
+/* Mobile conversation: maximize room for the exchange */
+@media(max-width:900px){
+ #trainer .trainnav{height:52px;padding:0 12px}
+ #trainer .trainnav .logo{font-size:10px;letter-spacing:.035em;gap:7px;white-space:nowrap}
+ #trainer .trainnav .brandmark{width:27px;height:27px;flex:0 0 27px}
+ #trainer .trainnav .btn{padding:8px 10px;font-size:10px;max-width:145px}
+ #trainer .trainbody{height:calc(100dvh - 52px);grid-template-columns:1fr;grid-template-rows:47px minmax(0,1fr)}
+ #trainer .side{height:47px;padding:5px 9px;gap:5px;overflow-x:auto;white-space:nowrap;scrollbar-width:none;border-right:none;border-bottom:1px solid #2c4131}
+ #trainer .side::-webkit-scrollbar{display:none}
+ #trainer .side>.eyebrow,#trainer .side>.small,#trainer .side>p,#trainer .side>hr,#trainer .side>.select{display:none!important}
+ #trainer .side .modebtn{font-size:11px;flex:1 0 auto;min-height:35px;width:auto;padding:8px 10px;margin:0;border-radius:10px;text-align:center}
+ #trainer .chatwrap{height:100%;min-height:0}
+ #trainer .chathead{flex:0 0 59px;height:59px;padding:0 12px;gap:9px}
+ #trainer .chathead .avatar{width:36px;height:36px;flex-basis:36px;border-radius:11px;font-size:14px}
+ #trainer .chathead .name{font-size:13px}
+ #trainer .chat-person-role{font-size:10px;max-width:100%;margin:3px 0}
+ #trainer .chathead .active{display:none}
+ #trainer .chathead .btn{font-size:10px;padding:8px 9px}
+ #trainer .room-brief-toggle{padding:8px 9px;font-size:10px}
+ #trainer .profilecard{display:none;margin:0;padding:11px 13px;border-radius:0;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px 15px;max-height:155px;overflow-y:auto}
+ #trainer .profilecard.room-open{display:grid}
+ #trainer .profilecard .pf:nth-child(n+3){display:block}
+ #trainer .profilecard .pf label{font-size:9px}
+ #trainer .profilecard .pf span{font-size:11px}
+ #trainer .messages{padding:17px 13px 24px;gap:9px}
+ #trainer .messages>.bubble{font-size:13px;padding:12px 13px;max-width:88%;line-height:1.47}
+ #trainer .guidebar{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-areas:"guidance level" "feedback feedback";gap:5px 7px;min-height:0;padding:8px 11px}
+ #trainer .guidebar .modulebadge{display:none!important}
+ #trainer .guidebar #guideMode{grid-area:guidance}
+ #trainer .guidebar #mobileDifficulty{grid-area:level}
+ #trainer .guidebar select{width:100%;min-width:0;height:34px;min-height:34px;font-size:11px;padding:6px 9px}
+ #trainer .guidebar .guidefeedback{grid-area:feedback;display:block;font-size:9px;line-height:1.25;max-height:26px;overflow:hidden;color:#90a998}
+ #trainer .composer{min-height:67px;padding:8px 11px calc(9px + env(safe-area-inset-bottom,0px));gap:8px}
+ #trainer .composer input{font-size:16px;min-height:45px;border-radius:12px;padding:10px 12px}
+ #trainer .composer .send{height:45px;flex-basis:46px;width:46px;border-radius:12px}
+}
+@media(max-width:370px){
+ #trainer .trainnav .logo{font-size:9px}
+ #trainer .chathead .btn{padding:7px;font-size:9px}
+ #trainer .room-brief-toggle{padding:7px;font-size:9px}
+ #trainer .chat-person-role{font-size:9px}
+ #trainer .side .modebtn{padding:8px;font-size:10px}
+}
+@media(max-height:620px) and (max-width:900px){
+ #trainer .guidebar .guidefeedback{display:none}
+ #trainer .chathead{flex-basis:52px;height:52px}
+ #trainer .trainnav{height:46px}
+ #trainer .trainbody{height:calc(100dvh - 46px)}
+}
+ 
+/* Briefing: profile-first hierarchy, fixed action rail, independently scrollable details */
+#briefing.briefmodal{
+ z-index:10020;background:rgba(4,10,6,.85);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+ padding:22px;display:flex;align-items:center;justify-content:center;min-height:0
+}
+#briefing.briefmodal.hidden{display:none!important}
+#briefing .briefbox{
+ position:relative;display:flex;flex-direction:column;width:min(850px,100%);height:auto;max-height:min(91dvh,940px);
+ min-height:0;padding:0;overflow:hidden;border-radius:24px;
+ background:linear-gradient(155deg,#141e17,#0b110e 64%);border:1px solid #3b5b43;
+ box-shadow:0 32px 110px #000b,0 0 65px rgba(102,170,118,.11)
+}
+#briefing .briefbox:before{content:"";position:absolute;left:0;right:0;top:0;height:2px;
+ background:linear-gradient(90deg,transparent 7%,#77bb85 55%,transparent 95%);opacity:.75;z-index:3;pointer-events:none}
+#briefing .room-brief-scroll{min-height:0;overflow-y:auto;scrollbar-color:#385741 transparent;scrollbar-width:thin;padding:26px 28px 13px;overscroll-behavior:contain}
+#briefing .briefhead{display:flex;align-items:center;justify-content:space-between;gap:14px;padding-bottom:21px;border-bottom:1px solid #2b4532}
+#briefing .briefperson{display:flex;align-items:center;gap:14px;min-width:0;flex:1}
+#briefing .briefavatar{width:53px;height:53px;flex:0 0 53px;background:linear-gradient(125deg,#b4e1bc,#89b995);border-radius:15px;color:#12241a;font-size:21px;
+ box-shadow:0 0 0 1px #679671,0 0 25px rgba(148,218,162,.12)}
+#briefing .briefperson .eyebrow{font-size:9px;line-height:1.4;letter-spacing:.16em;color:#a3d3aa}
+#briefing #bName{font-size:clamp(23px,3.7vw,31px)!important;line-height:1.1!important;
+ letter-spacing:-.045em;font-weight:800!important;color:#eef7ed;margin:6px 0 2px!important;overflow-wrap:anywhere}
+#briefing .room-brief-role{font-size:12px;line-height:1.4;color:#a2bba5;max-width:440px;overflow-wrap:anywhere;margin-top:3px}
+#briefing #bLevel{flex:0 0 auto;font-size:10px;letter-spacing:0;border:1px solid #476b4e;border-radius:999px;padding:7px 11px;color:#bfe9c7;background:#1a3121;max-width:170px;text-align:center}
+#briefing .missionbox{margin:18px 0 14px;background:linear-gradient(115deg,#1a3222,#122017);border:1px solid #4b7354;border-radius:15px;padding:17px 19px;box-shadow:inset 0 1px rgba(198,245,200,.055)}
+#briefing .missionbox label{color:#a9daad;font-size:10px;letter-spacing:.14em}
+#briefing .missionbox p{color:#e5f4e6;font-size:13px;line-height:1.5;margin-top:7px}
+#briefing .briefgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:0 0 13px}
+#briefing .briefitem{min-width:0;border:1px solid #2f4635;background:#111a14;padding:14px 15px;border-radius:13px;margin:0}
+#briefing .briefitem:nth-child(1),#briefing .briefitem:nth-child(4){grid-column:span 2}
+#briefing .briefitem label{color:#829c88;font-size:9px;letter-spacing:.12em;font-weight:800;margin-bottom:6px}
+#briefing .briefitem div{font-size:12px;line-height:1.45;color:#c7d9ca;overflow-wrap:anywhere}
+#briefing .profilepeek{background:#111c15;border:1px solid #344d39;border-radius:15px;padding:16px 18px;margin:0}
+#briefing .profilepeek>.eyebrow{color:#a1c9aa;font-size:9px;letter-spacing:.15em}
+#briefing .profiletop{gap:10px}
+#briefing .profilepeek .profileavatar{width:44px;height:44px;flex:0 0 44px;border-radius:13px;
+ font-size:17px;box-shadow:none;border:1px solid #52785a;color:#e5f5e7}
+#briefing .profilepeek .profiletop b{font-size:13px;overflow-wrap:anywhere;color:#e9f6eb}
+#briefing .profilepeek .profiletop .muted{font-size:11px;line-height:1.4;color:#8eaa97}
+#briefing .profilepeek .btn{border:1px solid #3e6146;background:#1a2e20;color:#c8e5cc;
+ font-size:11px;padding:9px 11px;border-radius:9px;margin-top:10px!important}
+#briefing .profilepeek .btn:hover{border-color:#85bf8e;background:#24402b;transform:none}
+#briefing .briefactions{flex:0 0 auto;display:flex;align-items:center;gap:10px;
+ padding:14px 28px calc(14px + env(safe-area-inset-bottom,0px));background:#101912;
+ border-top:1px solid #304a37;z-index:2;box-shadow:0 -9px 30px #0003
+}
+#briefing .briefnote{display:block;max-width:none;flex:1;font-size:10px;line-height:1.5;color:#799484;margin-right:auto}
+#briefing .briefactions .btn{font-size:12px;font-weight:780;padding:11px 16px;border-radius:10px;min-height:41px;white-space:nowrap;transition:background .16s,transform .16s}
+#briefing .briefactions .btn.ghost{background:#18251c;border:1px solid #385441;color:#b9d4bf}
+#briefing #briefEnter{background:linear-gradient(120deg,#c4edc9,#a6dbae);border:1px solid #b9e9c3;color:#102718;box-shadow:0 0 22px rgba(150,216,158,.11)}
+#briefing #briefEnter:hover{transform:translateY(-1px);box-shadow:0 0 25px rgba(150,216,158,.21)}
+#briefing #briefEnter:disabled{opacity:.55;box-shadow:none;cursor:wait}
+#briefing .room-brief-scroll{animation:roomBriefIn .3s ease both}
+@keyframes roomBriefIn{from{opacity:.55;transform:translateY(5px)}to{opacity:1;transform:none}}
+@keyframes roomMessageIn{from{opacity:.25;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:700px){
+ #briefing.briefmodal{padding:0;align-items:stretch}
+ #briefing .briefbox{width:100%;height:100dvh;max-height:100dvh;min-height:0;border:0;border-radius:0;box-shadow:none}
+ #briefing .room-brief-scroll{flex:1;min-height:0;padding:23px 17px 16px}
+ #briefing .briefhead{padding-bottom:16px;gap:10px}
+ #briefing .briefperson{gap:11px}
+ #briefing .briefavatar{height:44px;width:44px;flex-basis:44px;border-radius:12px;font-size:18px}
+ #briefing #bName{font-size:24px!important;letter-spacing:-.035em!important;line-height:1.1!important}
+ #briefing .room-brief-role{font-size:11px}
+ #briefing #bLevel{font-size:9px;padding:6px 9px;max-width:104px;line-height:1.25}
+ #briefing .missionbox{margin:13px 0 10px;padding:13px 15px}
+ #briefing .missionbox p{font-size:12px;line-height:1.45;margin-top:5px}
+ #briefing .briefgrid{gap:8px;margin-bottom:10px}
+ #briefing .briefitem{padding:11px 12px;border-radius:11px}
+ #briefing .briefitem label{font-size:8px;line-height:1.35;margin-bottom:5px}
+ #briefing .briefitem div{font-size:11px;line-height:1.45}
+ #briefing .profilepeek{padding:13px 14px}
+ #briefing .profilepeek .profiletop{margin-top:8px!important}
+ #briefing .profilepeek .btn{padding:8px 10px}
+ #briefing .briefactions{padding:11px 13px calc(12px + env(safe-area-inset-bottom,0px));gap:9px}
+ #briefing .briefnote{display:none}
+ #briefing .briefactions .btn{flex:1;min-height:44px}
+ #briefing #briefEnter{flex:1.7}
+}
+@media(max-width:355px){
+ #briefing #bName{font-size:21px!important}
+ #briefing .briefitem:nth-child(2),#briefing .briefitem:nth-child(3){grid-column:span 2}
+}
+@media(prefers-reduced-motion:reduce){
+ #trainer .messages>.bubble,#briefing .room-brief-scroll{animation:none!important}
+ #trainer .composer .send,#briefing #briefEnter{transition:none!important}
+}
