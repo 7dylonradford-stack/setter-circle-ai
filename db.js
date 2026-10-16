@@ -5,6 +5,11 @@ export const pool=process.env.DATABASE_URL?new Pool({connectionString:process.en
 export async function initDb(){
  if(!pool){console.warn("DATABASE_URL not set; persistent platform features disabled");return}
  await pool.query(`
+ CREATE TABLE IF NOT EXISTS workplace_progress(
+  user_id UUID PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+  state JSONB NOT NULL DEFAULT '{}'::jsonb,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+ );
  CREATE TABLE IF NOT EXISTS users(
   id UUID PRIMARY KEY, email TEXT UNIQUE NOT NULL, name TEXT NOT NULL, password_hash TEXT NOT NULL,
   role TEXT NOT NULL DEFAULT 'student', xp INTEGER NOT NULL DEFAULT 0, streak INTEGER NOT NULL DEFAULT 0,
