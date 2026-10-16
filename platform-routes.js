@@ -50,19 +50,26 @@ export function registerPlatformRoutes(app,{requireUser,requireAdmin}){
   res.json({ok:true,week_start:w});
  }catch(e){sendError(res,e)}});
  app.get("/api/mentor/submissions",requireUser,async(req,res)=>{try{
-  const r=await q("SELECT id,category,subject,submission,status,feedback,submitted_at,reviewed_at FROM mentor_submissions WHERE user_id=$1 ORDER BY submitted_at DESC LIMIT 100",[req.user.id]);res.json({submissions:r.rows});
+  const r=await q("SELECT id,category,subject,submission,status,feedback,acknowledged_at,submitted_at,reviewed_at FROM mentor_submissions WHERE user_id=$1 ORDER BY submitted_at DESC LIMIT 100",[req.user.id]);res.json({submissions:r.rows});
  }catch(e){sendError(res,e)}});
  app.post("/api/mentor/submissions",requireUser,async(req,res)=>{try{
   const cat=clean(req.body?.category,50),subject=clean(req.body?.subject,150),note=clean(req.body?.submission,3000);
   if(!["programme","conversation","workplace","general"].includes(cat)||subject.length<3||note.length<15)return res.status(400).json({error:"Choose a category and describe your work"});
   const r=await q("INSERT INTO mentor_submissions(id,user_id,category,subject,submission) VALUES($1,$2,$3,$4,$5) RETURNING id,status,submitted_at",[crypto.randomUUID(),req.user.id,cat,subject,note]);res.json({submission:r.rows[0]});
  }catch(e){sendError(res,e)}});
+
+ app.post("/api/mentor/submissions/:id/acknowledge",requireUser,async(req,res)=>{try{
+  if(!uuid(req.params.id))return res.status(400).json({error:"Invalid submission"});
+  const r=await q("UPDATE mentor_submissions SET acknowledged_at=NOW() WHERE id=$1 AND user_id=$2 AND status='needs_changes' AND feedback IS NOT NULL RETURNING id,acknowledged_at",[req.params.id,req.user.id]);
+  if(!r.rows.length)return res.status(404).json({error:"No actionable mentor feedback found"});
+  res.json({acknowledged:r.rows[0]});
+ }catch(e){sendError(res,e)}});
  app.get("/api/admin/mentor/submissions",requireAdmin,async(req,res)=>{try{
   const r=await q("SELECT m.*,u.name student_name,u.email student_email FROM mentor_submissions m JOIN users u ON u.id=m.user_id ORDER BY CASE WHEN m.status='pending' THEN 0 ELSE 1 END,m.submitted_at DESC LIMIT 200");res.json({submissions:r.rows});
  }catch(e){sendError(res,e)}});
  app.patch("/api/admin/mentor/submissions/:id",requireAdmin,async(req,res)=>{try{
   if(!uuid(req.params.id)||!["approved","needs_changes"].includes(req.body?.status)||clean(req.body?.feedback).length<10)return res.status(400).json({error:"Select a decision and provide feedback"});
-  const r=await q("UPDATE mentor_submissions SET status=$2,feedback=$3,reviewed_by=$4,reviewed_at=NOW() WHERE id=$1 RETURNING id,status",[req.params.id,req.body.status,clean(req.body.feedback,3000),req.user.id]);
+  const r=await q("UPDATE mentor_submissions SET status=$2,feedback=$3,acknowledged_at=NULL,reviewed_by=$4,reviewed_at=NOW() WHERE id=$1 RETURNING id,status",[req.params.id,req.body.status,clean(req.body.feedback,3000),req.user.id]);
   if(!r.rows.length)return res.status(404).json({error:"Submission not found"});res.json({review:r.rows[0]});
  }catch(e){sendError(res,e)}});
  app.get("/api/assessments",requireUser,async(req,res)=>{try{
@@ -143,7 +150,7 @@ export function registerPlatformRoutes(app,{requireUser,requireAdmin}){
    q("SELECT day FROM programme_progress WHERE user_id=$1 AND completed=TRUE ORDER BY day",[req.user.id]),
    q("SELECT l.id,l.title,l.module_number FROM training_lessons l LEFT JOIN lesson_progress lp ON lp.lesson_id=l.id AND lp.user_id=$1 WHERE l.published=TRUE AND lp.completed_at IS NULL ORDER BY l.module_number,l.sort_order,l.created_at LIMIT 1",[req.user.id]),
    q("SELECT COUNT(*)::int total,COUNT(lp.completed_at)::int completed FROM training_lessons l LEFT JOIN lesson_progress lp ON lp.lesson_id=l.id AND lp.user_id=$1 WHERE l.published=TRUE",[req.user.id]),
-   q("SELECT id,subject,feedback FROM mentor_submissions WHERE user_id=$1 AND status='needs_changes' AND feedback IS NOT NULL ORDER BY reviewed_at DESC LIMIT 1",[req.user.id]),
+   q("SELECT id,subject,feedback FROM mentor_submissions WHERE user_id=$1 AND status='needs_changes' AND acknowledged_at IS NULL AND feedback IS NOT NULL ORDER BY reviewed_at DESC LIMIT 1",[req.user.id]),
    q("SELECT COUNT(*)::int pending FROM mentor_submissions WHERE user_id=$1 AND status='pending'",[req.user.id]),
    q("SELECT id,updated_at FROM training_sessions WHERE user_id=$1 AND expires_at>NOW() ORDER BY updated_at DESC LIMIT 1",[req.user.id]),
    q("SELECT overall_score FROM simulation_results WHERE user_id=$1 ORDER BY created_at DESC LIMIT 50",[req.user.id]),
@@ -165,7 +172,7 @@ export function registerPlatformRoutes(app,{requireUser,requireAdmin}){
    assessment_status:assessment.rows[0]?.status||null
   };
   const steps=[];
-  if(mentor.rows[0])steps.push({key:"mentor",eyebrow:"MENTOR FEEDBACK",title:"Apply your mentor's corrections",detail:mentor.rows[0].subject,action:"mentor"});
+  if(mentor.rows[0])steps.push({key:"mentor",eyebrow:"MENTOR FEEDBACK",title:"Review your mentor's corrections",detail:mentor.rows[0].subject,action:"mentor"});
   if(session.rows[0])steps.push({key:"resume",eyebrow:"IN PROGRESS",title:"Resume your conversation",detail:"Continue your saved AI roleplay where you stopped.",action:"resume"});
   if(nextLesson.rows[0]){
    const lesson=nextLesson.rows[0];
