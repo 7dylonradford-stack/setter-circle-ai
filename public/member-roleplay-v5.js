@@ -105,7 +105,7 @@
     void panel.offsetWidth;
     panel.classList.add('rp-appear');
     requestAnimationFrame(()=>{
-      panel.scrollIntoView({behavior:window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth',block:'nearest'});
+      panel.scrollIntoView({behavior:window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'nearest'});
     });
   }
   function setDifficulty(level){
