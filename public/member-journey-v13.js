@@ -78,7 +78,7 @@ function render(){
  '<div class="journey-v13-body">'+
   '<div class="journey-v13-tasks"><div class="journey-v13-col-title">RECOMMENDED NEXT STEPS <span>0'+items.length+'</span></div>'+steps+
    '<button class="journey-v13-all" data-journey-all>Open your full plan <span aria-hidden="true">↗</span></button></div>'+
-  '<div class="journey-v13-summary"><div class="journey-v13-col-title">YOUR VERIFIED TRAINING ACTIVITY</div>'+
+  '<div class="journey-v13-summary"><div class="journey-v13-col-title">YOUR RECORDED TRAINING ACTIVITY</div>'+
    '<div class="journey-v13-milestone"><span>TRAINING STAGE</span><strong>'+escapeText(stageLabel(summary.stage))+'</strong><small>Milestones based on completed programme days and recent simulated practice. Not a job credential.</small></div>'+
    '<div class="journey-v13-bars">'+
    progressLine('40-DAY PROGRAMME',summary.programme_completed||0,40)+
