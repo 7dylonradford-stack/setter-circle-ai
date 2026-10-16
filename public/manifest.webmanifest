@@ -1,0 +1,18 @@
+{
+  "name": "The Setter Circle",
+  "short_name": "Setter Circle",
+  "description": "Appointment setting education, simulated practice and career development",
+  "start_url": "/?platform=1",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#080b07",
+  "theme_color": "#D0F83B",
+  "icons": [
+    {
+      "src": "/setter-logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
