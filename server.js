@@ -7,6 +7,8 @@ import { initDb, q, pool } from "./db.js";
 import { registerExperience } from "./experience.js";
 
 const app = express();
+// Allow larger JSON only for authenticated image uploads; keep other API payloads small.
+app.use("/api/admin/experience/photo",express.json({limit:"1.5mb"}));
 app.use(express.json({limit:"200kb"}));
 app.set("trust proxy",1);
 const accessTokens = new Map();
