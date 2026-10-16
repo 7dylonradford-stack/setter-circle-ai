@@ -122,7 +122,7 @@ document.addEventListener('click',function(e){
   const p=el('memberNavMorePanel');const open=p.classList.toggle('is-open');
   nav.querySelector('[data-more-toggle]').setAttribute('aria-expanded',String(open));return;
  }
- if(e.target.closest('#memberAppNav [data-member-logout]')){window.logoutAccount();viewDashboard();return;}
+ if(e.target.closest('#memberAppNav [data-member-logout]')){Promise.resolve(window.logoutAccount()).then(()=>{el('workspace').classList.add('hidden');el('site').classList.remove('hidden');window.openAccount();});return;}
  if(e.target.closest('#memberAppNav [data-member-exit]')){deactive();el('accountModal').classList.add('hidden');el('workspace').classList.add('hidden');el('site').classList.remove('hidden');document.body.style.overflow='';return;}
  const action=e.target.closest('[data-member-action]');
  if(action){chooseAction(action.dataset.memberAction);return;}
@@ -166,7 +166,7 @@ window.enterTrainer=function(){document.body.classList.add('member-focus-mode');
 const cancel=window.cancelSetup;
 window.cancelSetup=function(){const r=cancel.apply(this,arguments);document.body.classList.remove('member-focus-mode');return r};
 const interview=window.startInterview;
-window.startInterview=async function(){document.body.classList.add('member-focus-mode');try{return await interview.apply(this,arguments)}finally{if(el('interviewModal').classList.contains('hidden'))document.body.classList.remove('member-focus-mode')}};
+window.startInterview=async function(){document.body.classList.add('member-focus-mode');try{return await interview.apply(this,arguments)}finally{if(el('interviewModal').classList.contains('hidden'))document.body.classList.remove('member-focus-mode');else el('workspace').classList.add('hidden')}};
 const finishInterview=window.closeInterview;
 window.closeInterview=function(){const r=finishInterview.apply(this,arguments);document.body.classList.remove('member-focus-mode');if(localStorage.getItem('setterAccountToken'))viewDashboard();return r};
 if(new URLSearchParams(location.search).get('platform')==='1'){
