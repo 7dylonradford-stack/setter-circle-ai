@@ -74,9 +74,13 @@ function decorate(node){
 }
 function check(){
  const bubble=$('messages')?.querySelector('.bubble.them.typing');
- if(!bubble||!shown()){
-  stopAudio();return;
+ const status=document.querySelector('#trainer .chathead .active');
+ const waiting=!!bubble&&shown();
+ if(status){
+  status.classList.toggle('room10-waiting',waiting);
+  status.textContent=waiting?'● Typing a reply':'● Simulated prospect';
  }
+ if(!waiting){stopAudio();return}
  decorate(bubble);
  if(!enabled()){stopAudio();return}
  beginAudio(bubble);
@@ -84,6 +88,11 @@ function check(){
 function init(){
  const messages=$('messages'),trainer=$('trainer');
  if(!messages||!trainer)return;
+ const profileButton=trainer.querySelector('.chathead button[onclick*="openProspectProfile"]');
+ if(profileButton){
+  profileButton.textContent='Profile';
+  profileButton.setAttribute('aria-label','View the simulated prospect public profile');
+ }
  const observer=new MutationObserver(check);
  observer.observe(messages,{childList:true});
  const visibilityObserver=new MutationObserver(check);
