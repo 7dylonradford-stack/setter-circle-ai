@@ -96,7 +96,7 @@ function enhanceRoot(){
   card.classList.add('sc9-root-card','sc9-root-card-'+meta.kind);
   card.style.setProperty('--sc9-delay',Math.min(i,6)*70+'ms');
   const icon=card.querySelector('.member-root-card-icon');
-  if(icon){icon.innerHTML=art(meta.kind);icon.classList.add('sc9-visual-tile')}
+  if(icon)icon.remove()
   const copy=card.querySelector('.member-root-card-copy');
   if(copy){
    const titleEl=copy.querySelector('strong');
@@ -108,7 +108,7 @@ function enhanceRoot(){
    const cta=document.createElement('span');cta.className='sc9-inline-cta';
    cta.textContent=meta.label;copy.appendChild(cta);
   }
-  card.insertAdjacentHTML('beforeend',preview(meta.kind));
+  /* Decorative illustrations intentionally removed from navigation windows. */
  });
 }
 function enhanceDashboard(){
@@ -123,8 +123,8 @@ function enhanceDashboard(){
   card.classList.add('sc9-sig-tool');
   card.style.setProperty('--sc9-delay',Math.min(i,4)*70+'ms');
   const tile=card.querySelector('.sig-tool-art');
-  if(tile){tile.innerHTML=art(meta.kind);tile.classList.add('sc9-dashboard-art')}
-  card.insertAdjacentHTML('beforeend',preview(meta.kind));
+  if(tile)tile.remove()
+  /* Decorative illustrations intentionally removed from navigation windows. */
  });
  const hero=panel.querySelector('.todaycard.signature-feature');
  if(hero&&!hero.dataset.sc9Enhanced){
