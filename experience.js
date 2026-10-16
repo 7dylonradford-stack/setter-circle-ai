@@ -131,6 +131,44 @@ export function registerExperience(app, client, requireAdmin) {
     }catch{return reject(res,503,"Analytics are currently unavailable.");}
   });
 
+
+  // Self-service content editor: only administrator-approved testimonials are public.
+  const contentLimits = {
+    dylon_bio:350,amar_bio:350,
+    dylon_photo:1500,amar_photo:1500,dylon_video_url:1500,amar_video_url:1500,
+    booking_url:1500,
+    testimonial_1_name:100,testimonial_1_text:600,
+    testimonial_2_name:100,testimonial_2_text:600,
+    testimonial_3_name:100,testimonial_3_text:600
+  };
+  const safeUrl = value => {
+    if (!value) return "";
+    try {const u = new URL(value);return ["https:","http:"].includes(u.protocol) ? u.href : "";}
+    catch {return "";}
+  };
+  const readContent = async () => {
+    if(!pool) return {};
+    const r=await q("SELECT data FROM experience_content WHERE content_key='public'");
+    return r.rows[0]?.data || {};
+  };
+  app.get("/api/experience/content",async(req,res)=>{
+    try {res.set("Cache-Control","no-store").json({content:await readContent()});}
+    catch {res.json({content:{}});}
+  });
+  app.put("/api/admin/experience/content",requireAdmin,async(req,res)=>{
+    if (!pool) return reject(res,503,"The content database is unavailable");
+    const data={};
+    for(const [key,limit] of Object.entries(contentLimits)){
+      const input=clean(req.body?.[key],limit);
+      data[key]=key.endsWith("_photo")||key.endsWith("_url")?safeUrl(input):input;
+    }
+    for(let i=1;i<=3;i++) data["testimonial_"+i+"_approved"] = req.body?.["testimonial_"+i+"_approved"]===true;
+    try {
+      await q("INSERT INTO experience_content(content_key,data,updated_at) VALUES('public',$1::jsonb,NOW()) ON CONFLICT(content_key) DO UPDATE SET data=$1::jsonb,updated_at=NOW()",[JSON.stringify(data)]);
+      res.json({ok:true,content:data});
+    } catch(e) {console.error("Experience content save failed",e?.message);reject(res,503,"Could not save public content.");}
+  });
+
   // Keep enquiry records only for a bounded retention period, unless a shorter legal requirement applies.
   const purgeOldEnquiries = async () => {
     if (!pool) return;
