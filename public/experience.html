@@ -17,6 +17,9 @@
 
 /* The welcome hero is only visible on the topic-selection screen. */
 body.experience-topic-open .hero,body.experience-topic-open .strip,body.experience-topic-open #experienceMenu{display:none!important}body.experience-topic-open .experience-back{display:block!important}body.experience-topic-open .nav{position:relative}body.experience-topic-open .experience-panel.is-active{display:block!important}
+
+/* Before Joining opens directly to the topic cards: no welcome hero or example chat. */
+.hero,.strip{display:none!important}.experience-menu{padding-top:38px}body:not(.experience-topic-open) .experience-menu{display:block}body.experience-topic-open .experience-menu{display:none!important}
 </style>
 </head>
 <body>
