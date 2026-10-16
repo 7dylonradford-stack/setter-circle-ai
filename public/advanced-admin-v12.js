@@ -5,7 +5,8 @@ const A=window.SetterAdvanced;if(!A)return;
 const {api,json,esc,$,notice,show,view,section,btn,card,input,select,textArea,aside,action,date}=A;
 let admin=false,analytics=null,outcomes=[],submissions=[],feedback=[],agencies=[],settings={};
 async function checkAdmin(){
- const d=await api("/api/account/me");admin=d.user?.role==="admin";
+ try{await api("/api/advanced/admin/analytics");admin=true}
+ catch(e){admin=false}
  return admin;
 }
 async function adminPage(){
@@ -66,7 +67,7 @@ action("aa-save-project",async()=>{
  await api("/api/advanced/admin/projects",json({employer_name:$("aaPEmp")?.value,title:$("aaPTitle")?.value,brief:$("aaPBrief")?.value,requirements:$("aaPReq")?.value,published:!!$("aaPPub")?.checked}));
  notice("Employer brief saved");return adminPage();
 });
-action("aa-admin-outcomes",async()=>{
+async function renderOutcomeQueue(){
  await show("Outcome Verification","Review employment claims before publishing verified statistics.",async()=>{
   const d=await api("/api/advanced/admin/outcomes");outcomes=d.outcomes||[];
   let html=section("QUALITY / EVIDENCE","Reported career outcomes","Approve only after checking convincing independent evidence and consent.");
@@ -74,10 +75,10 @@ action("aa-admin-outcomes",async()=>{
    '<div class="aa-actions">'+btn("aa-verify-outcome","Verified",'data-id="'+esc(x.id)+'"')+btn("aa-reject-outcome","Reject",'data-id="'+esc(x.id)+'"')+'</div></div>').join("")+'</div>';
   view("Outcome Verification","Accountable human verification.",html,"ADMIN / VERIFICATION");
  });
-});
-action("aa-verify-outcome",async b=>{await api("/api/advanced/admin/outcomes/"+b.dataset.id,json({status:"verified"},"PATCH"));notice("Verified");return actions["aa-admin-outcomes"]()});
-action("aa-reject-outcome",async b=>{await api("/api/advanced/admin/outcomes/"+b.dataset.id,json({status:"rejected"},"PATCH"));notice("Rejected");return actions["aa-admin-outcomes"]()});
-const actions={"aa-admin-outcomes":()=>document.querySelector('[data-aa="aa-admin-outcomes"]')?.click()};
+}
+action("aa-admin-outcomes",renderOutcomeQueue);
+action("aa-verify-outcome",async b=>{await api("/api/advanced/admin/outcomes/"+b.dataset.id,json({status:"verified"},"PATCH"));notice("Verified");return renderOutcomeQueue()});
+action("aa-reject-outcome",async b=>{await api("/api/advanced/admin/outcomes/"+b.dataset.id,json({status:"rejected"},"PATCH"));notice("Rejected");return renderOutcomeQueue()});
 action("aa-admin-review",async()=>{
  await show("Employer Assessment Reviews","Human review of practical assignments.",async()=>{
   const d=await api("/api/advanced/admin/projects/reviews");submissions=d.reviews||[];
@@ -133,6 +134,6 @@ action("aa-settings",async()=>{
 });
 action("aa-save-settings",async()=>{
  await api("/api/advanced/settings",json({locale:$("aaLocale")?.value,voice_enabled:!!$("aaVoice")?.checked,reminders:!!$("aaReminders")?.checked},"PUT"));
- notice("Preferences saved");return adminPage();
+ notice("Preferences saved");return A.home();
 });
 })();
