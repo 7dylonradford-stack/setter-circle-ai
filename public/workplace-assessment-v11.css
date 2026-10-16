@@ -1,0 +1,9 @@
+
+.shift-review-card{border:1px solid #648036!important;background:linear-gradient(145deg,#182713,#0e160c)!important;box-shadow:0 0 25px rgba(208,248,59,.065)}
+.shift-review-summary{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.5fr);gap:20px;align-items:center;margin-top:20px}
+.shift-review-number{font-size:clamp(47px,6vw,72px);font-weight:790;line-height:1.05;letter-spacing:-.06em;color:#d0f83b}
+.shift-review-number small{font-size:23px;color:#a9c576;letter-spacing:-.025em}
+.shift-review-row{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid #364c2d;font-size:12px;color:#ccd7bc}
+.shift-review-row strong{color:#d8f492;text-align:right}
+.shift-review-card li{margin:8px 0;color:#c0d3ae;line-height:1.5}
+@media(max-width:700px){.shift-review-summary{grid-template-columns:1fr;gap:12px}.shift-review-number{font-size:49px}}
