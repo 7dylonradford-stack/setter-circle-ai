@@ -199,3 +199,17 @@
  #trainer .messages>.bubble,#briefing .room-brief-scroll{animation:none!important}
  #trainer .composer .send,#briefing #briefEnter{transition:none!important}
 }
+
+
+/* Researching a profile must always sit above the briefing overlay. */
+#prospectProfile.profilemodal{z-index:10050;background:rgba(5,12,8,.92);backdrop-filter:blur(15px)}
+#prospectProfile .profilemodalbox{background:linear-gradient(145deg,#132017,#0d140f);border:1px solid #46644d;border-radius:19px;box-shadow:0 26px 90px #000b}
+#prospectProfile .profilemodalbox .eyebrow{color:#a9d5ae}
+#prospectProfile .profilemodalbox .btn.ghost{background:#192b1e;border-color:#436b4e;color:#d5ecda}
+#prospectProfile .researchitem{background:#121e16;border-color:#324b39}
+#prospectProfile .researchitem label{color:#89a892}
+#prospectProfile .researchitem div{color:#e0ece2}
+@media(max-width:700px){
+ #prospectProfile.profilemodal{padding:10px}
+ #prospectProfile .profilemodalbox{width:100%;max-height:calc(100dvh - 20px);padding:19px 15px;border-radius:16px}
+}
