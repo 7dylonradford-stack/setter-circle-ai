@@ -140,7 +140,7 @@ var c=data.content||{},photos=data.photos||{},founders=document.querySelectorAll
 var p=item[0],card=item[1];if(!card)return;
 var bio=c[p+'_bio']||card.querySelector('p').textContent;card.querySelector('p').textContent=p==='dylon'?'Co-founder · Platform, training and marketing.':'Co-founder · Mentoring, interviews and consultations.';
 var photo=validLink(photos[p]||c[p+'_photo']);
-if(photo){var portrait=document.createElement('img');portrait.src=photo;portrait.alt=p==='dylon'?'Dylon portrait':'Amar portrait';portrait.loading='lazy';portrait.className='founder-photo';var avatar=card.querySelector('.initials');portrait.onerror=function(){if(portrait.parentNode)portrait.replaceWith(avatar);};avatar.replaceWith(portrait);}
+if(photo){var portrait=document.createElement('img');portrait.src=photo;portrait.alt=p==='dylon'?'Dylon portrait':'Amar portrait';portrait.loading='lazy';portrait.className='founder-photo';portrait.style.objectPosition=(Number.isFinite(+c[p+'_photo_x'])?Math.max(0,Math.min(100,+c[p+'_photo_x'])):50)+'% '+(Number.isFinite(+c[p+'_photo_y'])?Math.max(0,Math.min(100,+c[p+'_photo_y'])):50)+'%';var avatar=card.querySelector('.initials');portrait.onerror=function(){if(portrait.parentNode)portrait.replaceWith(avatar);};avatar.replaceWith(portrait);}
 var video=validLink(c[p+'_video_url']);founderDetails[p]={bio:bio,photo:photo,video:video};var b=document.createElement('button');b.type='button';b.className='btn ghost';b.textContent='Read full introduction →';b.onclick=function(){showFounder(p);};card.insertBefore(b,card.querySelector('.placeholder'));
 
 });
