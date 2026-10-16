@@ -85,24 +85,48 @@ export function registerExperience(app, client, requireAdmin) {
     const id = clean(req.body?.session_id,50),s=sessions.get(id);
     if (!s || s.ip !== ipKey(req)) return reject(res,404,"Session not found");
     if (!s.messages.length) return reject(res,400,"Send at least one message first");
-    const messages=s.messages.map(x=>x.user),text=messages.join(" ");
-    const questions=messages.filter(x=>x.includes("?")).length;
-    const verbose=messages.filter(x=>x.split(/\s+/).length>48).length;
-    const pushy=messages.filter(x=>/\b(book (a |the )?call now|guarantee|you need to|no brainer)\b/i.test(x)).length;
-    const discovery=/\b(what|how|why|currently|struggling|challenge|process|leads|appointments|pipeline|clients)\b/i.test(text);
-    const specific=/\b(agency|marketing|service business|local business|client|business)\b/i.test(text);
-    const score=Math.max(25,Math.min(88,47+Math.min(questions,3)*8+(discovery?12:0)+(specific?7:0)-verbose*8-pushy*12));
+    const messages=s.messages.map(x=>x.user);
+    // Award points for observable selling skills, not merely for sending messages or punctuation.
+    const gibberish=/^(?:[a-z]{1,3}\s*){1,3}$/i;
+    const nonsense=/\b(?:asdf|qwerty|lorem|ipsum|blah|nonsense|random|test(?:ing)?|banana|potato|lol|haha|1234|zzzz|xxxx)\b/i;
+    const discovery=/\b(?:how|what|where|when|why|which|could you|can you|tell me)\b.{0,100}\b(?:lead|client|customer|prospect|appointment|booking|pipeline|sale|business|agency|referral|marketing|outreach|conversion|revenue|growth|challenge|process|currently|struggl|new enquiries|new inquiries)/i;
+    const context=/\b(?:you said|you mentioned|as you said|that makes sense|so you're|your agency|your business|your clients|your leads|your referrals|your current|following up|based on what|sounds like)\b/i;
+    const specific=/\b(?:leads|clients|customers|referrals|appointments|pipeline|bookings|agency|marketing|outreach|sales|prospects|enquiries|inquiries|follow.up|conversion)\b/i;
+    const pushy=/\b(?:book (?:a |the )?call now|guaranteed results|you need to|no brainer|buy now|sign up now|100% guaranteed)\b/i;
+    let score=0,meaningful=0,goodQuestions=0,contextual=0,relevant=0,spam=0,pressure=0,verbose=0;
+    for(const raw of messages){
+      const m=raw.trim(),words=m.match(/[a-z]+(?:'[a-z]+)?/gi)||[],unique=new Set(words.map(w=>w.toLowerCase()));
+      const repeated=words.length>=5 && unique.size/words.length<0.4;
+      const lowQuality=words.length<4||unique.size<3||repeated||nonsense.test(m)||gibberish.test(m)||/^(.)\1{4,}$/i.test(m)||/^[^a-z]*$/i.test(m);
+      if(lowQuality){spam++;continue;}
+      meaningful++;
+      const asksRelevant=/\?/.test(m)&&discovery.test(m);
+      if(asksRelevant){goodQuestions++;score+=17;}
+      if(specific.test(m)){relevant++;score+=7;}
+      if(context.test(m)){contextual++;score+=8;}
+      if(words.length<=40){score+=4;}else if(words.length>65){verbose++;score-=7;}
+      if(pushy.test(m)){pressure++;score-=14;}
+      if(!asksRelevant&&!specific.test(m)&&!context.test(m))score+=1;
+    }
+    if(meaningful>=3&&goodQuestions>=2)score+=8;
+    if(meaningful===messages.length&&goodQuestions>=1&&contextual>=1)score+=5;
+    score=Math.max(0,Math.min(100,score));
+    if(goodQuestions===0)score=Math.min(score,25);
+    if(meaningful===0)score=0;
+    if(meaningful<=1)score=Math.min(score,25);
+    if(spam>=2)score=Math.min(score,15);
     const strengths=[];
-    if(questions) strengths.push("You made space for the prospect to explain their situation.");
-    if(discovery) strengths.push("You used discovery language rather than relying only on a pitch.");
-    if(specific) strengths.push("You linked the conversation to the prospect's business context.");
-    if(!strengths.length) strengths.push("You took the first step by starting a live practice conversation.");
+    if(goodQuestions)strengths.push("You asked a relevant discovery question about the prospect's situation.");
+    if(contextual)strengths.push("You referred to the prospect's context instead of using only a generic pitch.");
+    if(relevant)strengths.push("You used relevant business or lead-generation language.");
+    if(!strengths.length)strengths.push("No clear appointment-setting strengths were demonstrated in this attempt.");
     const improve=[];
-    if(!questions) improve.push("Ask one open question before you introduce a solution.");
-    if(!discovery) improve.push("Find out how they currently generate and manage leads.");
-    if(verbose) improve.push("Shorten your replies so the prospect can respond naturally.");
-    if(pushy) improve.push("Avoid pressuring someone to book before establishing a reason.");
-    if(!improve.length) improve.push("Build on the prospect's answer with a more specific follow-up question.");
+    if(spam)improve.push("Use complete, meaningful replies. Random or unrelated text does not demonstrate setting skills.");
+    if(!goodQuestions)improve.push("Ask an open, relevant question about how the prospect gets clients or manages leads.");
+    if(!contextual)improve.push("Listen to the prospect's answer and make your next reply specific to what they said.");
+    if(pressure)improve.push("Avoid pushing for a booking before establishing a genuine need.");
+    if(verbose)improve.push("Keep messages concise and focused on one useful question at a time.");
+    if(!improve.length)improve.push("Dig deeper into the prospect's answers and practise a natural transition to a next step.");
     s.finished=true;sessions.delete(id);
     res.set("Cache-Control","no-store");
     res.json({score,strengths,improvements:improve,turns:messages.length,disclaimer:"Illustrative practice estimate based on a short sample, not an official AI Setter Score or employment assessment."});
