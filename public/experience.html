@@ -115,12 +115,12 @@ catch(err){$('leadStatus').textContent=err.message+' Alternatively message us on
 
 function validLink(value){try{var url=new URL(value,location.origin);return ['https:','http:'].indexOf(url.protocol)!==-1?url.href:null;}catch(e){return null;}}
 fetch('/api/experience/content').then(function(r){return r.json();}).then(function(data){
-var c=data.content||{},founders=document.querySelectorAll('.founder');
+var c=data.content||{},photos=data.photos||{},founders=document.querySelectorAll('.founder');
 [['dylon',founders[0]],['amar',founders[1]]].forEach(function(item){
 var p=item[0],card=item[1];if(!card)return;
 if(c[p+'_bio'])card.querySelector('p').textContent=c[p+'_bio'];
-var photo=validLink(c[p+'_photo']);
-if(photo){var portrait=document.createElement('img');portrait.src=photo;portrait.alt=p==='dylon'?'Dylon portrait':'Amar portrait';portrait.loading='lazy';portrait.style.cssText='width:68px;height:68px;object-fit:cover;border-radius:14px;border:1px solid #47634b';card.querySelector('.initials').replaceWith(portrait);}
+var photo=validLink(photos[p]||c[p+'_photo']);
+if(photo){var portrait=document.createElement('img');portrait.src=photo;portrait.alt=p==='dylon'?'Dylon portrait':'Amar portrait';portrait.loading='lazy';portrait.style.cssText='width:68px;height:68px;object-fit:cover;border-radius:14px;border:1px solid #47634b';var avatar=card.querySelector('.initials');portrait.onerror=function(){if(portrait.parentNode)portrait.replaceWith(avatar);};avatar.replaceWith(portrait);}
 var video=validLink(c[p+'_video_url']);
 if(video){var area=card.querySelector('.placeholder');area.textContent='';var link=document.createElement('a');link.href=video;link.target='_blank';link.rel='noopener noreferrer';link.textContent='Watch introduction ↗';area.appendChild(link);}
 });
