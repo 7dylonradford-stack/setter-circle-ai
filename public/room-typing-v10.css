@@ -1,0 +1,175 @@
+
+/* Setter Circle conversation-quality pass v10
+   Keeps the training canvas readable on narrow Android viewports.
+   No changes to live AI scoring or training functionality.
+ */
+#trainer{background:#090e0a}
+#trainer .trainnav{
+ border-bottom-color:#3b512e;background:linear-gradient(90deg,#0e170d,#0b110b);
+ box-shadow:inset 0 1px rgba(216,255,143,.03);
+}
+#trainer .trainnav .brandmark{box-shadow:0 0 16px rgba(208,248,59,.07)}
+#trainer .trainnav .sc-trainer-sound{
+ margin-left:auto;border-color:#4c6430;background:#1a2612;
+ color:#d6f68e;min-width:36px
+}
+#trainer .trainnav .sc-trainer-sound[aria-pressed="false"]{color:#b4bbaa;border-color:#354333}
+#trainer .trainnav .sc-trainer-sound[aria-pressed="true"]:hover{box-shadow:0 0 24px rgba(208,248,59,.16)}
+#trainer .side{
+ border-bottom:1px solid #33472c;
+ background:linear-gradient(100deg,#121d11,#0c150c);
+ scrollbar-width:none!important;
+ -ms-overflow-style:none;
+}
+#trainer .side::-webkit-scrollbar{display:none!important;width:0!important;height:0!important}
+#trainer .side .modebtn{position:relative;outline-offset:-3px!important}
+#trainer .side .modebtn.sel{
+ background:linear-gradient(110deg,#2a3a1c,#1c2d16);
+ border-color:#87a54a;color:#f3f8e6;
+ box-shadow:inset 0 0 18px rgba(208,248,59,.04),0 0 20px rgba(208,248,59,.04)
+}
+#trainer .chatwrap{
+ min-width:0;
+ background:radial-gradient(ellipse 75% 44% at 50% 0,rgba(60,91,36,.095),transparent 84%),#090e0a
+}
+#trainer .chathead{
+ background:rgba(17,27,17,.96);
+ border-bottom:1px solid #33452c;min-width:0
+}
+#trainer .chathead>div[style*="flex"]{min-width:0}
+#trainer .chathead .name{color:#f2f7e7;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#trainer .chat-person-role{color:#a4b59e}
+#trainer .chathead .active{color:#91b895!important;font-size:10px!important;line-height:1.2}
+#trainer .chathead .active.room10-waiting{color:#d0f83b!important}
+#trainer .chathead .active.room10-waiting:before{content:"";display:inline-block;width:5px;height:5px;border-radius:50%;background:#d0f83b;
+ box-shadow:0 0 7px rgba(208,248,59,.45);margin-right:5px;animation:room10IndicatorPulse 1s ease-in-out infinite alternate}
+#trainer .chathead .room-brief-toggle,
+#trainer .chathead .btn{border-radius:10px;min-height:34px;font-weight:730}
+#trainer .chathead .room-brief-toggle{border-color:#445c38}
+#trainer .chathead .btn{border-color:#3f5737;background:#1d2b1b;color:#e0ecd2}
+#trainer .chathead .btn:hover{border-color:#a4c960}
+#trainer .messages{
+ position:relative;
+ padding:20px 20px 26px;
+ overflow-y:auto;overflow-x:hidden;
+ scrollbar-width:none!important;
+ -ms-overflow-style:none;
+ overscroll-behavior:contain;
+ scroll-behavior:smooth
+}
+#trainer .messages::-webkit-scrollbar{display:none!important;width:0!important;height:0!important}
+#trainer .messages>.bubble{
+ box-shadow:inset 0 1px rgba(235,255,214,.035),0 7px 18px rgba(0,0,0,.15);
+ transition:border-color .16s,background .16s
+}
+#trainer .messages>.bubble.them{
+ border-color:#384b3b;background:linear-gradient(135deg,#1b2920,#162019);color:#eaf3e8;
+}
+#trainer .messages>.bubble.me{
+ border-color:#d9fc90;background:linear-gradient(123deg,#d0f83b,#c7e97a);color:#17220d;
+ box-shadow:0 5px 20px rgba(208,248,59,.065)
+}
+#trainer .messages>.bubble.typing{
+ display:inline-flex;align-items:center;align-self:flex-start;gap:15px;
+ border:1px solid #4f633e;color:#aec49e;
+ background:linear-gradient(112deg,#1c2a1d,#121d15);
+ padding:12px 14px;border-radius:16px;border-bottom-left-radius:5px;
+ max-width:calc(100% - 25px);width:max-content;min-height:47px;
+ box-shadow:0 0 20px rgba(208,248,59,.055);
+ letter-spacing:normal
+}
+#trainer .messages>.bubble.typing .room10-typing-label{
+ font-size:11px;color:#b4cbaf;white-space:nowrap;font-weight:620
+}
+#trainer .messages>.bubble.typing .room10-dots{display:flex;align-items:center;gap:4px;min-width:31px;height:12px}
+#trainer .messages>.bubble.typing .room10-dots i{
+ display:block;width:5px;height:5px;border-radius:50%;background:#d0f83b;
+ opacity:.35;animation:room10Dot 1.05s ease-in-out infinite
+}
+#trainer .messages>.bubble.typing .room10-dots i:nth-child(2){animation-delay:.15s}
+#trainer .messages>.bubble.typing .room10-dots i:nth-child(3){animation-delay:.30s}
+#trainer .guidebar{
+ background:linear-gradient(180deg,#122015,#101810);
+ border-top:1px solid #385232;
+}
+#trainer .guidebar select{border-color:#405a37!important;background:#19271a;color:#e3f0cf}
+#trainer .guidebar #guideFeedback{color:#9cba91;line-height:1.35}
+#trainer .guidebar select:focus-visible{outline:2px solid #d0f83b;outline-offset:2px}
+#trainer .composer{
+ background:linear-gradient(180deg,#101a11,#0c140d);
+ border-top:1px solid #37502f
+}
+#trainer .composer input{border:1px solid #4b633e;background:#172117;border-radius:13px;color:#f1f7e8;
+ box-shadow:inset 0 2px 8px rgba(0,0,0,.11)}
+#trainer .composer input::placeholder{color:#849b85}
+#trainer .composer input:focus{
+ border-color:#a7cd5e;box-shadow:0 0 0 3px rgba(208,248,59,.095),inset 0 2px 8px #0002
+}
+#trainer .composer .send{
+ background:#d0f83b!important;border:1px solid #e0ff93!important;
+ box-shadow:0 0 23px rgba(208,248,59,.15)!important;
+ transition:transform .18s,filter .18s,opacity .18s,box-shadow .18s
+}
+#trainer .composer .send:disabled{opacity:.48;cursor:wait;filter:saturate(.55);
+ box-shadow:none!important;transform:none!important
+}
+#trainer .composer .send:not(:disabled):hover{box-shadow:0 0 29px rgba(208,248,59,.25)!important}
+#trainer .room-brief-toggle:focus-visible,#trainer button:focus-visible{
+ outline:2px solid #d0f83b;outline-offset:2px
+}
+/* The old fixed circular sound button is retired; one shared control lives in the header. */
+#soundToggle{display:none!important}
+@keyframes room10Dot{
+ 0%,60%,100%{opacity:.32;transform:translateY(1px) scale(.8)}
+ 28%{opacity:1;transform:translateY(-2px) scale(1.08)}
+}
+@keyframes room10IndicatorPulse{
+ from{opacity:.52;transform:scale(.85)}to{opacity:1;transform:scale(1.12)}
+}
+@media(max-width:900px){
+ #trainer .trainnav{height:52px;padding:0 11px}
+ #trainer .trainbody{height:calc(100dvh - 52px)}
+ #trainer .side{height:48px;min-height:48px;padding:5px 9px;gap:5px;align-items:stretch;scrollbar-width:none}
+ #trainer .side .modebtn{
+  display:inline-flex;align-items:center;justify-content:center;
+  min-height:38px;padding:7px 10px;font-size:11px;font-weight:735;flex:1 0 0;
+  margin:0;white-space:nowrap;line-height:1.18
+ }
+ #trainer .chathead{height:62px;flex-basis:62px;padding:0 12px;gap:8px}
+ #trainer .chathead .avatar{width:37px;height:37px;flex-basis:37px}
+ #trainer .chathead .name{font-size:15px}
+ #trainer .chat-person-role{font-size:10px;margin:2px 0}
+ #trainer .chathead .active{display:inline-flex!important;font-size:9px!important;margin-top:1px}
+ #trainer .room-brief-toggle{padding:7px 9px;font-size:11px}
+ #trainer .chathead .btn{padding:7px 9px;font-size:11px;max-width:87px}
+ #trainer .messages{padding:17px 12px 23px;gap:12px}
+ #trainer .messages>.bubble{font-size:13px;line-height:1.5;padding:12px 15px;
+  max-width:87%;border-radius:17px}
+ #trainer .messages>.bubble.them{border-bottom-left-radius:5px}
+ #trainer .messages>.bubble.me{border-bottom-right-radius:5px}
+ #trainer .messages>.bubble.typing{min-height:43px;border-bottom-left-radius:5px}
+ #trainer .guidebar{padding:8px 11px 7px;gap:6px 9px}
+ #trainer .guidebar select{height:37px;min-height:37px;min-width:0;border-radius:10px}
+ #trainer .guidebar .guidefeedback{max-height:28px;font-size:10px;margin-top:1px}
+ #trainer .composer{padding:9px 11px calc(10px + env(safe-area-inset-bottom,0px));gap:9px}
+ #trainer .composer input{min-height:47px;padding:10px 13px;border-radius:12px;font-size:16px}
+ #trainer .composer .send{height:47px;width:47px;flex-basis:47px;border-radius:12px}
+}
+@media(max-width:385px){
+ #trainer .trainnav{gap:7px}
+ #trainer .trainnav .logo{min-width:0;max-width:none!important;flex:1;font-size:9px}
+ #trainer .trainnav .sc-trainer-sound{flex:0 0 35px}
+ #trainer .trainnav .btn[onclick*="closeTrainer"]{max-width:105px;font-size:9px;padding:8px 7px}
+ #trainer .side .modebtn{font-size:10px;padding:7px 5px}
+ #trainer .chathead .avatar{width:33px;height:33px;flex-basis:33px}
+ #trainer .chathead .name{font-size:13px}
+ #trainer .chathead .btn,#trainer .room-brief-toggle{font-size:10px;padding:6px 7px;min-height:33px}
+}
+@media(prefers-reduced-motion:reduce){
+ #trainer .messages{scroll-behavior:auto}
+ #trainer .messages>.bubble.typing .room10-dots i,
+ #trainer .chathead .active.room10-waiting:before{
+  animation:none!important;opacity:1!important;transform:none!important
+ }
+ #trainer .messages>.bubble,#trainer .composer .send{transition:none!important}
+}
