@@ -244,6 +244,7 @@ export async function initDb(){
   submission TEXT NOT NULL,review TEXT,completed_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   UNIQUE(challenge_id,user_id)
  );
+ ALTER TABLE studio_outcomes ADD COLUMN IF NOT EXISTS verification_note TEXT;
  CREATE TABLE IF NOT EXISTS studio_settings(
   user_id UUID PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
   locale TEXT NOT NULL DEFAULT 'en-GB',reminders BOOLEAN NOT NULL DEFAULT FALSE,
