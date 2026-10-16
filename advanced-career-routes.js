@@ -97,7 +97,8 @@ export function registerCareerStudio(app,{requireUser,requireAdmin}){
   const r=await q("SELECT o.*,u.name student_name FROM studio_outcomes o JOIN users u ON u.id=o.user_id ORDER BY o.created_at DESC LIMIT 100");res.json({outcomes:r.rows});
  }catch(e){fail(res,e)}});
  app.patch("/api/advanced/admin/outcomes/:id",requireAdmin,async(req,res)=>{try{
-  if(!id(req.params.id)||!["verified","rejected"].includes(req.body?.status))return res.status(400).json({error:"Invalid verification"});
-  const r=await q("UPDATE studio_outcomes SET status=$2,reviewed_by=$3,reviewed_at=NOW() WHERE id=$1 RETURNING id,status",[req.params.id,req.body.status,req.user.id]);res.json({outcome:r.rows[0]||null});
+  const note=cut(req.body?.verification_note,1800);
+  if(!id(req.params.id)||!["verified","rejected"].includes(req.body?.status)||note.length<20)return res.status(400).json({error:"A verification decision and supporting review note (20+ characters) are required"});
+  const r=await q("UPDATE studio_outcomes SET status=$2,reviewed_by=$3,verification_note=$4,reviewed_at=NOW() WHERE id=$1 RETURNING id,status",[req.params.id,req.body.status,req.user.id,note]);res.json({outcome:r.rows[0]||null});
  }catch(e){fail(res,e)}});
 }
