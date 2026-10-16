@@ -1,7 +1,7 @@
 
 import crypto from "node:crypto";
 import {q} from "./db.js";
-const checkId=x=>/^[0-9a-f-]{36}$/i.test(String(x||""));
+const checkId=x=>/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(x||""));
 const clean=(x,n=1000)=>String(x??"").trim().slice(0,n);
 const fail=(res,e)=>{console.error("Advanced studio",e?.message);res.status(500).json({error:"Studio temporarily unavailable"})};
 const people=[
