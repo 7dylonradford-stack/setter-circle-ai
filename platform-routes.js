@@ -107,4 +107,34 @@ export function registerPlatformRoutes(app,{requireUser,requireAdmin}){
   ]);
   res.json({academy:lessons.rows[0],mentor_pending:pending.rows[0]?.pending||0,applications_active:apps.rows[0]?.active||0,assessment:assess.rows[0]?.status||null});
  }catch(e){sendError(res,e)}});
+ app.get("/api/workplace/assessment",requireUser,async(req,res)=>{try{
+  const r=await q("SELECT state,updated_at FROM workplace_progress WHERE user_id=$1",[req.user.id]);
+  const data=r.rows[0]?.state;
+  if(!data)return res.json({ready:false,detail:"Start a simulated Workplace shift first."});
+  const leads=Array.isArray(data.leads)?data.leads:[],bookings=Array.isArray(data.bookings)?data.bookings:[];
+  const messages=leads.reduce((n,l)=>n+Math.max(0,Number(l.messages)||0),0);
+  const qualified=leads.filter(l=>l.aiQualified).length;
+  const incorrect=leads.filter(l=>/qualified/i.test(String(l.status||""))&&!l.aiQualified).length;
+  const validBookings=bookings.filter(b=>leads.some(l=>l.name===b.name&&l.aiQualified)).length;
+  const handoff=String(data.handoff||"").trim(),reflection=String(data.notes||"").trim();
+  const detail=[
+   {name:"Prospect conversations",value:messages,target:8,points:25},
+   {name:"Evidence-based qualification",value:qualified,target:2,points:25},
+   {name:"Correctly booked appointments",value:validBookings,target:1,points:20},
+   {name:"Closer handoff",value:handoff.length,target:70,points:15},
+   {name:"Written shift reflection",value:reflection.length,target:100,points:15}
+  ];
+  const score=Math.max(0,Math.min(100,Math.round(detail.reduce((sum,x)=>sum+x.points*Math.min(1,x.value/x.target),0)-incorrect*8)));
+  const feedback=[
+   ...(messages<8?["Practise more conversations before completing your shift."]:[]),
+   ...(qualified<2?["Build stronger evidence before qualifying prospects."]:[]),
+   ...(incorrect?["Review CRM records marked qualified without AI-supported evidence."]:[]),
+   ...(validBookings<1?["Confirm genuine qualification and consent before booking."]:[]),
+   ...(handoff.length<70?["Write a more complete factual closer handoff."]:[]),
+   ...(reflection.length<100?["Reflect on what went well and one concrete improvement."]:[])
+  ];
+  res.json({ready:true,score,detail,feedback,stage:Number(data.stage)||0,
+   updated_at:r.rows[0].updated_at,disclaimer:"Practice-only automated shift review. Not a hiring credential or mentor approval."});
+ }catch(e){sendError(res,e)}});
+
 }
