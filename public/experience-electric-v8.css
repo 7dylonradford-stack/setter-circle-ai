@@ -1,0 +1,65 @@
+
+/* Experience pages — reference-matched electric lime and active visuals v8 */
+:root{--green:#d0f83b;--gold:#d2e08b;--bg:#080c08;--panel:#10170e;--panel2:#182212;--line:#39482e}
+body{background:radial-gradient(ellipse 72% 38% at 92% 0,rgba(172,221,25,.13),transparent 76%),#080b08;color:#f3f6e9}
+::selection{background:rgba(208,248,59,.30);color:#faffea}
+.eyebrow,.hero h1 span,.roadmap-num,.roadmap-step .stage,.brand em,.experience-menu-card .arrow{color:#d0f83b!important}
+.hero:after{background:radial-gradient(circle,rgba(208,248,59,.16),transparent 68%)!important;animation:expGlowDrift 10s ease-in-out infinite alternate}
+.brand img{border-color:#7a9037!important;box-shadow:0 0 19px rgba(208,248,59,.13)!important;transition:filter .25s,transform .25s}
+.brand img:hover{filter:drop-shadow(0 0 10px rgba(208,248,59,.42));transform:rotate(-3deg) scale(1.04)}
+.hero .preview{border-color:#748c3d!important;
+ background:radial-gradient(circle at 100% 0,rgba(208,248,59,.09),transparent 62%),linear-gradient(145deg,#192212,#0b100b)!important;
+ box-shadow:0 40px 100px #000a,0 0 38px rgba(208,248,59,.095)!important;
+ animation:expPreviewFloat 8s ease-in-out infinite alternate;
+}
+.hero .preview:hover{animation-play-state:paused;border-color:#d0f83b!important;box-shadow:0 45px 95px #000a,0 0 45px rgba(208,248,59,.17)!important}
+.previewhead{border-color:#3a4b2e!important}
+.preview .avatar{background:#34451b!important;color:#e5ff99!important}
+.preview .bubble.self{background:#d0f83b!important;border-color:#d0f83b!important;color:#1e270d!important}
+.dot{background:#d0f83b!important;box-shadow:0 0 13px rgba(208,248,59,.42)!important}
+.btn:not(.ghost){background:linear-gradient(115deg,#d0f83b,#e9ff90)!important;border-color:#d0f83b!important;color:#142006!important;
+ box-shadow:0 0 20px rgba(208,248,59,.14),0 7px 24px #0005!important;transition:transform .22s,box-shadow .25s,background .25s}
+.btn:not(.ghost):hover{transform:translateY(-2px)!important;box-shadow:0 0 35px rgba(208,248,59,.29),0 10px 26px #0005!important}
+.btn.ghost{border-color:#566e32!important;background:#131c0f!important;color:#e4efc4!important}
+.btn.ghost:hover{border-color:#d0f83b!important;box-shadow:0 0 24px rgba(208,248,59,.10)!important}
+.experience-menu-card{
+ position:relative;isolation:isolate;overflow:hidden;
+ border-color:#435532!important;background:linear-gradient(135deg,#1d2815,#0e140c)!important;
+ transition:border-color .25s,transform .25s,box-shadow .25s,opacity .6s!important
+}
+.experience-menu-card:after{content:"";pointer-events:none;position:absolute;inset:0;z-index:-1;
+ background:radial-gradient(370px circle at var(--spot-x,65%) var(--spot-y,0%),rgba(208,248,59,.17),transparent 60%);opacity:.65;transition:opacity .25s
+}
+.experience-menu-card:hover,.experience-menu-card:focus-visible{
+ border-color:#b5d743!important;background:#1d2b13!important;transform:translateY(-3px)!important;
+ box-shadow:0 0 32px rgba(208,248,59,.10),0 14px 35px #0005!important
+}
+.experience-menu-card:hover:after{opacity:1}
+.experience-menu-card strong{color:#edf6da!important}
+.experience-menu-card span:not(.arrow){color:#b1baa3!important}
+.experience-back{border-color:#4f6133!important;background:rgba(14,20,10,.98)!important}
+.experience-back button{border-color:#708a3e!important;color:#e5f3c1!important}
+.experience-back button:hover{border-color:#d0f83b!important;box-shadow:0 0 23px rgba(208,248,59,.12)!important}
+.roadmap-step,.quote,.contact-card{border-color:#3f5032!important;background:linear-gradient(145deg,#172014,#0e140d)!important}
+.roadmap-step:hover,.quote:hover{border-color:#829b42!important;box-shadow:0 0 29px rgba(208,248,59,.08)}
+.founder-photo{border:1px solid #5b7237;transition:transform .5s ease,filter .5s ease,box-shadow .5s ease}
+.founder-photo:hover{transform:scale(1.025);filter:saturate(1.07) contrast(1.05);box-shadow:0 0 30px rgba(208,248,59,.13)}
+.founder-dialog{border-color:#687f3d!important;background:#10190e!important;box-shadow:0 0 46px rgba(208,248,59,.08),0 35px 80px #000a!important}
+.founder-dialog img{border:1px solid #5b713d}
+section .placeholder{border-color:#506831!important;background:#172017!important}
+[data-sc-reveal].sc-pending{opacity:0;transform:translateY(20px)}
+[data-sc-reveal].sc-visible{opacity:1;transform:translateY(0)}
+.experience-menu-card[data-sc-reveal],.quote[data-sc-reveal],.founder-photo[data-sc-reveal]{
+ transition:opacity .65s ease,transform .65s cubic-bezier(.2,.75,.2,1),box-shadow .25s,border-color .25s!important
+}
+@keyframes expGlowDrift{from{transform:translate(-18px,6px) scale(.96)}to{transform:translate(11px,-16px) scale(1.1)}}
+@keyframes expPreviewFloat{from{transform:translateY(0) rotate(1deg)}to{transform:translateY(-14px) rotate(-.2deg)}}
+@media(max-width:780px){
+ .hero .preview{animation-duration:12s}
+ .experience-menu-card{min-height:0!important}
+}
+@media(prefers-reduced-motion:reduce){
+ .hero:after,.hero .preview{animation:none!important}
+ [data-sc-reveal].sc-pending,[data-sc-reveal].sc-visible{opacity:1!important;transform:none!important;transition:none!important}
+ .founder-photo,.experience-menu-card{transition:none!important}
+}
