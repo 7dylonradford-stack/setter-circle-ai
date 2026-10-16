@@ -1,0 +1,86 @@
+
+/* The Setter Circle - public-facing visual refinement.
+   Styles only. Member authentication, copy and routes remain unchanged.
+*/
+#site{--public-green:#abd9ac;--public-fog:#94a99a;--public-line:#29372f}
+#site nav{background:rgba(8,13,10,.86);border-bottom:1px solid rgba(143,199,150,.10);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px)}
+#site .navin{height:76px}
+#site .logo{font-size:14px;letter-spacing:.085em;color:#eef7ee}
+#site .logo span{color:#b7dbb7}
+#site .brandmark{border-color:#426747;box-shadow:none}
+#site .links a{color:#a6b4a6;font-weight:650;transition:color .17s}
+#site .links a:hover{color:#d9f0dc}
+#site .btn{border:1px solid #b8e2ba;background:#b8e2ba;color:#102017;border-radius:10px;transition:transform .23s cubic-bezier(.2,.7,.2,1),background .2s,border-color .2s,box-shadow .2s}
+#site .btn:hover{background:#d3f0d3;border-color:#d3f0d3;transform:translateY(-2px);box-shadow:0 8px 28px #0003}
+#site .btn.ghost{background:rgba(24,37,27,.68);border-color:#35533a;color:#d4e5d7}
+#site .btn.ghost:hover{background:#1d3423;border-color:#709b75;color:#f0faf1}
+#site .hero{background:
+ radial-gradient(ellipse 56% 65% at 84% 23%,rgba(59,106,67,.12),transparent 75%),
+ linear-gradient(180deg,#0b120e 0%,#080b09 100%);isolation:isolate}
+#site .hero:before{background:radial-gradient(circle,rgba(123,188,130,.065),transparent 67%);pointer-events:none}
+#site .hero:after{
+ content:"";position:absolute;inset:0;
+ background:linear-gradient(rgba(142,189,144,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(142,189,144,.025) 1px,transparent 1px);
+ background-size:73px 73px;opacity:.4;mask-image:linear-gradient(to right,transparent 20%,black 95%);pointer-events:none;z-index:-1
+}
+#site .hero-grid{position:relative;z-index:1}
+#site .hero .eyebrow{color:#b4dbb6;letter-spacing:.17em;font-size:10px}
+#site .hero h1{color:#f2f6f2;line-height:.98;letter-spacing:-.065em;font-weight:800}
+#site .hero p{color:#adbbad;font-size:17px;line-height:1.68}
+#site .hero .proofline{color:#789681;font-size:11px;letter-spacing:.03em}
+#site .hero .socialproof{border-top:1px solid #293d2d;padding-top:21px;gap:24px}
+#site .hero .socialproof b{color:#e5f0e6;letter-spacing:-.03em}
+#site .hero .preview .phone{background:#0f1711;border-color:#395342;transform:rotate(.2deg);box-shadow:0 24px 85px #0008}
+#site .hero .preview .phone .phead{border-color:#293e30}
+#site .hero .preview .phone .msgs{background:#0f1612}
+#site .hero .preview .phone .bubble.them{background:#18221b;border-color:#2b3c30}
+#site .hero .preview .phone .bubble.me{background:#b4e0b6}
+#site .hero .preview .coach-float{border:1px solid #3a5840;background:rgba(18,30,22,.97);box-shadow:0 18px 50px #0007}
+#site .statband{background:#0b100d}
+#site .stats .stat{border-color:#283e2d}
+#site .sectiontop h2{color:#f1f5ee;font-weight:800;line-height:1.07}
+#site .sectiontop .eyebrow{color:#a4ccaa}
+#site .sectiontop p{color:#99a99c}
+#site .cards .card{background:linear-gradient(150deg,#141c16,#0d1210);border:1px solid #2b3d30;border-radius:17px;padding:27px;box-shadow:none;transition:transform .23s,border-color .23s,background .23s}
+#site .cards .card:hover{transform:translateY(-3px);border-color:#698f6f;background:#19271d}
+#site .cards .card h3{color:#eef5ee;letter-spacing:-.027em}
+#site .cards .card p{color:#9baea0}
+#site .cards .card .num{color:#9dcca6}
+#site .cards .card .arrow{border-color:#446146;background:#1a2920}
+#site .cards .card:hover .arrow{background:#b4dfb8;color:#142319}
+#site .darkband{background:#0a100c;border-color:#263b2c}
+#site .cta{background:linear-gradient(130deg,#1a2b1c,#0f1a13);border:1px solid #36523b;border-radius:24px;box-shadow:none}
+#site .cta .eyebrow{color:#add4b0}
+#site .cta h2{color:#f2f9f1;line-height:1.05;letter-spacing:-.046em}
+#site .cta p{color:#a7bba8}
+#site footer{background:#0a100c;border-top:1px solid #25392c}
+#site footer .logo span{color:#a6d4ad}
+#site .links button{font-size:12px}
+@media(max-width:900px){
+ #site .hero{padding:65px 0 75px}
+ #site .hero h1{font-size:clamp(42px,9vw,65px)}
+ #site .hero p{font-size:15px;line-height:1.6}
+ #site .sectiontop h2{font-size:clamp(30px,7vw,43px)}
+ #site .cards .card{min-height:190px}
+ #site .cards .card h3{margin:25px 0 9px}
+ #site .navin{gap:10px;height:70px}
+ #site .navin .logo{font-size:11px;white-space:nowrap}
+ #site .navin .brandmark{width:30px;height:30px;flex:0 0 30px}
+ #site .links{gap:7px}
+ #site .links>a:first-child{display:inline-flex!important;font-size:10px;color:#c1dfc4;border:1px solid #36533d;padding:9px 10px;border-radius:9px;white-space:nowrap}
+ #site .links>button{font-size:10px;white-space:nowrap;padding:9px 10px}
+}
+@media(max-width:470px){
+ #site .navin{gap:6px}
+ #site .navin .logo{letter-spacing:.01em;font-size:10px;gap:5px}
+ #site .navin .brandmark{width:27px;height:27px;flex-basis:27px}
+ #site .links>a:first-child{font-size:9px;padding:8px 7px}
+ #site .links>button{font-size:9px;padding:8px 7px}
+ #site .hero .actions{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+ #site .hero .actions>a:first-child{grid-column:span 2}
+ #site .hero .actions .btn{width:100%;padding:12px 10px;text-align:center}
+ #site .hero .socialproof{gap:12px;flex-wrap:wrap}
+}
+@media(prefers-reduced-motion:reduce){
+ #site .btn,#site .cards .card{transition:none!important}
+}
