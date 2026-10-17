@@ -24,6 +24,7 @@ body.experience-topic-open .hero,body.experience-topic-open .strip,body.experien
 <link rel="stylesheet" href="/setter-electric-v8.css?v=8">
 <link rel="stylesheet" href="/experience-electric-v8.css?v=8">
 <link rel="stylesheet" href="/site-unified-v15.css?v=15">
+<link rel="stylesheet" href="/ui-polish-v16.css?v=16">
 </head>
 <body>
 <nav class="nav"><div class="wrap navinner">
@@ -94,23 +95,23 @@ function msg(text,self){var el=document.createElement('div');el.className='bubbl
 function status(text){$('chatMessage').textContent=text;}
 async function post(url,body){var r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});var d=await r.json().catch(function(){return{}});if(!r.ok)throw new Error(d.error||'Please try again.');return d;}
 $('startBtn').addEventListener('click',async function(){
-if(busy)return;busy=true;this.disabled=true;status('Starting your preview…');
+if(busy)return;busy=true;this.disabled=true;this.setAttribute('aria-busy','true');status('Starting your preview…');
 try{var d=await post('/api/experience/demo/start',{});demoId=d.session_id;remaining=d.max_turns;completedMessages=0;$('chatMessages').textContent='';msg(d.opening,false);$('chatInput').disabled=false;$('sendBtn').disabled=false;$('chatInput').placeholder='Write your reply to Alex…';$('chatInput').focus();$('startBtn').classList.add('hidden');$('finishBtn').classList.remove('hidden');$('turns').textContent='4 replies available';$('feedback').style.display='none';status('Your turn. One message at a time.');track('demo_started');}
-catch(e){status(e.message);this.disabled=false;}finally{busy=false;}
+catch(e){status(e.message);this.disabled=false;}finally{busy=false;this.removeAttribute('aria-busy');}
 });
 async function send(){
 if(!demoId||busy||remaining<=0)return;
 var input=$('chatInput'),value=input.value.trim();if(value.length<3){status('Write a little more before sending.');return;}
-busy=true;$('sendBtn').disabled=true;input.disabled=true;msg(value,true);input.value='';status('Alex is typing…');
+busy=true;$('sendBtn').disabled=true;$('sendBtn').setAttribute('aria-busy','true');input.disabled=true;msg(value,true);input.value='';status('Alex is typing…');
 try{var d=await post('/api/experience/demo/message',{session_id:demoId,message:value});msg(d.reply,false);remaining=d.remaining;completedMessages++;$('turns').textContent=remaining+' replies left';status(remaining?'Think about Alex’s answer before replying.':'Demo complete. Get your feedback below.');if(remaining<=0){$('finishBtn').focus();}else{input.disabled=false;input.focus();$('sendBtn').disabled=false;}}
-catch(e){status(e.message+' Your message was not counted; restart if needed.');input.value=value;input.disabled=false;$('sendBtn').disabled=false;}finally{busy=false;}
+catch(e){status(e.message+' Your message was not counted; restart if needed.');input.value=value;input.disabled=false;$('sendBtn').disabled=false;}finally{busy=false;$('sendBtn').removeAttribute('aria-busy');}
 }
 $('sendBtn').addEventListener('click',send);
 $('chatInput').addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();send();}});
 $('finishBtn').addEventListener('click',async function(){
-if(!demoId||busy)return;busy=true;this.disabled=true;status('Preparing your practice feedback…');
+if(!demoId||busy)return;busy=true;this.disabled=true;this.setAttribute('aria-busy','true');status('Preparing your practice feedback…');
 try{var d=await post('/api/experience/demo/finish',{session_id:demoId});$('score').textContent=d.score+' / 100';$('strength').textContent=d.strengths.join(' ');$('improve').textContent=d.improvements.join(' ');$('disclaimer').textContent=d.disclaimer;$('metricTurns').textContent=completedMessages+' / 4';$('metricFocus').textContent='Discovery';$('metricNext').textContent='AI Coach';$('hubExampleScore').textContent=d.score+' / 100';$('feedback').style.display='block';demoId=null;$('chatInput').disabled=true;$('sendBtn').disabled=true;$('turns').textContent='Finished';status('Preview finished. Full AI training is available to members.');track('demo_completed');}
-catch(e){status(e.message);this.disabled=false;}finally{busy=false;}
+catch(e){status(e.message);this.disabled=false;}finally{busy=false;this.removeAttribute('aria-busy');}
 });
 $('showHubPreview').addEventListener('click',function(){document.getElementById('hubPreviewDialog').showModal();});$('closeHubPreview').addEventListener('click',function(){document.getElementById('hubPreviewDialog').close();});['previewRoadmap','previewContact'].forEach(function(id){$(id).addEventListener('click',function(){document.getElementById('hubPreviewDialog').close();});});
 var questions=[
@@ -160,6 +161,7 @@ if(booking){var link=document.createElement('a');link.href=booking;link.target='
 </script>
 <script>
 (function(){var ids=["discover","roadmap","demo","training","workplace","programme","founders","stories","faq","enquiry"],menu=document.getElementById('experienceMenu'),back=document.getElementById('experienceBack');function show(id,scroll){if(!ids.includes(id))id='';document.querySelectorAll('.experience-panel').forEach(function(el){el.classList.toggle('is-active',el.dataset.panel===id);});menu.hidden=!!id;back.hidden=!id;document.body.classList.toggle('experience-topic-open',!!id);if(scroll)window.scrollTo({top:0,behavior:'instant'});}document.getElementById('backToExperience').addEventListener('click',function(){history.pushState(null,'',location.pathname);show('',true);});document.querySelectorAll('[data-open-section]').forEach(function(b){b.addEventListener('click',function(){location.hash=b.dataset.openSection;});});window.addEventListener('hashchange',function(){show(location.hash.slice(1),true);});document.querySelectorAll('a[href^="#"]').forEach(function(a){a.addEventListener('click',function(){var id=a.getAttribute('href').slice(1);if(ids.includes(id))setTimeout(function(){show(id,true);},0);});});show(location.hash.slice(1),false);})();
-</script><script>fetch('/api/experience/content',{cache:'no-store'}).then(r=>r.json()).then(d=>{const logo=d.photos&&d.photos.logo;if(logo)document.querySelectorAll('img[src="/setter-logo.svg"]').forEach(img=>{img.src=logo;img.onerror=()=>{img.onerror=null;img.src='/setter-logo.svg';};});}).catch(()=>{});</script><script src="/setter-electric-v8.js?v=8"></script>
+</script><script>fetch('/api/experience/content',{cache:'no-store'}).then(r=>r.json()).then(d=>{const logo=d.photos&&d.photos.logo;if(logo)document.querySelectorAll('img[src="/setter-logo.svg"]').forEach(img=>{img.src=logo;img.onerror=()=>{img.onerror=null;img.src='/setter-logo.svg';};});}).catch(()=>{});</script><script src="/setter-electric-v8.js?v=16"></script>
+<script src="/ui-polish-v16.js?v=16"></script>
 </body>
 </html>
