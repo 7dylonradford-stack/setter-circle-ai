@@ -1,0 +1,135 @@
+/* The Setter Circle v16 — a quiet, responsive visual system.
+   Preserves existing layouts, with no artificial loading delay or autoplay. */
+:root{--sc16-fast:140ms;--sc16-normal:230ms;--sc16-ease:cubic-bezier(.2,.75,.25,1);scroll-padding-bottom:24px}
+#site,#profilePanel,#workspace,#trainer,#briefing,#simSetup,#accountModal{
+ -webkit-tap-highlight-color:transparent;
+}
+#site :is(button,a),#workspace :is(button,a),#trainer :is(button,a),
+#profilePanel :is(button,a),#accountModal :is(button,a){
+ touch-action:manipulation;
+}
+#site :is(.btn,button),#workspace :is(.btn,button),#profilePanel :is(.btn,button),
+#accountModal :is(.btn,button),#trainer :is(.btn,button){
+ transition-duration:var(--sc16-fast);
+}
+#site :is(.btn,button):active,#workspace :is(.btn,button):active,
+#trainer :is(.btn,button):active,#profilePanel :is(.btn,button):active{
+ filter:brightness(.95);
+}
+#site :is(button,a):focus-visible,#workspace :is(button,a,input,textarea,select):focus-visible,
+#accountModal :is(button,input,textarea,select):focus-visible,
+#trainer :is(button,input,select):focus-visible{
+ outline:2px solid #d0f83b!important;
+ outline-offset:3px;
+}
+/* Consistent pending affordance. Busy states are tied to real network requests. */
+#site button[aria-busy="true"],#workspace button[aria-busy="true"],
+#accountModal button[aria-busy="true"],#trainer button[aria-busy="true"]{
+ position:relative;cursor:progress!important;opacity:.88;
+}
+#site button[aria-busy="true"]::before,#workspace button[aria-busy="true"]::before,
+#accountModal button[aria-busy="true"]::before,#trainer button[aria-busy="true"]::before{
+ content:"";display:inline-block;vertical-align:-2px;width:12px;height:12px;
+ margin-right:9px;border:2px solid currentColor;border-top-color:transparent;
+ border-radius:50%;animation:sc16-rotate .7s linear infinite;
+}
+#workspace .studio-loading,.aa-root .aa-empty[role="status"]{
+ min-height:76px;display:flex;align-items:center;gap:12px;
+ background:linear-gradient(110deg,#172216,#202d1c,#172216);
+ background-size:200% 100%;animation:sc16-pending 2.1s ease-in-out infinite;
+ border-radius:12px;border:1px solid #425630;
+}
+#workspace .studio-loading-dot,#workspace .aa-pulse{flex:0 0 8px}
+#workspace .studio-main-card,#workspace .studio-list-row,.v15-hub-card{
+ contain:layout style;
+}
+#workspace .studio-main-card,#workspace .studio-note,#workspace .aa-panel,
+#workspace .v15-hub-card{overflow-wrap:anywhere}
+/* Set dimensions before logos and avatars arrive to avoid reflow. */
+#site .brandmark,#trainer .brandmark,#memberAppNav .member-nav-brand img{
+ aspect-ratio:1/1;object-fit:contain;flex-shrink:0;
+}
+#site .hero .container{min-width:0}
+#site .preview .phone{min-width:0}
+#site .hero p{overflow-wrap:anywhere}
+/* A small entering transition, never an intrusive page takeover. */
+#workspace:not(.hidden) .workspaceinner{
+ animation:sc16-fade-up var(--sc16-normal) var(--sc16-ease) both;
+}
+#accountModal:not(.hidden) .accountbox{
+ animation:sc16-fade-up var(--sc16-normal) var(--sc16-ease) both;
+}
+#simSetup:not(.hidden) .simsetupbox{
+ animation:sc16-fade-up var(--sc16-normal) var(--sc16-ease) both;
+}
+#trainer .messages>.bubble:not(.typing){animation-duration:var(--sc16-fast)}
+#trainer .composer .send:disabled{cursor:wait;opacity:.55;box-shadow:none!important}
+#trainer .composer input{font-size:16px!important;min-width:0}
+#trainer .composer{min-width:0}
+#trainer .guidebar{min-width:0}
+/* Keep sound controls clear of mobile safe-area edges. */
+.sc-public-sound{right:max(14px,env(safe-area-inset-right,0px))!important;
+ bottom:calc(18px + env(safe-area-inset-bottom,0px))!important}
+#trainer .sc-trainer-sound{min-height:36px}
+.sc-sound-control[aria-pressed="false"]{opacity:.77}
+.sc-sound-control[aria-pressed="true"]{opacity:1}
+#site .btn:disabled,#workspace button:disabled{cursor:not-allowed}
+@media(max-width:900px){
+ #trainer{min-height:0}
+ #trainer .composer{padding-bottom:calc(10px + env(safe-area-inset-bottom,0px))}
+ #trainer .messages{overscroll-behavior:contain}
+ body.sc16-keyboard-open #memberAppNav{display:none!important}
+ body.sc16-keyboard-open #trainer:not(.hidden){
+  height:var(--sc16-visible-height,100dvh)!important;
+  max-height:var(--sc16-visible-height,100dvh)!important;
+  top:var(--sc16-viewport-top,0px);
+ }
+ body.sc16-keyboard-open #trainer:not(.hidden) .trainbody{
+  height:calc(var(--sc16-visible-height,100dvh) - 52px)!important;
+  min-height:0!important;
+ }
+ body.sc16-keyboard-open #trainer .composer{
+  padding-bottom:10px!important;
+  min-height:60px!important;
+ }
+ body.sc16-keyboard-open #trainer .messages{scroll-behavior:auto!important}
+ body.sc16-keyboard-open #accountModal .accountbox{
+  max-height:min(90dvh,var(--sc16-visible-height,90dvh));
+  overflow-y:auto;overscroll-behavior:contain;
+ }
+ body.sc16-keyboard-open #workspace .workspaceinner{
+  padding-bottom:calc(32px + env(safe-area-inset-bottom,0px));
+ }
+ #trainer .composer input{min-height:44px}
+}
+@media(max-width:540px){
+ #accountModal .accountinput{min-height:46px;font-size:16px}
+ #site .hero .actions .btn{min-height:48px}
+ #site nav .links .btn{min-height:42px}
+ #workspace .studio-toolbar{gap:10px}
+ #workspace .studio-toolbar button{min-height:42px}
+ #workspace .aa-field input,#workspace .aa-field textarea,
+ #workspace .aa-field select{font-size:16px}
+ .sc-public-sound{min-height:37px}
+}
+/* Hard accessibility preference: eliminates all decorative motion, including
+   legacy animations from earlier design layers. */
+@media(prefers-reduced-motion:reduce){
+ :root{scroll-behavior:auto!important}
+ #site *,#site *::before,#site *::after,
+ #workspace *,#workspace *::before,#workspace *::after,
+ #profilePanel *,#profilePanel *::before,#profilePanel *::after,
+ #trainer *,#trainer *::before,#trainer *::after,
+ #accountModal *,#accountModal *::before,#accountModal *::after,
+ #simSetup *,#simSetup *::before,#simSetup *::after,
+ #briefing *,#briefing *::before,#briefing *::after{
+  animation-duration:.01ms!important;
+  animation-iteration-count:1!important;
+  transition-duration:.01ms!important;
+  scroll-behavior:auto!important;
+ }
+ #site .sc-pending{opacity:1!important;transform:none!important;filter:none!important}
+}
+@keyframes sc16-fade-up{from{opacity:.82;transform:translate3d(0,7px,0)}to{opacity:1;transform:translate3d(0,0,0)}}
+@keyframes sc16-rotate{to{transform:rotate(360deg)}}
+@keyframes sc16-pending{0%,100%{background-position:100% 50%}50%{background-position:0% 50%}}
