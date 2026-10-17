@@ -44,7 +44,7 @@ test("Employer reviews and verified outcomes require admins",()=>{
 });
 test("New client screens and navigation are connected",()=>{
  for(const name of ["advanced-hub-v12.js","advanced-ai-v12.js","advanced-career-v12.js","advanced-community-v12.js","advanced-admin-v12.js"])assert.ok(index.includes(name));
- assert.match(shell,/showAdvancedStudio/);
+ assert.match(read('public/member-experience-v15.js'),/showAdvancedStudio/);
  assert.match(ai,/SpeechRecognition/);
  assert.match(ai,/recognition\.start\(\)/);
 });
