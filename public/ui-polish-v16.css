@@ -133,3 +133,34 @@
 @keyframes sc16-fade-up{from{opacity:.82;transform:translate3d(0,7px,0)}to{opacity:1;transform:translate3d(0,0,0)}}
 @keyframes sc16-rotate{to{transform:rotate(360deg)}}
 @keyframes sc16-pending{0%,100%{background-position:100% 50%}50%{background-position:0% 50%}}
+
+/* Standalone Workplace controls share the preference, without a floating overlay. */
+.sc-workplace-sound{display:inline-flex!important;align-items:center;justify-content:center;gap:8px;
+ background:#1c2b17;border:1px solid #59723d;border-radius:10px;padding:9px 12px;
+ color:#e2f3be;font-size:12px;font-weight:760;min-height:42px;cursor:pointer}
+.sc-workplace-sound svg{width:18px;height:18px;display:block}
+.sc-workplace-sound[aria-pressed="false"]{color:#acbba1}
+.sc-workplace-sound:focus-visible{outline:2px solid #d0f83b;outline-offset:3px}
+/* Before Joining: quiet transitions and responsive demo controls. */
+.experience-panel.is-active{animation:sc16-fade-up var(--sc16-normal) var(--sc16-ease) both}
+.experience-panel .chat input,.experience-panel .chat textarea,
+.experience-panel input,.experience-panel textarea{font-size:max(16px,1em)}
+.experience-panel button[aria-busy="true"]{position:relative;cursor:progress;opacity:.88}
+.experience-panel button[aria-busy="true"]::before{content:"";display:inline-block;width:12px;height:12px;
+ border:2px solid currentColor;border-top-color:transparent;border-radius:50%;
+ vertical-align:-2px;margin-right:8px;animation:sc16-rotate .7s linear infinite}
+.experience-panel .chat,.experience-panel .demo-section,.experience-panel .contact-card{min-width:0}
+.experience-panel .chat input,.experience-panel .chat textarea{max-width:100%}
+.experience-panel :is(a,button,input,textarea):focus-visible{outline:2px solid #d0f83b;outline-offset:3px}
+@media(max-width:620px){
+ .experience-panel .section{padding-block:clamp(34px,8vw,64px)}
+ .experience-panel .chat input,.experience-panel .chat textarea{font-size:16px}
+ .experience-panel :is(.btn,button){touch-action:manipulation}
+ .experience-panel .demo-grid{gap:24px}
+}
+@media(prefers-reduced-motion:reduce){
+ .experience-panel *, .experience-panel *::before,.experience-panel *::after{
+  animation-duration:.01ms!important;animation-iteration-count:1!important;
+  transition-duration:.01ms!important;scroll-behavior:auto!important
+ }
+}
