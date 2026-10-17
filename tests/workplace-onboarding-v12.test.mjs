@@ -11,7 +11,7 @@ test("Workplace onboarding cards are not forced into two columns by inline !impo
  assert.match(css,/@media\(max-width:820px\)\s*\{[\s\S]*?\.onboard-cards\s*\{\s*grid-template-columns:minmax\(0,1fr\)!important/);
 });
 test("Rules are readable, separated and never clipped by a max-height",()=>{
- assert.match(html,/class="onboard-rules"/);
+ assert.match(html,/class="[^"]*\bonboard-rules\b[^"]*"/);
  assert.match(html,/<ol class="onboard-rule-list">/);
  for(const title of ["Be truthful","Respect boundaries","Protect information","Book with consent"])
   assert.ok(html.includes("<strong>"+title+"</strong>"));
