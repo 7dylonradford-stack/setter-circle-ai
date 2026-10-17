@@ -67,7 +67,7 @@ test('Static performance keeps authentication fresh and avoids forced reflow on 
  const worker=read('public/sw.js');
  assert.match(worker,/url\.pathname\.startsWith\("\/api\/"\)/);
  assert.match(worker,/req\.mode==="navigate"/);
- assert.match(worker,/cache:versioned\?"default":"no-store"/);
+ assert.match(worker,/fetch\(req,\{cache:"no-store"\}\)/);
  assert.doesNotMatch(sound,/clickTarget\.offsetWidth/);
  assert.match(sound,/requestAnimationFrame\(\(\)=>/);
 });
