@@ -82,7 +82,7 @@ test("Member dashboard imports journey assets and direct lesson actions",()=>{
  const front=readFileSync(new URL("../public/member-journey-v13.js",import.meta.url),"utf8");
  const academy=readFileSync(new URL("../public/platform-growth-v11.js",import.meta.url),"utf8");
  assert.match(html,/member-journey-v13.js\?v=13/);
- assert.match(html,/member-ui-v15.css\?v=15/);
+ assert.match(html,/member-ui-v15.css\?v=16/);
  assert.match(front,/window\.openAcademyLesson/);
  assert.match(academy,/openAcademyLesson:async/);
  assert.match(front,/YOUR RECORDED TRAINING ACTIVITY/);
