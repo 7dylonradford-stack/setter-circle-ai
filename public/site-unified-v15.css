@@ -1,0 +1,32 @@
+
+:root{--lime:#D0F83B;--green:#D0F83B}
+#site{background:#090e09;color:#f0f6e9}
+#site nav{background:rgba(9,14,9,.94);border-bottom:1px solid #3b4d30;backdrop-filter:blur(18px)}
+#site .hero{min-height:640px;padding:72px 0}
+#site .hero-grid{gap:42px}
+#site .hero h1{font-size:clamp(43px,6vw,78px);font-weight:840;line-height:.98;letter-spacing:-.065em;text-wrap:balance}
+#site .hero p{max-width:610px;font-size:16px;line-height:1.7;color:#abbba8}
+#site .hero .actions{display:flex;flex-wrap:wrap;gap:11px;margin:24px 0}
+#site .hero .actions .btn{display:inline-flex;justify-content:center;align-items:center;min-height:46px;padding:12px 17px;white-space:normal;text-decoration:none;border-radius:10px;font-size:12px;font-weight:790;line-height:1.4}
+#site .hero .actions .btn:not(.ghost){color:#142009;background:#d0f83b;border-color:#d0f83b}
+#site .hero .actions .btn.ghost{background:#131d13;color:#e7f2d9;border:1px solid #50603a}
+#site .socialproof{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px;margin-top:23px}
+#site .socialproof>div{min-width:0;background:#152013;border:1px solid #394d30;border-radius:12px;padding:14px 12px;font-size:11px;color:#9fb19b;line-height:1.45}
+#site .socialproof b{display:block;font-size:17px;margin-bottom:6px;letter-spacing:-.04em;font-weight:760;color:#e9f6d5}
+#site .preview .phone{background:#101b10;border-color:#3e5334}
+#site .preview .phone .active{color:#afc89b;font-size:10px}
+#site .statband{border-color:#354a2c;background:#0d160d}
+#site .statband .stat b{font-size:clamp(17px,2vw,23px);letter-spacing:-.04em;color:#e1f6bd}
+#site .statband .stat span{font-size:12px;line-height:1.6;color:#9daf94}
+#site .sectiontop h2,#site .cta h2{letter-spacing:-.052em;line-height:1.1}
+#site .card,#site .feature,#site .cta{border-color:#3a5130}
+#site .card{background:#141e12}
+#site :is(a,button,input,textarea):focus-visible{outline:2px solid #D0F83B;outline-offset:3px}
+body:has(.experience-panel){--green:#D0F83B;--light:#eff6e5;--muted:#a5b99e;--line:#35472e}
+body:has(.experience-panel) .nav{border-color:#3d512f;background:rgba(9,14,9,.92)}
+body:has(.experience-panel) :is(.tile,.quote,.contact-card,.feature,.chat){border-color:#455b35}
+body:has(.experience-panel) :is(.tile,.quote,.contact-card){background:#152013}
+body:has(.experience-panel) .btn:not(.ghost){background:#D0F83B;color:#152007;border-color:#D0F83B}
+body:has(.experience-panel) .btn.ghost{border-color:#53683c;background:#182216;color:#ebf5dc}
+@media(max-width:850px){#site .hero{padding:45px 0;min-height:0}#site .hero h1{font-size:clamp(40px,8.5vw,58px)}#site .hero .actions .btn{flex:1 1 165px}#site .socialproof{grid-template-columns:1fr 1fr}#site .statband .stats{display:grid;grid-template-columns:1fr}}
+@media(max-width:520px){#site .hero .actions{display:grid;grid-template-columns:1fr}#site .hero .actions .btn{width:100%;min-height:45px}#site .socialproof{grid-template-columns:1fr;gap:7px}#site .socialproof>div{padding:10px 13px}#site .socialproof b{font-size:15px;margin-bottom:3px}#site .hero h1{font-size:clamp(40px,11vw,53px)}}
