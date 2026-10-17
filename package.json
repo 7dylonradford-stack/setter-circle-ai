@@ -5,7 +5,8 @@
   "scripts": {
     "start": "node server.js",
     "test": "node --test tests/*.test.mjs",
-    "prestart": "npm test"
+    "prestart": "npm run build:styles && npm test",
+    "build:styles": "node scripts/build-member-css.mjs"
   },
   "dependencies": {
     "express": "^5.1.0",
