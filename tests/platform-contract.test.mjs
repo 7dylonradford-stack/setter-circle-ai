@@ -51,7 +51,7 @@ test('Career applications and weekly reviews are account scoped',()=>{
  assert.match(db,/CREATE TABLE IF NOT EXISTS weekly_reviews/);
 });
 test('Practice navigation includes recovery and removes illustration tiles',()=>{
- assert.match(shell,/showResumeTraining/);
+ assert.match(read('public/member-experience-v15.js'),/showResumeTraining/);
  assert.match(atelier,/if\(icon\)icon\.remove\(\)/);
  assert.match(atelier,/if\(tile\)tile\.remove\(\)/);
  assert.doesNotMatch(atelier,/card\.insertAdjacentHTML\('beforeend',preview\(meta.kind\)\)/);
