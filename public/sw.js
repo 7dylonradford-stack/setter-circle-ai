@@ -21,10 +21,8 @@ self.addEventListener("fetch",event=>{
  if(req.mode==="navigate"||req.destination==="document")return;
  const asset=/\.(?:css|js|svg|png|jpg|jpeg|webp|woff2?|webmanifest)$/.test(url.pathname);
  if(!asset)return;
- // Versioned static assets can use normal HTTP caching; unversioned code must be fresh.
- // Never cache user API responses or document navigations.
- const versioned=/\.(?:css|js)$/.test(url.pathname)&&/^\d+$/.test(url.searchParams.get("v")||"");
- event.respondWith(fetch(req,{cache:versioned?"default":"no-store"}).then(response=>{
+ // Keep authentication and training scripts fresh; never cache API responses or navigations.
+ event.respondWith(fetch(req,{cache:"no-store"}).then(response=>{
   if(response.ok&&response.type==="basic"){
    const copy=response.clone();
    event.waitUntil(caches.open(STATIC_CACHE).then(cache=>cache.put(req,copy)).catch(()=>{}));
