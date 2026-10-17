@@ -84,11 +84,32 @@ function lessonView(id){
  else c+=empty('Video coming soon','The team has published this lesson without a video. Review the notes and linked resources.');
  if(resource)c+='<p class="studio-resource"><a href="'+esc(resource)+'" target="_blank" rel="noopener noreferrer">Open lesson resources ↗</a></p>';
  c+='<div class="studio-note"><strong>Apply what you learned</strong><p>Take one useful idea from this lesson into your next simulation or real outreach block.</p></div>';
+ c+='<div id="studioLessonCheck" data-lesson-id="'+esc(l.id)+'"></div>';
  c+='<div class="studio-toolbar">'+action('module','← Back to module','data-number="'+l.module_number+'"');
  if(!l.completed)c+='<label class="studio-confirm"><input id="studioWatched" type="checkbox"> I have reviewed this lesson</label>'+action('complete-lesson','Mark lesson complete','data-id="'+esc(l.id)+'"');
  else c+='<span class="studio-completed">Completed ✓</span>';
  c+='</div>';
  call(l.title,'Module '+l.module_number+' · '+(l.duration_min?l.duration_min+' minute lesson':'Training lesson'),layout('',c),'ACADEMY / LESSON');
+ loadLessonCheck(l.id);
+}
+
+async function loadLessonCheck(id){
+ const area=$('studioLessonCheck');
+ if(!area||area.dataset.lessonId!==id)return;
+ area.innerHTML='<div class="studio-loading"><span class="studio-loading-dot"></span> Checking learning assessment…</div>';
+ try{
+  const d=await api('/api/academy/lessons/'+id+'/check');
+  if(!area.isConnected||area.dataset.lessonId!==id)return;
+  if(!d.check){area.innerHTML='<div class="studio-note"><strong>Practice task</strong><p>Apply this lesson in a roleplay. A formal knowledge check has not been published for this lesson.</p></div>';return}
+  const c=d.check;
+  area.innerHTML='<section class="studio-main-card studio-lesson-check">'+
+   '<span class="studio-overline">LESSON UNDERSTANDING · '+(d.passed?'PASSED':'PRACTICE CHECK')+'</span>'+
+   '<h3>'+esc(c.question)+'</h3>'+
+   (d.passed?'<p class="studio-completed">Knowledge check passed ✓</p>':
+   '<div class="studio-check-options">'+c.options.map((x,i)=>'<label class="studio-check-answer"><input type="radio" name="studioCheckAnswer" value="'+i+'"><span>'+esc(x)+'</span></label>').join('')+'</div>'+
+   '<div class="studio-toolbar">'+action('submit-check','Check my answer','data-id="'+esc(id)+'"')+'</div>')+
+   '<div id="studioCheckFeedback" role="status" aria-live="polite"></div></section>';
+ }catch(err){if(area.isConnected)area.innerHTML='<p class="studio-help">Knowledge check could not be loaded. '+esc(err.message)+'</p>'}
 }
 async function programme(){
  call('40-Day Programme','Structured assignments, proof of work and mentor review.',loading('Programme'),'ACADEMY / 40 DAYS');
@@ -234,7 +255,12 @@ async function adminStudio(){
   '<label class="studio-field-label" for="studioAdminDescription">DESCRIPTION</label><textarea id="studioAdminDescription" rows="3"></textarea>'+
   '<div class="studio-field-grid"><label class="studio-field">VIDEO URL<input id="studioAdminVideo" placeholder="https://"></label><label class="studio-field">RESOURCE URL<input id="studioAdminResource" placeholder="https://"></label><label class="studio-field">DURATION (MIN)<input type="number" id="studioAdminDuration" min="0" value="8"></label><label class="studio-field">ORDER<input type="number" id="studioAdminOrder" value="1" min="0"></label></div>'+
   '<label class="studio-checkbox"><input type="checkbox" id="studioAdminPublished"> Publish immediately</label>'+action('create-lesson','Add lesson')+'</div>';
-  c+='<div class="studio-list">'+lessons.map(x=>'<div class="studio-list-row"><span class="studio-list-index">'+x.module_number+'</span><span class="studio-list-copy"><strong>'+esc(x.title)+'</strong><small>'+(x.published?'Published':'Draft')+'</small></span>'+action('toggle-publish',x.published?'Unpublish':'Publish','data-id="'+esc(x.id)+'"')+'</div>').join('')+'</div>';
+  c+='<div class="studio-list">'+lessons.map(x=>'<div class="studio-list-row studio-stack"><div class="studio-admin-lesson-row"><span class="studio-list-index">'+x.module_number+'</span><span class="studio-list-copy"><strong>'+esc(x.title)+'</strong><small>'+(x.published?'Published':'Draft')+'</small></span>'+action('toggle-publish',x.published?'Unpublish':'Publish','data-id="'+esc(x.id)+'"')+'</div>'+
+ '<details class="studio-quiz-editor"><summary>Configure three-answer knowledge check</summary>'+
+ '<label class="studio-field">QUESTION<input id="studioQ_'+esc(x.id)+'" maxlength="500" placeholder="What is the correct next step?"></label>'+
+ '<div class="studio-field-grid"><label class="studio-field">ANSWER A<input id="studioA0_'+esc(x.id)+'" maxlength="200"></label><label class="studio-field">ANSWER B<input id="studioA1_'+esc(x.id)+'" maxlength="200"></label><label class="studio-field">ANSWER C<input id="studioA2_'+esc(x.id)+'" maxlength="200"></label><label class="studio-field">CORRECT ANSWER<select id="studioCorrect_'+esc(x.id)+'"><option value="0">A</option><option value="1">B</option><option value="2">C</option></select></label></div>'+
+ '<label class="studio-field-label">EXPLANATION<textarea rows="2" id="studioExplain_'+esc(x.id)+'" placeholder="Why is this the best answer?"></textarea></label>'+
+ action('save-knowledge-check','Save knowledge check','data-id="'+esc(x.id)+'"')+'</details></div>').join('')+'</div>';
   call('Lesson studio','Manage your programme without editing code.',layout('',c),'ADMIN / CURRICULUM');
  }catch(e){notice(e.message)}
 }
@@ -317,6 +343,23 @@ document.addEventListener('click',async e=>{
    const proof=$('studioProof')?.value.trim()||'';if(proof.length<15)throw Error('Include at least 15 characters of evidence.');
    await api('/api/mentor/submissions',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({category:'programme',subject:'Day '+dayNo+' practical evidence',submission:proof})});
    notice('Sent to mentor review queue');return;
+  }
+  if(key==='submit-check'){
+   const value=document.querySelector('input[name="studioCheckAnswer"]:checked');
+   if(!value)throw Error('Choose an answer first.');
+   const d=await api('/api/academy/lessons/'+b.dataset.id+'/check',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({answer_index:Number(value.value)})});
+   const feedback=$('studioCheckFeedback');
+   if(feedback)feedback.innerHTML='<div class="studio-note"><strong>'+(d.correct?'Correct — well done':'Not quite — review this point')+'</strong><p>'+esc(d.explanation||'')+'</p></div>';
+   if(d.passed){setTimeout(()=>loadLessonCheck(b.dataset.id),800)}
+   return;
+  }
+  if(key==='save-knowledge-check'){
+   const id=b.dataset.id;
+   const question=$('studioQ_'+id)?.value||'';
+   const options=[0,1,2].map(i=>$('studioA'+i+'_'+id)?.value||'');
+   const answer_index=Number($('studioCorrect_'+id)?.value);
+   await api('/api/admin/academy/lessons/'+id+'/check',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({question,options,answer_index,explanation:$('studioExplain_'+id)?.value||''})});
+   notice('Knowledge check published. Students must pass before completing this lesson.');return;
   }
   if(key==='complete-lesson'){
    if(!$('studioWatched')?.checked)throw Error('Confirm you reviewed the lesson first.');
