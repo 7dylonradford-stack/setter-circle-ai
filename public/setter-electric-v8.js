@@ -10,7 +10,7 @@
  const AUDIO_PREF='setterCircleUiSoundV8';
  const hasReducedMotion=()=>typeof matchMedia==='function'&&matchMedia('(prefers-reduced-motion: reduce)').matches;
  let soundOn=true;
- try{soundOn=localStorage.getItem(AUDIO_PREF)!=='off'}catch(e){}
+ try{soundOn=localStorage.getItem(AUDIO_PREF)==='on'}catch(e){}
  let audio=null,lastSound=0,seed=0;
  const AudioEngine=window.AudioContext||window.webkitAudioContext;
  const controls=[];
