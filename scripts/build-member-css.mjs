@@ -11,7 +11,7 @@ const files=[
  'site-signature-v7.css','setter-electric-v8.css','member-atelier-v9.css',
  'room-typing-v10.css','platform-growth-v11.css','advanced-studio-v12.css',
  'member-journey-v13.css','roleplay-replay-v14.css','site-luxe.css',
- 'site-unified-v15.css','member-design-v15.css'
+ 'site-unified-v15.css','member-design-v15.css','ui-polish-v16.css'
 ];
 const parts=files.map(file=>{
  const css=readFileSync(path.join(root,'public',file),'utf8');
