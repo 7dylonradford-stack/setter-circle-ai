@@ -1,6 +1,6 @@
 
 /* Setter Circle service worker — freshness first for app code; no account/API caching. */
-const STATIC_CACHE="setter-static-v16";
+const STATIC_CACHE="setter-static-v16.1";
 const PRECACHE=["/setter-logo.svg"];
 self.addEventListener("install",event=>{
  event.waitUntil(
@@ -21,8 +21,10 @@ self.addEventListener("fetch",event=>{
  if(req.mode==="navigate"||req.destination==="document")return;
  const asset=/\.(?:css|js|svg|png|jpg|jpeg|webp|woff2?|webmanifest)$/.test(url.pathname);
  if(!asset)return;
- // Always fetch fresh member JavaScript/CSS to prevent mixing code from different releases.
- event.respondWith(fetch(req,{cache:"no-store"}).then(response=>{
+ // Versioned static assets can use normal HTTP caching; unversioned code must be fresh.
+ // Never cache user API responses or document navigations.
+ const versioned=/\.(?:css|js)$/.test(url.pathname)&&/^\d+$/.test(url.searchParams.get("v")||"");
+ event.respondWith(fetch(req,{cache:versioned?"default":"no-store"}).then(response=>{
   if(response.ok&&response.type==="basic"){
    const copy=response.clone();
    event.waitUntil(caches.open(STATIC_CACHE).then(cache=>cache.put(req,copy)).catch(()=>{}));
