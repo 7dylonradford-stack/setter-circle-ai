@@ -120,8 +120,9 @@
   playBubble(false);
   if(!hasReducedMotion()&&clickTarget.matches('button,.btn')){
    clickTarget.classList.remove('sc-click-pop');
-   void clickTarget.offsetWidth;
-   clickTarget.classList.add('sc-click-pop');
+   requestAnimationFrame(()=>{
+    if(clickTarget.isConnected)clickTarget.classList.add('sc-click-pop');
+   });
   }
  },{capture:true,passive:true});
  document.addEventListener('animationend',e=>{
