@@ -53,6 +53,8 @@ export function registerPlatformRoutes(app,{requireUser,requireAdmin}){
     return res.status(400).json({error:"Supply one meaningful question, three answers and the correct answer index"});
   const check=await q("INSERT INTO lesson_knowledge_checks(lesson_id,question,options,answer_index,explanation) SELECT id,$2,$3::jsonb,$4,$5 FROM training_lessons WHERE id=$1 ON CONFLICT(lesson_id) DO UPDATE SET question=$2,options=$3::jsonb,answer_index=$4,explanation=$5,updated_at=NOW() RETURNING lesson_id",[req.params.id,question,JSON.stringify(options.map(x=>clean(x,200))),answer,clean(req.body?.explanation,700)]);
   if(!check.rows.length)return res.status(404).json({error:"Lesson not found"});
+  // Revised questions require a fresh answer; previous completion records are not retroactively revoked.
+  await q("DELETE FROM lesson_check_attempts WHERE lesson_id=$1",[req.params.id]);
   res.json({ok:true});
  }catch(e){sendError(res,e)}});
  app.post("/api/academy/lessons/:id/complete",requireUser,async(req,res)=>{try{
