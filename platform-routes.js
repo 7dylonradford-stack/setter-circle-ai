@@ -27,11 +27,44 @@ export function registerPlatformRoutes(app,{requireUser,requireAdmin}){
   const r=await q("UPDATE training_lessons SET module_number=$2,title=$3,description=$4,video_url=$5,resource_url=$6,duration_min=$7,sort_order=$8,published=$9,updated_at=NOW() WHERE id=$1 RETURNING *",[req.params.id,Number(x.module_number),clean(x.title,160),clean(x.description,1800),url(x.video_url),url(x.resource_url),Math.min(480,Math.max(0,Number(x.duration_min)||0)),Math.min(999,Math.max(0,Number(x.sort_order)||0)),!!x.published]);
   res.json({lesson:r.rows[0]});
  }catch(e){sendError(res,e)}});
+
+ app.get("/api/academy/lessons/:id/check",requireUser,async(req,res)=>{try{
+  if(!uuid(req.params.id))return res.status(400).json({error:"Invalid lesson"});
+  const lesson=await q("SELECT id FROM training_lessons WHERE id=$1 AND published=TRUE",[req.params.id]);
+  if(!lesson.rows[0])return res.status(404).json({error:"Lesson unavailable"});
+  const [check,attempt]=await Promise.all([
+   q("SELECT question,options FROM lesson_knowledge_checks WHERE lesson_id=$1",[req.params.id]),
+   q("SELECT passed,attempts FROM lesson_check_attempts WHERE lesson_id=$1 AND user_id=$2",[req.params.id,req.user.id])
+  ]);
+  res.set("Cache-Control","no-store").json({check:check.rows[0]||null,passed:attempt.rows[0]?.passed===true,attempts:attempt.rows[0]?.attempts||0});
+ }catch(e){sendError(res,e)}});
+ app.post("/api/academy/lessons/:id/check",requireUser,async(req,res)=>{try{
+  if(!uuid(req.params.id)||!Number.isInteger(req.body?.answer_index))return res.status(400).json({error:"Choose an answer"});
+  const r=await q("SELECT c.answer_index,c.explanation FROM lesson_knowledge_checks c JOIN training_lessons l ON l.id=c.lesson_id WHERE c.lesson_id=$1 AND l.published=TRUE",[req.params.id]);
+  if(!r.rows[0])return res.status(404).json({error:"Knowledge check unavailable"});
+  const correct=Number(req.body.answer_index)===r.rows[0].answer_index;
+  await q("INSERT INTO lesson_check_attempts(user_id,lesson_id,passed,attempts) VALUES($1,$2,$3,1) ON CONFLICT(user_id,lesson_id) DO UPDATE SET passed=lesson_check_attempts.passed OR $3,attempts=lesson_check_attempts.attempts+1,last_attempt_at=NOW()",[req.user.id,req.params.id,correct]);
+  res.json({correct,explanation:r.rows[0].explanation,passed:correct||(await q("SELECT passed FROM lesson_check_attempts WHERE user_id=$1 AND lesson_id=$2",[req.user.id,req.params.id])).rows[0]?.passed===true});
+ }catch(e){sendError(res,e)}});
+ app.put("/api/admin/academy/lessons/:id/check",requireAdmin,async(req,res)=>{try{
+  if(!uuid(req.params.id))return res.status(400).json({error:"Invalid lesson"});
+  const question=clean(req.body?.question,500),options=req.body?.options,answer=Number(req.body?.answer_index);
+  if(question.length<12||!Array.isArray(options)||options.length!==3||options.some(x=>typeof x!=="string"||clean(x,200).length<2)||!Number.isInteger(answer)||answer<0||answer>2)
+    return res.status(400).json({error:"Supply one meaningful question, three answers and the correct answer index"});
+  const check=await q("INSERT INTO lesson_knowledge_checks(lesson_id,question,options,answer_index,explanation) SELECT id,$2,$3::jsonb,$4,$5 FROM training_lessons WHERE id=$1 ON CONFLICT(lesson_id) DO UPDATE SET question=$2,options=$3::jsonb,answer_index=$4,explanation=$5,updated_at=NOW() RETURNING lesson_id",[req.params.id,question,JSON.stringify(options.map(x=>clean(x,200))),answer,clean(req.body?.explanation,700)]);
+  if(!check.rows.length)return res.status(404).json({error:"Lesson not found"});
+  res.json({ok:true});
+ }catch(e){sendError(res,e)}});
  app.post("/api/academy/lessons/:id/complete",requireUser,async(req,res)=>{try{
   if(!uuid(req.params.id))return res.status(400).json({error:"Invalid lesson"});
   const r=await q("SELECT video_url FROM training_lessons WHERE id=$1 AND published=TRUE",[req.params.id]);
   if(!r.rows.length)return res.status(404).json({error:"Lesson unavailable"});
   if(r.rows[0].video_url&&!req.body?.confirm_watched)return res.status(400).json({error:"Confirm you watched the lesson"});
+  const c=await q("SELECT EXISTS(SELECT 1 FROM lesson_knowledge_checks WHERE lesson_id=$1) required",[req.params.id]);
+  if(c.rows[0]?.required){
+   const attempt=await q("SELECT passed FROM lesson_check_attempts WHERE lesson_id=$1 AND user_id=$2",[req.params.id,req.user.id]);
+   if(attempt.rows[0]?.passed!==true)return res.status(409).json({error:"Pass this lesson's knowledge check before marking it complete"});
+  }
   await q("INSERT INTO lesson_progress(user_id,lesson_id) VALUES($1,$2) ON CONFLICT DO NOTHING",[req.user.id,req.params.id]);res.json({ok:true});
  }catch(e){sendError(res,e)}});
  app.get("/api/academy/progress",requireUser,async(req,res)=>{try{
