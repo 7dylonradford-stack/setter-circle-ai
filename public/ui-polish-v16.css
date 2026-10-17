@@ -64,6 +64,8 @@
 }
 #trainer .messages>.bubble:not(.typing){animation-duration:var(--sc16-fast)}
 #trainer .composer .send:disabled{cursor:wait;opacity:.55;box-shadow:none!important}
+#trainer .composer .send[aria-busy="true"]{font-size:0!important;display:flex;align-items:center;justify-content:center}
+#trainer .composer .send[aria-busy="true"]::before{width:17px;height:17px;margin:0;border-width:2px;color:#16210b}
 #trainer .composer input{font-size:16px!important;min-width:0}
 #trainer .composer{min-width:0}
 #trainer .guidebar{min-width:0}
@@ -103,6 +105,10 @@
  #trainer .composer input{min-height:44px}
 }
 @media(max-width:540px){
+ .sc-public-sound{width:42px;min-width:42px;padding:8px!important;border-radius:12px!important}
+ .sc-public-sound .sc-sound-caption{display:none!important}
+ .sc-public-sound .sc-sound-icon svg{width:19px;height:19px}
+
  #accountModal .accountinput{min-height:46px;font-size:16px}
  #site .hero .actions .btn{min-height:48px}
  #site nav .links .btn{min-height:42px}
