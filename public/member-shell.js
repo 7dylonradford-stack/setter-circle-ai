@@ -27,32 +27,19 @@ academy:{eyebrow:'LEARNING',summary:'Build your foundations, follow the 40-day r
 ['academy','Training library','Core modules, practical lessons and essential setter skills.','showAcademy','Explore lessons'],
 ['calendar','40-Day Programme','A clear daily roadmap from learning to real-world execution.','showProgramme','Open roadmap'],
 ['file','Playbooks & resources','Frameworks, objection guides and practical reference materials.','showResources','Browse resources']]},
-practice:{eyebrow:'YOUR TRAINING GROUND',summary:'Realistic situations. Better conversations. Skills you can use on the job.',cards:[
-['practice','AI Roleplay Lab','Practice conversations with adaptive fictional prospects.','openAIStage','Start roleplay'],
-['career','Virtual Workplace','Handle prospects, CRM tasks, bookings and shift reporting.','workplace','Enter workplace'],
-['coach','Mock Interview','Practise hiring questions before a real interview.','startInterview','Start interview'],
-['academy','Conversation Clinic','Learn from common mistakes and improve your replies.','showConversationClinic','Enter clinic'],
-['calendar','Pre-Shift Checklist','Prepare for a productive practice session.','showPreShift','Open checklist'],
-['practice','Resume Training','Return to an unfinished AI roleplay after leaving the page.','showResumeTraining','Resume a session'],
-['practice','Replay Studio','Revisit previous conversations and practise correcting difficult moments.','showReplayStudio','Review conversation'],
-['practice','Advanced AI Studio','Continue fictional prospects across channels and practise voice calls.','showAdvancedStudio','Open advanced training']]},
-progress:{eyebrow:'YOUR DEVELOPMENT',summary:'Track your performance, understand your strongest skills and know what to practise next.',cards:[
-['progress','Performance Lab','Visual breakdowns of your simulations and skills.','showPerformanceLab','Review results'],
-['coach','Personal AI Coach','Targeted suggestions based on your training history.','showPersonalCoach','Open coach'],
-['file','Results Vault','Your completed training and evidence of progress.','showResultsVault','View your evidence'],
-['calendar','Weekly Review','Reflect, review and plan your next actions.','showWeeklyReview','Open review'],
-['trophy','Progression Path','Track your stages from foundation to job readiness.','showProgression','View your path']]},
-career:{eyebrow:'ROLE READINESS',summary:'Build credible skills, prepare for interviews and explore shared opportunities.',cards:[
-['career','Setter Profile','Your personal training record and professional profile.','showSetterProfile','View profile'],
-['progress','Placement Path','Your progression towards becoming role ready.','showPlacementPath','View your path'],
-['academy','Opportunities','Browse roles shared with Setter Circle students.','showOpportunities','Explore roles'],
-['coach','Interview Preparation','Practise with a simulated hiring manager.','startInterview','Prepare now'],
-['file','Career Portfolio & Pathways','Employer-ready practice evidence, projects and your first 90 days.','showAdvancedStudio','Explore career studio']]},
-community:{eyebrow:'THE COMMUNITY',summary:'Learn alongside other members, celebrate progress and stay connected.',cards:[
-['trophy','Weekly Leaderboard','See how members are getting on this week.','showLeaderboard','View leaderboard'],
-['calendar','Referral Challenge','Your daily member referral challenge.','showReferralChallenge','View challenge'],
-['file','Member Resources','Guides and tools to help you keep developing.','showResources','Open resources'],
-['practice','Advanced Community','Workshops, practice partners, cohorts and monthly challenges.','showAdvancedStudio','Explore the community']]}
+practice:{eyebrow:'PRACTICE WITH PURPOSE',summary:'Three clear training environments. Continue, replay and coach conversations inside the Roleplay Lab.',cards:[
+['practice','Roleplay Lab','Start, resume or replay a simulation — and improve your replies.','showPracticeStudio','Open practice studio'],
+['career','Virtual Workplace','Run a guided simulated shift with CRM and booking tasks.','workplace','Enter workplace'],
+['coach','Mock Interview','Prepare for a real interview with structured AI practice.','startInterview','Open interview practice']]},progress:{eyebrow:'YOUR DEVELOPMENT',summary:'A clear view of your performance and feedback, without duplicate dashboards.',cards:[
+['progress','Performance Lab','See your skill trends and measured areas for improvement.','showPerformanceLab','Review performance'],
+['coach','Mentor Feedback','Send work, track reviews and act on mentor corrections.','showMentorDesk','Open mentor feedback'],
+['file','Results & Evidence','Review completed sessions and learning evidence.','showResultsVault','Open results vault']]},career:{eyebrow:'BUILD YOUR CAREER',summary:'Present your skills, prepare applications and find appropriate opportunities.',cards:[
+['career','Student Career Studio','Skills passport, placements and professional development.','showCareerStudio','Open career studio'],
+['academy','Job Opportunities','Browse approved opportunities and track your applications.','showOpportunities','Explore jobs'],
+['coach','Interview Preparation','Practise hiring questions and request mentor assessment.','startInterview','Start interview preparation']]},community:{eyebrow:'LEARN TOGETHER',summary:'Mentor-led events and responsible peer-to-peer practice in one place.',cards:[
+['practice','Community & Workshops','Training events, cohort learning and peer practice.','showCommunityStudio','Open community'],
+['trophy','Member Referral Challenge','Review the optional referral challenge and participation rules.','showReferralChallenge','Open referral challenge']]}
+
 };
 let currentSection='dashboard';
 const item=(id,extra)=>'<button type="button" class="member-nav-item '+(extra||'')+'" data-member-section="'+id+'" aria-label="'+names[id]+'">'+svg(id)+'<span>'+names[id]+'</span></button>';
