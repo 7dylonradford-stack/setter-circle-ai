@@ -98,6 +98,12 @@
   if(document.getElementById('site')||document.querySelector('.experience-menu')){
    if(!document.querySelector('.sc-public-sound'))document.body.appendChild(buildSoundButton(false,'sc-public-sound'));
   }
+  // Workplace is a separate page; keep mute control available beside the client selector.
+  const workplace=document.getElementById('app');
+  const workplaceControls=workplace?.querySelector(':scope > .row');
+  if(workplaceControls&&!workplaceControls.querySelector('.sc-workplace-sound')){
+   workplaceControls.appendChild(buildSoundButton(false,'sc-workplace-sound'));
+  }
   const trainer=document.querySelector('#trainer .trainnav');
   if(trainer&&!trainer.querySelector('.sc-trainer-sound')){
    const back=trainer.querySelector('button[onclick*="closeTrainer"]');
