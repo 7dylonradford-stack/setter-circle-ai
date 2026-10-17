@@ -97,6 +97,22 @@ export async function initDb(){
    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(), updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
  );
  CREATE INDEX IF NOT EXISTS training_lessons_module_order ON training_lessons(module_number,sort_order);
+ CREATE TABLE IF NOT EXISTS lesson_knowledge_checks(
+  lesson_id UUID PRIMARY KEY REFERENCES training_lessons(id) ON DELETE CASCADE,
+  question TEXT NOT NULL,
+  options JSONB NOT NULL,
+  answer_index INTEGER NOT NULL CHECK(answer_index BETWEEN 0 AND 3),
+  explanation TEXT NOT NULL DEFAULT '',
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+ );
+ CREATE TABLE IF NOT EXISTS lesson_check_attempts(
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  lesson_id UUID NOT NULL REFERENCES training_lessons(id) ON DELETE CASCADE,
+  passed BOOLEAN NOT NULL DEFAULT FALSE,
+  attempts INTEGER NOT NULL DEFAULT 0,
+  last_attempt_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  PRIMARY KEY(user_id,lesson_id)
+ );
  CREATE TABLE IF NOT EXISTS lesson_progress(
    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
    lesson_id UUID NOT NULL REFERENCES training_lessons(id) ON DELETE CASCADE,
