@@ -1,0 +1,58 @@
+
+/* V15 Workplace: mobile-first simulated shift, clear stage navigation and no overflowing cards. */
+#app{--wp-accent:#D0F83B;--wp-muted:#a9ba9f}
+#app .workspace-head{background:linear-gradient(125deg,#1a2817,#0e180f);border-color:#4e6638;
+ border-radius:17px;padding:clamp(16px,3vw,26px);margin:18px 0 12px}
+#app .workspace-head h2{font-size:clamp(22px,3vw,30px)!important;letter-spacing:-.045em;line-height:1.16}
+#app .workspace-head p{line-height:1.65;color:#b1c0a9;max-width:750px}
+#app .workstat{display:flex;gap:8px;flex-wrap:wrap}
+#app .workstat>span{font-size:10px;line-height:1.45;white-space:normal}
+#app .training-progress{height:7px;overflow:hidden;border-radius:20px;background:#283b1d}
+#app .training-progress span{border-radius:20px;background:#D0F83B}
+#app .stepbar{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px;overflow-x:auto;
+ margin:16px 0 20px;scrollbar-width:thin;scrollbar-color:#5a7936 transparent}
+#app .stepbar .step{min-width:0;min-height:84px;padding:13px 9px;border-radius:12px;
+ background:#121c12;color:#9eaf9a;border:1px solid #3d5231;text-align:left}
+#app .stepbar .step strong{display:block;margin-top:7px;line-height:1.24;white-space:normal;
+ overflow-wrap:anywhere;font-size:11px;color:#d3ddc9}
+#app .stepbar .step.active{border-color:#a3c84f;background:#253719;color:#d0f83b}
+#app .stepbar .step.active strong{color:#eef5e2}
+#app #onboarding,#app #inbox,#app #crm,#app #calendar,#app #report,#app #guide{scroll-margin-top:110px}
+#app .tabs{display:flex;gap:8px;align-items:center;overflow-x:auto;overscroll-behavior-x:contain;
+ scrollbar-width:thin;scrollbar-color:#536b3a transparent}
+#app .tabs .btn{flex:0 0 auto;min-height:43px;padding:9px 13px;white-space:nowrap;
+ border-radius:9px;font-size:12px}
+#app .tabs .btn.primary{background:#D0F83B;color:#192507;border-color:#D0F83B}
+#app .tabs .workplace-academy-link{display:inline-flex;align-items:center;text-decoration:none;
+ background:#1d3018;color:#d9efb6;border:1px solid #658044}
+#app #stageCoach{border-color:#5c7a40;background:#172414;color:#d9e4ce;
+ padding:14px 18px;border-radius:12px;line-height:1.55;font-size:12px}
+#app .card{min-width:0;max-width:100%;overflow-wrap:anywhere}
+#app .grid{min-width:0;gap:12px}
+#app .card h2,#app .card h3{line-height:1.2;overflow-wrap:anywhere}
+#app .stage-note{max-width:100%;overflow-wrap:anywhere}
+#app .lesson-row{height:auto!important;max-height:none!important;line-height:1.6!important;padding:15px 3px!important}
+#app .lesson-row input{accent-color:#D0F83B}
+#app .chat{max-height:470px;min-height:250px;overflow-y:auto;scrollbar-width:thin}
+#app #reply,#app #notes,#app #handoff{width:100%;max-width:100%;min-width:0;line-height:1.6}
+#app button:focus-visible,#app input:focus-visible,#app textarea:focus-visible,
+#app select:focus-visible,#app a:focus-visible{outline:2px solid #D0F83B;outline-offset:3px}
+@media(max-width:850px){
+ #app .stepbar{grid-template-columns:repeat(5,minmax(105px,1fr));gap:6px;padding-bottom:6px}
+ #app .stepbar .step{padding:11px 9px;min-height:73px}
+ #app .tabs{position:sticky;top:0;z-index:6;background:#090e09;padding:9px 0}
+ #app .workspace-head{margin:12px 0}
+ #app .grid>.card{max-height:none!important;overflow:visible!important;height:auto!important}
+}
+@media(max-width:550px){
+ #app .row{flex-wrap:wrap;align-items:stretch;gap:9px}
+ #app .row .btn{min-height:42px}
+ #app .workspace-head{padding:16px 14px}
+ #app .workspace-head h2{font-size:23px!important}
+ #app .stepbar{grid-template-columns:repeat(5,112px)}
+ #app #prospectControl .row{align-items:flex-start}
+ #app .tabs .btn{padding:9px 11px;font-size:11px}
+}
+@media(prefers-reduced-motion:reduce){
+ #app .training-progress span{transition:none!important}
+}
