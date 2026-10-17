@@ -150,13 +150,22 @@ async function mentorDesk(){
  try{const d=await api('/api/mentor/submissions');mentor=d.submissions||[];renderMentor()}catch(e){notice(e.message)}
 }
 function renderMentor(){
- let c=heading('PERSONAL GUIDANCE','Mentor feedback centre','Submit examples of your work for a real team member to review. Feedback is not AI-generated.');
+ const urgent=mentor.filter(x=>x.status==='needs_changes'&&!x.acknowledged_at).length;
+ const waiting=mentor.filter(x=>x.status==='pending').length;
+ const approved=mentor.filter(x=>x.status==='approved').length;
+ const sorted=[...mentor].sort((a,b)=>{
+  const priority=x=>x.status==='needs_changes'&&!x.acknowledged_at?0:x.status==='pending'?1:x.status==='approved'?2:3;
+  return priority(a)-priority(b)||(new Date(b.submitted_at)-new Date(a.submitted_at));
+ });
+ let c=heading('PERSONAL GUIDANCE','Mentor feedback centre','Send redacted practice work, track real human reviews and respond to specific corrections.');
+ c+='<div class="studio-mini-metrics">'+box('ACTION REQUIRED',urgent)+box('AWAITING REVIEW',waiting)+box('APPROVED',approved)+'</div>';
+ c+='<div class="studio-note"><strong>How reviews work</strong><p>Submit a clear example and the question you want answered. Your mentor reviews it and may approve it or request changes. Acknowledging feedback does not count as approval.</p></div>';
  c+='<div class="studio-main-card"><div class="studio-field-grid"><label class="studio-field">TYPE<select id="studioMentorCategory"><option value="programme">40-Day evidence</option><option value="conversation">Conversation review</option><option value="workplace">Workplace performance</option><option value="general">General support</option></select></label><label class="studio-field">SUBJECT<input id="studioMentorSubject" maxlength="150" placeholder="What should your mentor review?"></label></div>'+
  '<label class="studio-field-label" for="studioMentorBody">YOUR SUBMISSION</label><textarea id="studioMentorBody" rows="5" placeholder="Include a summary, redacted conversation excerpts, your questions or a link to non-sensitive work."></textarea>'+
  '<p class="studio-help">Remove real prospects\' personal details before submitting.</p>'+
  action('submit-mentor','Submit for mentor review')+'</div>';
  c+='<div class="studio-section-heading"><span>REVIEW HISTORY</span><h3>Your submissions</h3></div>';
- c+=mentor.length?'<div class="studio-list">'+mentor.map(x=>'<div class="studio-list-row studio-stack"><span class="studio-overline">'+esc(x.category)+' · '+esc(x.status)+' · '+fmtDate(x.submitted_at)+'</span><strong>'+esc(x.subject)+'</strong><p>'+esc(x.submission)+'</p>'+(x.feedback?'<div class="studio-note"><strong>Mentor feedback</strong><p>'+esc(x.feedback)+'</p></div>':'')+
+ c+=mentor.length?'<div class="studio-list">'+sorted.map(x=>'<div class="studio-list-row studio-stack studio-review-item"><span class="studio-review-status studio-status-'+esc(x.status)+'">'+esc(x.status==='needs_changes'?'Needs changes':x.status==='pending'?'Awaiting review':'Approved')+'</span><span class="studio-overline">'+esc(x.category)+' · '+fmtDate(x.submitted_at)+'</span><strong>'+esc(x.subject)+'</strong><p>'+esc(x.submission)+'</p>'+(x.feedback?'<div class="studio-note"><strong>Mentor feedback</strong><p>'+esc(x.feedback)+'</p></div>':'')+
  (x.status==='needs_changes'&&!x.acknowledged_at?'<div class="studio-toolbar">'+action('mentor-acknowledge','Mark feedback reviewed','data-id="'+esc(x.id)+'"')+'</div><p class="studio-help">If changes are requested, you can submit revised evidence using the form above.</p>':'')+'</div>').join('')+'</div>':empty('No submissions yet','Send your first piece of work when you are ready for feedback.');
  call('Mentor feedback','Human support for practical training.',layout('',c),'MENTORSHIP / FEEDBACK');
 }
