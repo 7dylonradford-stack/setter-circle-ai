@@ -63,6 +63,15 @@ test('Reduced-motion users have a hard visual-motion override',()=>{
  assert.equal((css.match(/\{/g)||[]).length,(css.match(/\}/g)||[]).length);
 });
 
+test('Static performance keeps authentication fresh and avoids forced reflow on clicks',()=>{
+ const worker=read('public/sw.js');
+ assert.match(worker,/url\.pathname\.startsWith\("\/api\/"\)/);
+ assert.match(worker,/req\.mode==="navigate"/);
+ assert.match(worker,/cache:versioned\?"default":"no-store"/);
+ assert.doesNotMatch(sound,/clickTarget\.offsetWidth/);
+ assert.match(sound,/requestAnimationFrame\(\(\)=>/);
+});
+
 test('Additional progress polish does not replace the user account or simulation APIs',()=>{
  assert.doesNotMatch(script,/\/api\//);
  assert.doesNotMatch(script,/localStorage\.setItem/);
