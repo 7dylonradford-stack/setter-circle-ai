@@ -25,7 +25,7 @@ test("Practice section has three focused destinations without discarding the rep
  assert.match(home,/member-experience-v15.js\?v=15/);
 });
 test("The landing page leads with a free practice preview and avoids unverified numerical outcome claims",()=>{
- assert.match(home,/href="\/experience.html#demo">Thinking of joining\? →<\/a>/);
+ assert.match(home,/href="\/experience.html">Thinking of joining\? →<\/a>/);
  assert.doesNotMatch(home,/<b>20\+<\/b>students landed roles/);
  assert.match(home,/Fictional practice prospect/);
 });
