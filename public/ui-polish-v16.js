@@ -55,6 +55,10 @@
   if(send&&!send.getAttribute('aria-label'))send.setAttribute('aria-label','Send your message');
   const input=document.getElementById('input');
   if(input){input.setAttribute('enterkeyhint','send');input.setAttribute('aria-label','Your message to the simulated prospect')}
+  const demoStatus=document.getElementById('chatMessage');
+  if(demoStatus){demoStatus.setAttribute('role','status');demoStatus.setAttribute('aria-live','polite')}
+  const demoMessages=document.getElementById('chatMessages');
+  if(demoMessages){demoMessages.setAttribute('role','log');demoMessages.setAttribute('aria-label','Free fictional prospect conversation')}
   const work=document.getElementById('workContent');
   if(work)work.setAttribute('aria-live','off');
  }
