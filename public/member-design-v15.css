@@ -125,3 +125,12 @@ body.member-shell-active:not(.member-focus-mode) #workspace .studio-loading{alig
  *,*:before,*:after{scroll-behavior:auto!important}
  .v15-hub-card,.v15-primary{transition:none!important}
 }
+
+/* Mentor centre: immediate review status, without implying an AI score is a mentor approval. */
+.studio-review-item{align-items:flex-start}
+.studio-review-status{display:inline-flex;width:max-content;max-width:100%;font-size:10px;
+ font-weight:790;letter-spacing:.03em;border:1px solid #53683d;border-radius:99px;
+ padding:7px 11px;background:#1d2a17;color:#cbdea8;margin:0 0 2px}
+.studio-status-needs_changes{border-color:#896f39;color:#f1d69e;background:#2b2415}
+.studio-status-pending{border-color:#617943;color:#d5eda5}
+.studio-status-approved{border-color:#75a34d;color:#c8f48a;background:#223819}
