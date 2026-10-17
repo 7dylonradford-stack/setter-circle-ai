@@ -54,7 +54,7 @@ test("Practice UI includes accessible replay and adaptive recommendations",()=>{
  const page=get("public/index.html"),nav=get("public/member-shell.js"),js=get("public/roleplay-replay-v14.js");
  assert.match(page,/roleplay-replay-v14.js\?v=14/);
  assert.match(page,/Replay & improve/);
- assert.match(nav,/showReplayStudio/);
+ assert.match(get('public/member-experience-v15.js'),/showReplayStudio/);
  assert.match(js,/data-rp14="turn"/);
  assert.match(js,/roleplay\/difficulty/);
  assert.match(js,/alternative responses are hypothetical/i);
