@@ -13,7 +13,7 @@ let timer=0,active=null,noiseBuffer=null,startedAt=0;
 const enabled=()=>{
  try{return typeof window.setterCircleSoundEnabled==='function'
    ?window.setterCircleSoundEnabled()
-   :localStorage.getItem('setterCircleUiSoundV8')!=='off'}
+   :localStorage.getItem('setterCircleUiSoundV8')==='on'}
  catch(e){return false}
 };
 const shown=()=>document.visibilityState!=='hidden'&&$('trainer')&&!$('trainer').classList.contains('hidden');
