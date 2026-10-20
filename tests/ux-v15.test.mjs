@@ -7,7 +7,7 @@ const workplace=load("public/workplace.html"),routes=load("platform-routes.js");
 const db=load("db.js"),academy=load("public/platform-growth-v11.js");
 const bundle=load("scripts/build-member-css.mjs");
 test("Member CSS is consolidated at startup from the original ordered layers",()=>{
- assert.match(home,/href="\/member-ui-v15.css\?v=16"/);
+ assert.match(home,/href="\/member-ui-v15.css\?v=17"/);
  assert.equal((home.match(/<link rel="stylesheet"/g)||[]).length,1);
  assert.match(bundle,/member-signature-v7.css/);
  assert.match(bundle,/member-journey-v13.css/);

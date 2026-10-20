@@ -12,16 +12,16 @@ const typing=read('public/room-typing-v10.js');
 const build=read('scripts/build-member-css.mjs');
 
 test('Polish is loaded on public, member, Workplace and Before Joining pages',()=>{
- assert.match(home,/member-ui-v15\.css\?v=16/);
+ assert.match(home,/member-ui-v15\.css\?v=17/);
  assert.match(home,/ui-polish-v16\.js\?v=16/);
  for(const page of [workplace,experience]){
   assert.match(page,/ui-polish-v16\.css\?v=16/);
   assert.match(page,/ui-polish-v16\.js\?v=16/);
  }
  assert.match(build,/ui-polish-v16\.css/);
- assert.match(home,/setter-electric-v8\.js\?v=16/);
- assert.match(workplace,/setter-electric-v8\.js\?v=16/);
- assert.match(experience,/setter-electric-v8\.js\?v=16/);
+ assert.match(home,/setter-electric-v8\.js\?v=17/);
+ assert.match(workplace,/setter-electric-v8\.js\?v=17/);
+ assert.match(experience,/setter-electric-v8\.js\?v=17/);
 });
 
 test('Sound is off for first-time visitors and preserves explicit on/off preferences',()=>{

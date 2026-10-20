@@ -29,7 +29,7 @@
  }
  window.addEventListener('storage',e=>{
   if(e.key!==AUDIO_PREF)return;
-  soundOn=e.newValue!=='off';
+  soundOn=e.newValue==='on';
   updateSoundControls();
   window.dispatchEvent(new CustomEvent('setter:sound-change',{detail:{enabled:soundOn}}));
  });
@@ -81,7 +81,7 @@
    osc.frequency.exponentialRampToValueAtTime(peak,t+.037);
    osc.frequency.exponentialRampToValueAtTime(confirmation?560:460,t+.114);
    env.gain.setValueAtTime(.0001,t);
-   env.gain.exponentialRampToValueAtTime(confirmation?.027:.019,t+.012);
+   env.gain.exponentialRampToValueAtTime(confirmation?.022:.014,t+.012);
    env.gain.exponentialRampToValueAtTime(.005,t+.053);
    env.gain.exponentialRampToValueAtTime(.0001,t+.135);
    osc.connect(env);env.connect(context.destination);
@@ -89,6 +89,8 @@
    osc.onended=()=>{try{osc.disconnect();env.disconnect()}catch(e){}};
   }catch(e){/* Audio feedback never blocks interaction. */}
  }
+ // Shared short UI feedback; uses the same mute preference and audio context.
+ window.setterCirclePlaySound=()=>playBubble(false);
  function initControls(){
   const nav=document.getElementById('memberAppNav');
   const footer=nav?.querySelector('.member-nav-footer');
