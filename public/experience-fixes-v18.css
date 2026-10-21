@@ -1,0 +1,35 @@
+/* Topic navigation belongs in document flow; it must never obscure the lesson or chat. */
+.sc17-experience .experience-back{position:static!important;top:auto!important;z-index:auto;backdrop-filter:none;padding-top:9px;padding-bottom:9px}
+.sc17-experience #backToExperience{padding:9px 0;min-height:44px}
+.sc17-experience .chat-compose{align-items:flex-end}
+.sc17-experience .chat-compose textarea{flex:1;width:100%;min-height:54px;max-height:160px;resize:vertical;line-height:1.5;font-size:16px}
+.sc17-experience .chat-compose .btn{min-height:54px;flex:none}
+.sc17-experience .demo-compose-hint{display:flex;justify-content:space-between;gap:15px;padding:0 16px 10px;color:#a4b397;font-size:11px}
+.sc17-experience .chat-messages{overscroll-behavior-y:contain;overflow-wrap:anywhere;scrollbar-width:thin;scrollbar-color:#627545 transparent}
+.sc17-experience .chat-messages .bubble{white-space:pre-wrap;flex-shrink:0}
+.sc17-experience .chat-messages .bubble.is-pending{opacity:.6}
+.sc17-experience .message{font-size:12px;line-height:1.6;padding-bottom:12px;min-height:30px}
+.sc17-experience .chat-actions{gap:10px;padding-bottom:20px}
+.sc17-experience .chat-actions .btn{min-height:44px}
+.sc17-experience .demo-guide .sectionhead{margin-bottom:20px}
+.sc17-experience .demo-guide .feature{margin:16px 0}
+.sc17-experience .demo-topic-return{display:inline-flex;align-items:center;min-height:44px;color:#c6df9b;text-decoration:none;font-size:12px;margin:14px 0 0}
+@media(max-width:970px){
+ .sc17-experience .demo-grid{gap:24px}
+ .sc17-experience .demo-guide{position:static}
+ .sc17-experience .demo-guide .sectionhead h2{font-size:34px}
+ .sc17-experience .demo-guide .feature{margin:10px 0;font-size:12px}
+ .sc17-experience .chat-messages{min-height:210px;max-height:min(440px,48dvh);padding:16px}
+ .sc17-experience .chat-head{padding:16px}
+ .sc17-experience .scenario{padding:14px 16px}
+}
+@media(max-width:600px){
+ .sc17-experience .chat .chat-messages .bubble{max-width:90%;font-size:14px}
+ .sc17-experience .chat-compose{padding:12px;gap:8px}
+ .sc17-experience .chat-compose textarea{padding:12px;min-height:54px}
+ .sc17-experience .demo-compose-hint .desktop-hint{display:none}
+ .sc17-experience .demo-compose-hint{justify-content:flex-end}
+ .sc17-experience .chat-actions{padding-right:16px}
+ .sc17-experience .chat-actions #turns{margin-left:auto}
+ .sc17-experience #demo .chat{margin-bottom:36px}
+}

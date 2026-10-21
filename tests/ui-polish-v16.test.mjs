@@ -5,6 +5,7 @@ const read=file=>readFileSync(new URL('../'+file,import.meta.url),'utf8');
 const home=read('public/index.html');
 const workplace=read('public/workplace.html');
 const experience=read('public/experience.html');
+const demo=read('public/experience-demo-v18.js');
 const script=read('public/ui-polish-v16.js');
 const css=read('public/ui-polish-v16.css');
 const sound=read('public/setter-electric-v8.js');
@@ -47,9 +48,9 @@ test('Keyboard viewport handling is event-driven and focused on active text inpu
 
 test('Real busy states and accessible notifications are supported without artificial delay',()=>{
  assert.match(css,/button\[aria-busy="true"\]/);
- assert.match(experience,/this\.setAttribute\('aria-busy','true'\)/);
- assert.match(experience,/\$\('sendBtn'\)\.setAttribute\('aria-busy','true'\)/);
- assert.match(experience,/\$\('sendBtn'\)\.removeAttribute\('aria-busy'\)/);
+ assert.match(demo,/this\.setAttribute\('aria-busy','true'\)/);
+ assert.match(demo,/sendButton\.setAttribute\('aria-busy','true'\)/);
+ assert.match(demo,/sendButton\.removeAttribute\('aria-busy'\)/);
  assert.match(script,/toast\.setAttribute\('aria-live','polite'\)/);
  assert.match(script,/demoMessages\.setAttribute\('role','log'\)/);
  assert.doesNotMatch(script,/setTimeout\(/);

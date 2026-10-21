@@ -62,6 +62,11 @@ export async function initDb(){
   id UUID PRIMARY KEY, event_name TEXT NOT NULL, created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
  );
  CREATE INDEX IF NOT EXISTS experience_events_created ON experience_events(created_at DESC);
+ CREATE TABLE IF NOT EXISTS experience_demo_sessions(
+  id UUID PRIMARY KEY, owner_hash TEXT NOT NULL, state JSONB NOT NULL,
+  expires_at TIMESTAMPTZ NOT NULL, busy_token UUID, busy_until TIMESTAMPTZ
+ );
+ CREATE INDEX IF NOT EXISTS experience_demo_sessions_expiry ON experience_demo_sessions(expires_at);
  CREATE TABLE IF NOT EXISTS achievements(
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE, code TEXT NOT NULL,
   unlocked_at TIMESTAMPTZ NOT NULL DEFAULT NOW(), PRIMARY KEY(user_id,code)
