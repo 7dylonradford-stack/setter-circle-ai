@@ -34,7 +34,6 @@ practice:{eyebrow:'PRACTICE WITH PURPOSE',summary:'Three clear training environm
 ['progress','Performance Lab','See your skill trends and measured areas for improvement.','showPerformanceLab','Review performance'],
 ['coach','Mentor Feedback','Send work, track reviews and act on mentor corrections.','showMentorDesk','Open mentor feedback'],
 ['file','Results & Evidence','Review completed sessions and learning evidence.','showResultsVault','Open results vault']]},career:{eyebrow:'BUILD YOUR CAREER',summary:'Present your skills, prepare applications and find appropriate opportunities.',cards:[
-['career','Student Career Studio','Skills passport, placements and professional development.','showCareerStudio','Open career studio'],
 ['academy','Job Opportunities','Browse automatically updated roles and track your applications.','showOpportunities','Explore jobs'],
 ['coach','Interview Preparation','Practise hiring questions and request mentor assessment.','startInterview','Start interview preparation']]},community:{eyebrow:'LEARN TOGETHER',summary:'Mentor-led events and responsible peer-to-peer practice in one place.',cards:[
 ['practice','Community & Workshops','Training events, cohort learning and peer practice.','showCommunityStudio','Open community'],
