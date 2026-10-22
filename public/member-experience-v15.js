@@ -31,7 +31,7 @@ function career(){
  const content=headline('CAREER / PROFESSIONAL DEVELOPMENT','Build evidence. Find a role.','Your career progression stays separate from simulated scores. Choose what to work on next.')+
  '<div class="v15-hub-grid">'+
  card('showSetterProfile','01','My training profile','Review your recorded training and demonstrated strengths.')+
- card('showOpportunities','02','Job opportunities','Browse roles shared with students and track application progress.')+
+ card('showOpportunities','02','Job opportunities','Find automatically updated roles and track application progress.')+
  card('showPlacementPath','03','Readiness pathway','See what is required before a mentor assessment.')+
  card('showFinalAssessment','04','Request assessment','Submit evidence for a real mentor to review.')+
  card('showAdvancedStudio','05','Professional portfolio','Build optional shareable practice evidence and career milestones.')+

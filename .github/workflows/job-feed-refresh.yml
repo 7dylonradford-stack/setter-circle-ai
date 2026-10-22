@@ -1,0 +1,21 @@
+name: Refresh Hub job feed
+on:
+  schedule:
+    - cron: '17 * * * *'
+  workflow_dispatch:
+permissions: {}
+concurrency:
+  group: hub-job-feed-refresh
+  cancel-in-progress: false
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - name: Wake Hub and request due job-feed refresh
+        run: |
+          curl --fail --silent --show-error --retry 2 --retry-delay 15 --max-time 150 \
+            --request POST https://settercircle.co.uk/api/jobs/feed-refresh
+          sleep 45
+          curl --fail --silent --show-error --retry 2 --max-time 150 \
+            https://settercircle.co.uk/api/jobs/feed-health

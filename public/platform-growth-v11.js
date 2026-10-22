@@ -19,6 +19,7 @@ const box=(k,v)=>'<div class="studio-metric"><span>'+esc(k)+'</span><strong>'+es
 const call=(title,subtitle,content,kicker)=>window.openWorkspace(title,subtitle,content,kicker||'THE SETTER CIRCLE / STUDENT STUDIO');
 const modules=['Appointment Setting Foundations','Understanding the Setter Role','Outreach That Starts Conversations','Building Rapport','Discovery & Better Questions','Qualification','Objection Handling','Positioning the Offer','Booking the Call','Loom & Video Outreach','Performing in Your First Role'];
 let lessons=[],days=[],dayNo=1,opportunities=[],applications=[],jobFilter='all';
+let jobFeedInfo={},jobSearch='',jobKind='all',jobWork='all',jobPay='all',jobLimit=40,jobTimer;
 let weekly=[],mentor=[],adminTasks=[],adminAssessments=[];
 let admin=false,adminChecked=false,overviewBusy=false;
 function layout(top,inside){
@@ -183,24 +184,37 @@ async function assessment(){
 async function jobBoard(){
  call('Opportunities','Available roles and your application pipeline.',loading('opportunities'),'CAREER / JOB BOARD');
  try{
-  const [d,a]=await Promise.all([api('/api/opportunities'),api('/api/job-applications')]);opportunities=d.opportunities||[];applications=a.applications||[];renderJobs();
- }catch(e){notice(e.message)}
+  const [d,a]=await Promise.all([api('/api/opportunities'),api('/api/job-applications')]);opportunities=d.opportunities||[];jobFeedInfo=d.feed||{};applications=a.applications||[];renderJobs();
+  clearInterval(jobTimer);jobTimer=setInterval(async()=>{
+   if(!document.getElementById('liveJobBoard')){clearInterval(jobTimer);return}
+   if(document.hidden||document.activeElement?.closest('#liveJobBoard'))return;
+   try{const d=await api('/api/opportunities');if(!document.getElementById('liveJobBoard'))return;opportunities=d.opportunities||[];jobFeedInfo=d.feed||{};renderJobs()}catch{}
+  },60000);
+ }catch(e){call('Opportunities','Available roles and your application pipeline.',empty('Could not load the job board',e.message),'CAREER / JOB BOARD')}
 }
 function renderJobs(){
  const stage=applications.filter(x=>['applied','interview','offer','placed'].includes(x.status)).length;
- let c=heading('CAREER OPPORTUNITIES','Your job board','Browse verified listings shared by the team. Save roles and track each application.');
+ let c='<div id="liveJobBoard">'+heading('CAREER OPPORTUNITIES','Your live job board','New roles arrive automatically from employer career feeds. Save opportunities and track your applications.');
+ c+='<div class="live-job-sync" role="status"><span class="live-job-dot" aria-hidden="true"></span><strong>Automatic job feed</strong><span>'+(jobFeedInfo.last_synced?'Last source check '+esc(new Date(jobFeedInfo.last_synced).toLocaleString('en-GB')):'First source check in progress — roles will appear automatically')+'</span><small>Sources checked hourly. This page refreshes automatically.</small></div>';
  c+='<div class="studio-mini-metrics">'+box('AVAILABLE ROLES',opportunities.length)+box('ACTIVE APPLICATIONS',stage)+box('SAVED ROLES',applications.filter(x=>x.status==='saved').length)+'</div>';
- c+='<div class="studio-toolbar"><label class="studio-field">FILTER<select id="studioJobFilter"><option value="all">All roles</option><option value="saved">Saved roles</option><option value="applied">Applied</option><option value="interview">Interview</option><option value="offer">Offer</option><option value="placed">Placed</option></select></label></div>';
- const visible=opportunities.filter(x=>jobFilter==='all'||applications.find(y=>y.opportunity_id===x.id)?.status===jobFilter);
- c+=visible.length?'<div class="studio-job-grid">'+visible.map(x=>{
+ c+='<div class="live-job-filters"><label class="studio-field">SEARCH<input id="studioJobSearch" type="search" placeholder="Company, role or keyword" value="'+esc(jobSearch)+'"></label><label class="studio-field">ROLE<select id="studioJobKind"><option value="all">All relevant roles</option><option value="Appointment Setting">Appointment setters</option><option value="SDR / BDR">SDR / BDR</option></select></label><label class="studio-field">WORKING STYLE<select id="studioJobWork"><option value="all">Any location</option><option value="Remote">Remote</option><option value="Hybrid">Hybrid</option></select></label><label class="studio-field">PAY<select id="studioJobPay"><option value="all">All pay structures</option><option value="listed">Pay disclosed</option><option value="commission">Commission only</option></select></label><label class="studio-field">YOUR PIPELINE<select id="studioJobFilter"><option value="all">All roles</option><option value="saved">Saved roles</option><option value="applied">Applied</option><option value="interview">Interview</option><option value="offer">Offer</option><option value="placed">Placed</option></select></label></div>';
+ const visible=opportunities.filter(x=>(jobFilter==='all'||applications.find(y=>y.opportunity_id===x.id)?.status===jobFilter)&&(jobKind==='all'||x.category===jobKind)&&(jobWork==='all'||x.workplace_type===jobWork)&&(jobPay==='all'||(jobPay==='commission'?/commission[ -]only/i.test(x.salary_text):!!x.salary_text&&!/not disclosed/i.test(x.salary_text)))&&[x.title,x.company,x.description,x.location].join(' ').toLowerCase().includes(jobSearch.toLowerCase()));
+ c+='<p class="small muted">'+visible.length+' matching roles · UK locations and explicitly UK-accessible remote roles. Check language and experience requirements.</p>';
+ c+=visible.length?'<div class="studio-job-grid">'+visible.slice(0,jobLimit).map(x=>{
   const record=applications.find(a=>a.opportunity_id===x.id),status=record?.status||'';
-  const link=x.apply_url&&/^https:\/\//i.test(x.apply_url)?'<a target="_blank" rel="noopener noreferrer" href="'+esc(x.apply_url)+'">Application link ↗</a>':'';
-  return '<div class="studio-job"><span class="studio-overline">'+esc(x.category||x.type||'Setter role')+' · '+esc(x.location||'Remote')+'</span><h3>'+esc(x.title)+'</h3><strong>'+esc(x.company)+'</strong><p>'+esc(x.description)+'</p>'+(x.salary_text?'<div class="studio-pay">'+esc(x.salary_text)+'</div>':'')+
-   '<div class="studio-toolbar"><label class="studio-field">YOUR STATUS<select class="studio-job-status" data-job-id="'+esc(x.id)+'">'+['','saved','applied','interview','offer','placed','rejected'].map(k=>'<option value="'+k+'" '+(status===k?'selected':'')+'>'+esc(k||'Not saved')+'</option>').join('')+'</select></label>'+link+'</div></div>'
- }).join('')+'</div>':empty('No matching opportunities','Clear the filter or check again when new roles are shared.');
- call('Opportunities','Member opportunities and application tracking.',layout('',c),'CAREER / JOB BOARD');
- if($('studioJobFilter'))$('studioJobFilter').value=jobFilter;
+  const experience=String(x.description||'').match(/(?:\b(?:at least|minimum(?: of)?)\s+)?\b\d(?:\s*[–-]\s*\d)?\+?\s+years?['’]?\s+(?:of\s+)?(?:relevant\s+|professional\s+|previous\s+)?(?:experience|in\b|working\b)[^.!?]{0,100}/i)?.[0]||'See employer requirements';
+  const link=x.apply_url&&/^https:\/\//i.test(x.apply_url)?'<a class="live-job-apply" target="_blank" rel="noopener noreferrer" href="'+esc(x.apply_url)+'">View role & apply ↗</a>':'';
+  return '<div class="studio-job"><span class="studio-overline">'+esc(x.category||x.type||'Setter role')+' · '+esc(x.location||'See employer')+'</span><h3>'+esc(x.title)+'</h3><strong>'+esc(x.company)+'</strong><div class="live-job-tags"><span>'+esc(x.workplace_type||'See employer')+'</span><span>'+esc(x.source_key?'Public employer listing':'Shared by the team')+'</span></div><p>'+esc(String(x.description||'').slice(0,450))+(x.description?.length>450?'…':'')+'</p><div class="studio-pay">'+esc(x.salary_text||'Pay not disclosed')+'</div><small class="muted">'+esc(x.posted_at?'Posted '+fmtDate(x.posted_at):'Added to Hub '+fmtDate(x.created_at))+(x.source_name?' · '+esc(x.source_name):'')+'</small>'+
+   '<p class="small"><b>Experience:</b> '+esc(experience)+'</p><details class="live-job-details"><summary>Role details & requirements</summary><p>'+esc(x.description||'See the full employer advert for details.')+'</p></details><div class="studio-toolbar"><label class="studio-field">YOUR STATUS<select class="studio-job-status" data-job-id="'+esc(x.id)+'">'+['','saved','applied','interview','offer','placed','rejected'].map(k=>'<option value="'+k+'" '+(status===k?'selected':'')+'>'+esc(k||'Not saved')+'</option>').join('')+'</select></label>'+link+'</div></div>'
+ }).join('')+'</div>':empty('No matching opportunities',opportunities.length?'Try a different keyword or clear your filters.':'New matching roles will appear after a successful source check.');
+ if(visible.length>jobLimit)c+=action('jobs-more','Show more roles');
+ c+='<p class="small muted live-job-note">Public listings are automatically imported, not independently vetted or exclusive placements. Apply on the employer’s website. OTE and commission are not guaranteed earnings. Confirm eligibility and terms before accepting a role.</p></div>';
+ call('Opportunities','Automatically updated roles and your application pipeline.',layout('',c),'CAREER / JOB BOARD');
+ for(const [id,value] of [['studioJobFilter',jobFilter],['studioJobKind',jobKind],['studioJobWork',jobWork],['studioJobPay',jobPay]])if($(id))$(id).value=value;
 }
+document.addEventListener('input',e=>{if(e.target.id!=='studioJobSearch')return;const pos=e.target.selectionStart;jobSearch=e.target.value;jobLimit=40;renderJobs();const input=$('studioJobSearch');input?.focus();input?.setSelectionRange(pos,pos)});
+document.addEventListener('click',e=>{if(e.target.closest('[data-studio="jobs-more"]')){jobLimit+=40;renderJobs()}});
+
 function polylineChart(points){
  const values=points.slice(-25).map(x=>Number(x.overall_score)).filter(Number.isFinite);
  if(!values.length)return empty('No scores recorded','Complete an AI roleplay to start building your performance history.');
@@ -425,6 +439,7 @@ document.addEventListener('click',async e=>{
 document.addEventListener('change',async e=>{
  const t=e.target;if(!(t instanceof Element))return;
  if(t.id==='studioJobFilter'){jobFilter=t.value;renderJobs();return}
+ if(['studioJobKind','studioJobWork','studioJobPay'].includes(t.id)){if(t.id==='studioJobKind')jobKind=t.value;if(t.id==='studioJobWork')jobWork=t.value;if(t.id==='studioJobPay')jobPay=t.value;jobLimit=40;renderJobs();return}
  if(t.matches('.studio-job-status')){
   const status=t.value,id=t.dataset.jobId;if(!status){notice('Choose a status to save this role');return}
   try{

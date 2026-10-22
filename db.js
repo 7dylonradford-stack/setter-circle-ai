@@ -157,6 +157,20 @@ export async function initDb(){
  ALTER TABLE opportunities ADD COLUMN IF NOT EXISTS salary_text TEXT NOT NULL DEFAULT '';
  ALTER TABLE opportunities ADD COLUMN IF NOT EXISTS category TEXT NOT NULL DEFAULT 'Appointment Setting';
  ALTER TABLE opportunities ADD COLUMN IF NOT EXISTS expires_at TIMESTAMPTZ;
+ ALTER TABLE opportunities ADD COLUMN IF NOT EXISTS source_key TEXT;
+ ALTER TABLE opportunities ADD COLUMN IF NOT EXISTS external_id TEXT;
+ ALTER TABLE opportunities ADD COLUMN IF NOT EXISTS source_name TEXT;
+ ALTER TABLE opportunities ADD COLUMN IF NOT EXISTS source_url TEXT;
+ ALTER TABLE opportunities ADD COLUMN IF NOT EXISTS workplace_type TEXT;
+ ALTER TABLE opportunities ADD COLUMN IF NOT EXISTS posted_at TIMESTAMPTZ;
+ ALTER TABLE opportunities ADD COLUMN IF NOT EXISTS source_updated_at TIMESTAMPTZ;
+ ALTER TABLE opportunities ADD COLUMN IF NOT EXISTS last_seen_at TIMESTAMPTZ;
+ CREATE UNIQUE INDEX IF NOT EXISTS opportunities_source_identity ON opportunities(source_key,external_id);
+ CREATE TABLE IF NOT EXISTS job_feed_sources(
+  source_key TEXT PRIMARY KEY, source_name TEXT NOT NULL,
+  attempted_at TIMESTAMPTZ, succeeded_at TIMESTAMPTZ,
+  job_count INTEGER NOT NULL DEFAULT 0, error TEXT
+ );
  CREATE TABLE IF NOT EXISTS skill_assessments(
    id UUID PRIMARY KEY, user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
    status TEXT NOT NULL DEFAULT 'pending' CHECK(status IN ('pending','approved','needs_changes')),
