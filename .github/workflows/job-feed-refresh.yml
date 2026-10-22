@@ -18,4 +18,16 @@ jobs:
             --request POST https://settercircle.co.uk/api/jobs/feed-refresh
           sleep 45
           curl --fail --silent --show-error --retry 2 --max-time 150 \
-            https://settercircle.co.uk/api/jobs/feed-health
+            https://settercircle.co.uk/api/jobs/feed-health > /tmp/feed-health.json
+          python3 - <<'PY'
+          import json, datetime
+          data = json.load(open('/tmp/feed-health.json'))
+          stamp = data.get('last_synced')
+          if not stamp:
+              raise SystemExit('Job feed has never completed a source check')
+          checked = datetime.datetime.fromisoformat(stamp.replace('Z', '+00:00'))
+          age = (datetime.datetime.now(datetime.timezone.utc) - checked).total_seconds()
+          if age > 4500:
+              raise SystemExit('Job feed is stale: last source check is over 75 minutes old')
+          print('Job feed current:', data)
+          PY

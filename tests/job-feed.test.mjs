@@ -53,6 +53,14 @@ test('Concurrent importer requests share a single run',async()=>{
  const h=harness(async()=>{fetches++;await wait;return {ok:true,text:async()=>JSON.stringify({jobs:[row]})}});
  const a=h.feed.sync();const b=h.feed.sync();release();await Promise.all([a,b]);assert.equal(fetches,1);
 });
+test('Waking before an import is due does not postpone the next scheduled refresh',async()=>{
+ let clock=Date.parse('2026-10-22T19:17:00Z'),fetches=0;
+ const client={query:async sql=>({rows:[sql.includes('try_advisory')?{locked:true}:{latest:'2026-10-22T18:29:00Z'}]}),release:()=>{}};
+ const feed=createJobFeed({pool:{connect:async()=>client},q:async()=>({rows:[]}),sources:[source],now:()=>clock,fetcher:async()=>{fetches++;return {ok:true,text:async()=>JSON.stringify({jobs:[row]})}}});
+ assert.equal((await feed.sync()).skipped,true);assert.equal(fetches,0);
+ clock=Date.parse('2026-10-22T19:43:00Z');
+ assert.equal((await feed.sync()).imported,1);assert.equal(fetches,1);
+});
 test('Job board renders escaped employer details, filters results and preserves apply links',async()=>{
  const handlers={},elements=new Map(),views=[];
  const document={readyState:'loading',hidden:false,activeElement:null,addEventListener:(name,fn)=>(handlers[name]??=[]).push(fn),getElementById:id=>elements.get(id)||null};

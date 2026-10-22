@@ -113,7 +113,7 @@ export function createJobFeed({pool,q,sources=SOURCES,fetcher=fetch,now=()=>Date
    try{
     locked=(await client.query('SELECT pg_try_advisory_lock(739121084) locked')).rows[0]?.locked;
     if(!locked)return {skipped:true};
-    if(!force){const r=await client.query('SELECT MAX(attempted_at) latest FROM job_feed_sources');if(r.rows[0]?.latest&&now()-new Date(r.rows[0].latest).getTime()<INTERVAL_MS-60000)return {skipped:true};}
+    if(!force){const r=await client.query('SELECT MAX(attempted_at) latest FROM job_feed_sources');if(r.rows[0]?.latest&&now()-new Date(r.rows[0].latest).getTime()<INTERVAL_MS-60000){lastAttempt=new Date(r.rows[0].latest).getTime();return {skipped:true};}}
     const queue=[...sources];
     await Promise.all(Array.from({length:3},async()=>{while(queue.length){const source=queue.shift();
      try{
