@@ -14,6 +14,7 @@ import { registerCommunityStudio } from "./advanced-community-routes.js";
 import { registerCareerStudio } from "./advanced-career-routes.js";
 import { registerAdvancedAdmin } from "./advanced-admin-routes.js";
 import {createJobFeed, INTERVAL_MS} from './job-feed.js';
+import {addReviewedOpportunities} from './curated-opportunities.js';
 const jobFeed=createJobFeed({pool,q});
 
 const trustedScenarios=JSON.parse(readFileSync(new URL("./trusted-scenarios.json",import.meta.url),"utf8"));
@@ -206,7 +207,7 @@ app.get("/api/opportunities",requireUser,async(req,res)=>{try{
 app.post('/api/jobs/feed-refresh',(req,res)=>{jobFeed.kick();res.status(202).json({accepted:!!pool,refresh_minutes:60})});
 app.get('/api/jobs/feed-health',async(req,res)=>{try{
  const r=await q("SELECT MAX(succeeded_at) last_synced,COUNT(*) FILTER(WHERE error IS NULL)::int healthy_sources,COUNT(*)::int total_sources FROM job_feed_sources");
- const jobs=await q("SELECT COUNT(*)::int active_jobs FROM opportunities WHERE source_key IS NOT NULL AND active=TRUE AND last_seen_at>NOW()-INTERVAL '72 hours'");
+ const jobs=await q("SELECT COUNT(*) FILTER(WHERE source_key IS NOT NULL AND last_seen_at>NOW()-INTERVAL '72 hours')::int active_jobs,COUNT(*) FILTER(WHERE source_key IS NULL)::int manually_added_jobs FROM opportunities WHERE active=TRUE AND (expires_at IS NULL OR expires_at>NOW())");
  res.set('Cache-Control','no-store').json({automatic:!!pool,refresh_minutes:60,...r.rows[0],...jobs.rows[0]});
  }catch{res.status(503).json({automatic:false,error:'Feed initializing'})}});
 app.post("/api/admin/opportunities",requireUser,async(req,res)=>{if(req.user.role!=="admin")return res.status(403).json({error:"Admin only"});const title=String(req.body?.title||"").trim(),company=String(req.body?.company||"").trim(),description=String(req.body?.description||"").trim(),location=String(req.body?.location||"Remote").trim(),apply=String(req.body?.apply_url||"").trim();if(!title||!company||!description)return res.status(400).json({error:"Title, company and description are required"});const salary=String(req.body?.salary_text||"").trim().slice(0,100),category=String(req.body?.category||"Appointment Setting").trim().slice(0,80),expires=String(req.body?.expires_at||"").trim();if(apply&&!/^https:\/\//i.test(apply))return res.status(400).json({error:"Use a secure application URL"});if(expires&&(isNaN(Date.parse(expires))||new Date(expires)<=new Date()))return res.status(400).json({error:"Use a future expiry date"});const id=crypto.randomUUID();await q("INSERT INTO opportunities(id,title,company,description,location,apply_url,salary_text,category,expires_at) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9)",[id,title,company,description,location,apply||null,salary,category,expires||null]);res.json({ok:true,id})});
@@ -737,4 +738,4 @@ registerAdvancedAdmin(app,{requireUser,requireAdmin});
 registerExperience(app,client,requireAdmin);
 app.get("/{*splat}",(req,res)=>res.sendFile(path.join(__dirname,"public","index.html")));
 const port=process.env.PORT||3000;
-initDb().then(()=>app.listen(port,()=>{console.log(`Setter Circle AI running on ${port}`);jobFeed.start();})).catch(e=>{console.error('Database migration failed; refusing to start uninitialized API',e);process.exitCode=1;});
+initDb().then(async()=>{await addReviewedOpportunities({pool,q});}).then(()=>app.listen(port,()=>{console.log(`Setter Circle AI running on ${port}`);jobFeed.start();})).catch(e=>{console.error('Database migration failed; refusing to start uninitialized API',e);process.exitCode=1;});

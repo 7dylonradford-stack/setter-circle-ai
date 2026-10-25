@@ -1,0 +1,6 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {reviewedOpportunities,reviewedId,addReviewedOpportunities} from '../curated-opportunities.js';
+test('Reviewed leads have stable valid identities and unique secure source links',()=>{assert.equal(reviewedOpportunities.length,5);assert.equal(new Set(reviewedOpportunities.map(j=>j.url)).size,5);for(const j of reviewedOpportunities){assert.ok(j.url.startsWith('https://'));assert.match(reviewedId(j.url),/^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-a[a-f0-9]{3}-[a-f0-9]{12}$/);assert.equal(reviewedId(j.url),reviewedId(j.url));}});
+test('Repeated imports do not duplicate or reopen reviewed listings',async()=>{const existing=new Set();let calls=0;const q=async(sql,args)=>{calls++;assert.match(sql,/WHERE NOT EXISTS/);assert.match(sql,/ON CONFLICT\(id\) DO NOTHING/);assert.doesNotMatch(sql,/DO UPDATE/);assert.ok(args[10]);if(existing.has(args[0]))return {rows:[]};existing.add(args[0]);return {rows:[{id:args[0]}]}};assert.equal((await addReviewedOpportunities({pool:{},q})).added,5);assert.equal((await addReviewedOpportunities({pool:{},q})).added,0);assert.equal(calls,10);});
+test('An unconfigured database is skipped without a write',async()=>{assert.deepEqual(await addReviewedOpportunities({pool:null,q:()=>{throw Error('unexpected write')}}),{added:0,skipped:true});});
